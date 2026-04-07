@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate ,Link} from "react-router-dom"
 import ProjectForm from './ProjectForm'
-import "../Style/FormTable.css"
+import "../Style/FormTable.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -11,7 +11,7 @@ export default function ProjectTable({ records, handleDelete }) {
   const [search, setSearch] = useState("");
   const [entries, setEntries] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showForm, setShowForm] = useState(false); // 🔥 NEW
+  const [showForm, setShowForm] = useState(false); 
 
   // Search
   const filteredData = records.filter((item) =>
@@ -156,7 +156,7 @@ export default function ProjectTable({ records, handleDelete }) {
                         <td>{item.status}</td>
                         <td>
                           <button
-                            className="btn btn-sm btn-warning me-2"
+                            className="btn btn-sm btn-warning ms-2" 
                             onClick={() =>
                               navigate(`/project/create/${index}`)
                             }
@@ -166,7 +166,7 @@ export default function ProjectTable({ records, handleDelete }) {
 
                           <button
                             onClick={() => handleDelete(index)}
-                            className="btn btn-sm btn-danger"
+                            className="btn btn-sm btn-danger ms-2 "
                           >
                             <i className="fa-solid fa-trash"></i>
                           </button>

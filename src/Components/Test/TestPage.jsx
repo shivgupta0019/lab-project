@@ -83,65 +83,65 @@
 // }
 
 
-import React, { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom';
-import TestTable from './TestTable';
-import axios from "axios";
+// import React, { useEffect, useState } from 'react'
+// import { useLocation } from 'react-router-dom';
+// import TestTable from './TestTable';
+// import axios from "axios";
 
-export default function TestPage() {
-  const [records, setRecords] = useState([]);
-  const [editIndex, setEditIndex] = useState(null);
-  const [editData, setEditData] = useState(null);
-  const [showForm, setShowForm] = useState(false);
+// export default function TestPage() {
+//   const [records, setRecords] = useState([]);
+//   const [editIndex, setEditIndex] = useState(null);
+//   const [editData, setEditData] = useState(null);
+//   const [showForm, setShowForm] = useState(false);
 
-  const location = useLocation();
+//   const location = useLocation();
 
-  useEffect(() => {
-    fetchData();
-  }, [location]);
+//   useEffect(() => {
+//     fetchData();
+//   }, [location]);
 
-  async function fetchData() {
-    try {
-      const res = await axios.get("http://localhost:3000/test");
-      setRecords(res.data);
-    } catch (err) {
-      console.log(err);
-    }
-  }
+//   async function fetchData() {
+//     try {
+//       const res = await axios.get("http://localhost:3000/test");
+//       setRecords(res.data);
+//     } catch (err) {
+//       console.log(err);
+//     }
+//   }
 
-  // CREATE
-  function handleCreate() {
-    setEditIndex(null);
-    setEditData(null);
-    setShowForm(true);
-  }
+//   // CREATE
+//   function handleCreate() {
+//     setEditIndex(null);
+//     setEditData(null);
+//     setShowForm(true);
+//   }
 
-  // EDIT
-  function handleEdit(index) {
-    setEditIndex(index);
-    setEditData(records[index]);
-    setShowForm(true);
-  }
+//   // EDIT
+//   function handleEdit(index) {
+//     setEditIndex(index);
+//     setEditData(records[index]);
+//     setShowForm(true);
+//   }
 
-  // DELETE
-  async function handleDelete(id) {
-    const confirmDelete = window.confirm("Delete?");
-    if (confirmDelete) {
-      await axios.delete(`http://localhost:3000/test/${id}`);
-      fetchData();
-    }
-  }
+//   // DELETE
+//   async function handleDelete(id) {
+//     const confirmDelete = window.confirm("Delete?");
+//     if (confirmDelete) {
+//       await axios.delete(`http://localhost:3000/test/${id}`);
+//       fetchData();
+//     }
+//   }
 
-  return (
-    <TestTable
-      records={records}
-      handleDelete={handleDelete}
-      handleCreate={handleCreate}
-      handleEdit={handleEdit}
-      showForm={showForm}
-      setShowForm={setShowForm}
-      editData={editData}
-      editIndex={editIndex}
-    />
-  )
-}
+//   return (
+//     <TestTable
+//       records={records}
+//       handleDelete={handleDelete}
+//       handleCreate={handleCreate}
+//       handleEdit={handleEdit}
+//       showForm={showForm}
+//       setShowForm={setShowForm}
+//       editData={editData}
+//       editIndex={editIndex}
+//     />
+//   )
+// }
