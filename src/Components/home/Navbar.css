@@ -1,6 +1,6 @@
 .modern-navbar {
   position: fixed;
-  top: 15px; /* thoda gap upar se */
+  top: 5px; /* thoda gap upar se */
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
