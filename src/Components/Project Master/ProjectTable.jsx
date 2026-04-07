@@ -24,7 +24,6 @@ export default function ProjectTable({ records, handleDelete }) {
   const currentData = filteredData.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(filteredData.length / entries);
 
-
   function handleDownloadAll() {
   const doc = new jsPDF();
 
