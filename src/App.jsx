@@ -1,9 +1,9 @@
-import React from 'react'
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
-import Footer from './Components/home/Footer'
-import SignupPage from './Components/User/Signup'
-import LoginPage from './Components/User/Login'
-import OTPPage from './Components/User/Otp'
+import React from "react";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import Footer from "./Components/home/Footer";
+import SignupPage from "./Components/User/Signup";
+import LoginPage from "./Components/User/Login";
+import OTPPage from "./Components/User/Otp";
 
 // import UserScientistForm from './Components/UserScientist/UserScientistForm'
 // import UserScientistPage from './Components/UserScientist/UserScientistPage'
@@ -14,16 +14,16 @@ import OTPPage from './Components/User/Otp'
 // import RawMaterialPage from './Components/Rowmatairiel/RowMetairialPage'
 // import RowMetairialForm from './Components/Rowmatairiel/RowMetairialForm'
 
-import ProjectForm from './Components/Project Master/ProjectForm'
-import ProjecPage from './Components/Project Master/ProjecPage'
+import ProjectForm from "./Components/Project Master/ProjectForm";
+import ProjecPage from "./Components/Project Master/ProjecPage";
 
 // import TestPage from './Components/Test/TestPage'
 // import TestForm from './Components/Test/TestForm'
 
-import CentrallabPage from './Components/CentralLab/CentralLabPage'
-import CentralLabForm from './Components/CentralLab/CentralLabForm'
+import CentrallabPage from "./Components/CentralLab/CentralLabPage";
+import CentralLabForm from "./Components/CentralLab/CentralLabForm";
 
-import Dashboard from './Components/home/Dashboard'
+import Dashboard from "./Components/home/Dashboard";
 
 // import SamplePage from './Components/Data transaction/sample/samplePage'
 // import SampleForm from './Components/Data transaction/sample/SampleForm'
@@ -37,11 +37,9 @@ import Dashboard from './Components/home/Dashboard'
 // import StudyPage from './Components/Data transaction/studiesRecords/Studypage'
 // import StudyForm from './Components/Data transaction/studiesRecords/StudyForm'
 
-
-import ProfilePage from './Components/User/ProfilePage'
-import DownloadResults from './Components/DownloadResults'
-import ForgotPassword from './Components/User/Forgate-Password'
-
+import ProfilePage from "./Components/User/ProfilePage";
+import DownloadResults from "./Components/DownloadResults";
+import ForgotPassword from "./Components/User/Forgate-Password";
 
 export default function App() {
   return (
@@ -50,32 +48,44 @@ export default function App() {
     </BrowserRouter>
   );
 }
- function Layout() {
+function Layout() {
   const location = useLocation();
 
   // 👉 jin routes pe dashboard nahi chahiye
-  const hideRoutes = ["/", "/signup", "/otp","/forgot-password"];
+  const hideRoutes = ["/", "/signup", "/otp", "/forgot-password"];
 
   const hideDashboard = hideRoutes.includes(location.pathname);
 
-
   return (
     <>
-            {/*  Dashboard sirf tab dikhe jab allowed ho */}
+      {/*  Dashboard sirf tab dikhe jab allowed ho */}
       {!hideDashboard && <Dashboard />}
       <Routes>
-        
-        <Route path='/centrallab' element={<CentrallabPage />} />
-        <Route path='/centrallab/create' element={<CentralLabForm />} />
-        <Route path='/centrallab/create/:id' element={<CentralLabForm />} />
+        <Route path="/centrallab" element={<CentrallabPage />} />
+        <Route
+          path="/centrallab/create"
+          element={
+            <div style={{ paddingTop: "100px" }}>
+              <CentralLabForm />
+            </div>
+          }
+        />
+        <Route
+          path="/centrallab/create/:id"
+          element={
+            <div style={{ paddingTop: "100px" }}>
+              <CentralLabForm />
+            </div>
+          }
+        />
 
         {/* <Route path='/user' element={<UserScientistPage />} />
         <Route path='/user/create/:id' element={<UserScientistForm />} />
         <Route path='/user/create' element={<UserScientistForm />} /> */}
 
-        <Route path='/project' element={<ProjecPage/>} />
-        <Route path='/project/create/:id' element={<ProjectForm />} />
-        <Route path='/project/create' element={<ProjectForm />} />
+        <Route path="/project" element={<ProjecPage />} />
+        <Route path="/project/create/:id" element={<ProjectForm />} />
+        <Route path="/project/create" element={<ProjectForm />} />
 
         {/* <Route path='/metairial' element={<RawMaterialPage />} />
         <Route path='/metairial/create/:id' element={<RowMetairialForm />} />
@@ -101,22 +111,19 @@ export default function App() {
         <Route path='/analytical/create/:id' element={<AnalyticalTestForm/>}/>
         <Route path='/analytical/create' element={<AnalyticalTestForm/>}/> */}
 
-         {/* <Route path='/study' element={<StudyPage/>}/>
+        {/* <Route path='/study' element={<StudyPage/>}/>
         <Route path='/study/create/:id' element={<StudyForm/>}/>
         <Route path='/study/create' element={<StudyForm/>}/> */}
 
-        <Route path='/result' element={<DownloadResults/>}/>
+        <Route path="/result" element={<DownloadResults />} />
 
-        <Route  path='/signup' element={<SignupPage />} />
-        <Route path='/' element={<LoginPage />} />
-        <Route path='/otp' element={<OTPPage />} />
-        <Route path='/profile' element={<ProfilePage />} />
-        <Route path='/forgot-password' element={<ForgotPassword />} />
-
-
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/otp" element={<OTPPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
       <Footer />
     </>
   );
 }
-
