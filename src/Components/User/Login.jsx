@@ -22,16 +22,31 @@ export default function LoginPage() {
       return;
     }
 
+    //  localStorage se users lo
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+
+    //  username aur password dono match karo
+    const matchedUser = users.find(
+      (x) =>
+        x.username?.toLowerCase() === form.username.toLowerCase() &&
+        x.password === form.password
+    );
+
+    if (!matchedUser) {
+      alert("Invalid Username or Password ");
+      return;
+    }
+
+    // OTP generate karo
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    localStorage.setItem("user", JSON.stringify(form));
+    localStorage.setItem("loggedInUser", JSON.stringify(matchedUser));
     localStorage.setItem("otp", otp);
 
     alert("Your OTP is: " + otp);
 
     navigate("/otp");
   }
-
 
   return (
     <div className="main-container">
@@ -70,9 +85,9 @@ export default function LoginPage() {
                 onChange={handleChange}
               />
             </div>
-            <p className="forgot ms-4">Forgot your Password?</p>
-
-
+            <p className="forgot ms-4">
+              <Link to="/forgot-password">Forgot your Password?</Link>
+            </p>
 
 
             <div className="btn-group">
@@ -83,7 +98,7 @@ export default function LoginPage() {
             </div>
             <div className="create">
               <p className="forgot d-flex fs-6 mt-4 ms-5"><Link to="/signup" >Create Your Account?</Link></p>
-              
+
             </div>
           </form>
         </div>
