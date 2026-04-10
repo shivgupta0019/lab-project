@@ -1139,18 +1139,11 @@ export default function CentralLabTable({
               </button> */}
               <button
                 className="btn btn-primary"
-                onClick={() => setShowForm(!showForm)}
+                onClick={() => navigate("/centrallab/create")}
               >
-                {showForm ? "✖ Close Form" : "+ Add Central Lab"}
+                + Add Central Lab
               </button>
             </div>
-
-            {/* Inline Add Form */}
-            {showForm && (
-              <div className="px-3 pb-3">
-                <CentralLabForm onSaved={handleFormSaved} />
-              </div>
-            )}
 
             <div className="card-header">
               <h5 className="mb-0">Central Lab List</h5>
