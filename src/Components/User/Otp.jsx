@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "../Style/userotp.css";
+import axios from "axios";
 
 export default function OTPPage() {
   const navigate = useNavigate();
@@ -96,42 +97,43 @@ export default function OTPPage() {
     }
   }, [otp]);
 
-  // ✅ VERIFY
-  function handleVerify() {
-    const enteredOtp = otp.join("");
-    const savedOtp = localStorage.getItem("otp");
+  //  VERIFY
+  async function handleVerify() {
+  try {
+    let res = await axios.post("http://localhost:5000/api/verify-otp", {
+      email: localStorage.getItem("email"),
+      otp: otp.join(""),
+    });
 
-    if (enteredOtp === savedOtp) {
-      alert("Login Successful ");
-      navigate("/dashboard");
-    } else {
-      alert("Invalid OTP ");
-    }
+    localStorage.setItem("token", res.data.token);
+
+    alert(res.data.message);
+    navigate("/dashboard");
+
+  } catch (err) {
+    alert(err.response?.data?.message);
   }
+}
 
   // 🔁 RESEND OTP (MAIN LOGIC)
-  function handleResend() {
-    if (!resendActive) return; // prevent early click
+ async function handleResend() {
+  if (!resendActive) return;
 
-    // 🔥 new OTP generate
-    const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+  try {
+    let res = await axios.post("http://localhost:5000/api/resend-otp", {
+      email: localStorage.getItem("email"),
+    });
 
-    // save
-    localStorage.setItem("otp", newOtp);
+    alert(res.data.message);
 
-    // demo ke liye show
-    alert("New OTP: " + newOtp);
-
-    // reset timer + UI
     setTimeLeft(60);
     setResendActive(false);
     setOtp(["", "", "", "", "", ""]);
 
-    // focus first input
-    setTimeout(() => {
-      inputsRef.current[0]?.focus();
-    }, 100);
+  } catch (err) {
+    alert(err.response?.data?.message);
   }
+}
 
   return (
     <div className="auth-container">
