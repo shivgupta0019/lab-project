@@ -17,6 +17,7 @@ import ProfilePage from './Components/User/ProfilePage'
 import DownloadResults from './Components/DownloadResults'
 import ForgotPassword from './Components/User/Forgate-Password'
 import ResetPassword from './Components/User/ResetPassword'
+import UsersPage from './Components/User/Users'
 
 
 export default function App() {
@@ -60,6 +61,8 @@ export default function App() {
         <Route path='/profile' element={<ProfilePage />} />
         <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/users" element={<UsersPage />} />
+
 
       </Routes>
       <Footer />
