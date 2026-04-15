@@ -13,11 +13,12 @@ import CentralLabForm from "./Components/CentralLab/CentralLabForm";
 
 import Dashboard from "./Components/home/Dashboard";
 
-import ProfilePage from "./Components/User/ProfilePage";
-import DownloadResults from "./Components/DownloadResults";
-import ForgotPassword from "./Components/User/Forgate-Password";
-import ResetPassword from "./Components/User/ResetPassword";
-import LabManagement from "./Components/admin/LabManagement";
+import ProfilePage from './Components/User/ProfilePage'
+import DownloadResults from './Components/DownloadResults'
+import ForgotPassword from './Components/User/Forgate-Password'
+import ResetPassword from './Components/User/ResetPassword'
+import UsersPage from './Components/User/Users'
+
 
 export default function App() {
   return (
@@ -62,6 +63,9 @@ function Layout() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/users" element={<UsersPage />} />
+
+
       </Routes>
       <Footer />
     </>

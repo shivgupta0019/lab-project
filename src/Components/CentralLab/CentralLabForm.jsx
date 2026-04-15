@@ -9,7 +9,246 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import axios from "axios";
+
+// ─── PDF Export Function ──────────────────────────────────────────────────────
+function generateLabPDF(record) {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 12;
+  const contentWidth = pageWidth - 2 * margin;
+  let yPosition = 15;
+
+  // Helper function to add section title
+  function addSectionTitle(title) {
+    doc.setFontSize(13);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(0);
+    doc.text(title, margin, yPosition);
+    yPosition += 7;
+
+    // Draw line under title
+    doc.setDrawColor(200);
+    doc.line(margin, yPosition - 2, pageWidth - margin, yPosition - 2);
+    yPosition += 5;
+  }
+
+  // Helper function to check page space
+  function checkPageSpace(spaceNeeded) {
+    if (yPosition + spaceNeeded > pageHeight - 15) {
+      doc.addPage();
+      yPosition = 15;
+    }
+  }
+
+  // Title
+  doc.setFontSize(18);
+  doc.setFont(undefined, "bold");
+  doc.setTextColor(0);
+  doc.text("Submission Summary", pageWidth / 2, yPosition, { align: "center" });
+  yPosition += 12;
+
+  // Lab Info Section
+  addSectionTitle("Lab Info");
+
+  doc.setFont(undefined, "normal");
+  doc.setFontSize(10);
+  const labInfoData = [
+    ["Code", record.code],
+    ["Lab Name", record.labname],
+    ["Location", record.location],
+    ["Lab Type", record.labtype],
+  ];
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [],
+    body: labInfoData,
+    margin: { left: margin, right: margin },
+    columnStyles: {
+      0: { fontStyle: "bold", cellWidth: contentWidth * 0.3 },
+      1: { cellWidth: contentWidth * 0.7 },
+    },
+    styles: {
+      fontSize: 10,
+      cellPadding: 3,
+      textColor: 0,
+      lineColor: 220,
+      lineWidth: 0.1,
+    },
+    alternateRowStyles: {
+      fillColor: [245, 245, 245],
+    },
+  });
+  yPosition = doc.lastAutoTable.finalY + 8;
+
+  // Lab Test Entries Section
+  if (record.tests && record.tests.length > 0) {
+    checkPageSpace(40);
+    addSectionTitle(`Lab Test Entries (${record.tests.length})`);
+
+    const testData = record.tests.map((t) => [
+      t.labCode || "",
+      t.companyName || "",
+      t.labTestCode || "",
+      t.testingType || "",
+    ]);
+
+    autoTable(doc, {
+      startY: yPosition,
+      head: [["Lab Code", "Company", "Test Code", "Type"]],
+      body: testData,
+      margin: { left: margin, right: margin },
+      styles: {
+        fontSize: 9,
+        cellPadding: 2.5,
+        textColor: 0,
+        lineColor: 220,
+        lineWidth: 0.1,
+      },
+      headStyles: {
+        fontStyle: "bold",
+        fillColor: [230, 230, 230],
+        textColor: 0,
+        lineColor: 150,
+        lineWidth: 0.5,
+      },
+      alternateRowStyles: {
+        fillColor: [250, 250, 250],
+      },
+    });
+    yPosition = doc.lastAutoTable.finalY + 8;
+  }
+
+  // Scientists Section
+  if (record.scientists && record.scientists.length > 0) {
+    checkPageSpace(40);
+    addSectionTitle(`Scientists (${record.scientists.length})`);
+
+    const scientistData = record.scientists.map((s) => [
+      s.userId || "",
+      s.name || "",
+      s.role || "",
+      s.labCode || "",
+    ]);
+
+    autoTable(doc, {
+      startY: yPosition,
+      head: [["User ID", "Name", "Role", "Lab Code"]],
+      body: scientistData,
+      margin: { left: margin, right: margin },
+      styles: {
+        fontSize: 9,
+        cellPadding: 2.5,
+        textColor: 0,
+        lineColor: 220,
+        lineWidth: 0.1,
+      },
+      headStyles: {
+        fontStyle: "bold",
+        fillColor: [230, 230, 230],
+        textColor: 0,
+        lineColor: 150,
+        lineWidth: 0.5,
+      },
+      alternateRowStyles: {
+        fillColor: [250, 250, 250],
+      },
+    });
+    yPosition = doc.lastAutoTable.finalY + 8;
+  }
+
+  // Materials Section
+  if (record.materials && record.materials.length > 0) {
+    checkPageSpace(40);
+    addSectionTitle(`Materials (${record.materials.length})`);
+
+    const materialData = record.materials.map((m) => [
+      m.materialCode || "",
+      m.materialName || "",
+      m.category || "",
+      m.supplier || "",
+      m.storageCondition || "",
+    ]);
+
+    autoTable(doc, {
+      startY: yPosition,
+      head: [["Code", "Name", "Category", "Supplier", "Storage"]],
+      body: materialData,
+      margin: { left: margin, right: margin },
+      styles: {
+        fontSize: 9,
+        cellPadding: 2.5,
+        textColor: 0,
+        lineColor: 220,
+        lineWidth: 0.1,
+      },
+      headStyles: {
+        fontStyle: "bold",
+        fillColor: [230, 230, 230],
+        textColor: 0,
+        lineColor: 150,
+        lineWidth: 0.5,
+      },
+      alternateRowStyles: {
+        fillColor: [250, 250, 250],
+      },
+    });
+    yPosition = doc.lastAutoTable.finalY + 8;
+  }
+
+  // Instruments Section
+  if (record.instruments && record.instruments.length > 0) {
+    checkPageSpace(40);
+    addSectionTitle(`Instruments (${record.instruments.length})`);
+
+    const instrumentData = record.instruments.map((ins) => [
+      ins.instrumentId || "",
+      ins.instrumentName || "",
+      ins.model || "",
+      ins.calibrationDate || "",
+      ins.nextCalibrationDate || "",
+    ]);
+
+    autoTable(doc, {
+      startY: yPosition,
+      head: [["ID", "Name", "Model", "Calibrated", "Next Calib."]],
+      body: instrumentData,
+      margin: { left: margin, right: margin },
+      styles: {
+        fontSize: 9,
+        cellPadding: 2.5,
+        textColor: 0,
+        lineColor: 220,
+        lineWidth: 0.1,
+      },
+      headStyles: {
+        fontStyle: "bold",
+        fillColor: [230, 230, 230],
+        textColor: 0,
+        lineColor: 150,
+        lineWidth: 0.5,
+      },
+      alternateRowStyles: {
+        fillColor: [250, 250, 250],
+      },
+    });
+  }
+
+  // Footer with page numbers
+  const pageCount = doc.getNumberOfPages();
+  doc.setFontSize(9);
+  doc.setTextColor(128);
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 8, {
+      align: "center",
+    });
+  }
+
+  doc.save(`lab-report-${record.code}.pdf`);
+}
+
 // ─── Theme ────────────────────────────────────────────────────────────────────
 const C = {
   primary: "#2563eb",
@@ -152,78 +391,6 @@ const CATEGORIES = [
   "Reference Standard",
 ];
 const STORAGE = ["Room Temperature", "Refrigerated", "Frozen", "Dark & Dry"];
-
-const LAB_NAMES = [
-  "Central Lab Mumbai",
-  "Clinical Lab Delhi",
-  "Forensic Lab Bangalore",
-  "Environmental Lab Pune",
-  "Pharmaceutical Lab Hyderabad",
-  "Microbiology Lab Chennai",
-];
-
-const LOCATIONS = [
-  {
-    id: 11,
-    name: "Delhi",
-    labs_id: [1, 2, 3],
-    labtest_code: "LT-0001",
-  },
-  {
-    id: 12,
-    name: "Noida",
-    labs_id: [2, 4],
-    labtest_code: "LT-0002",
-  },
-  {
-    id: 13,
-    name: "Gurgaon",
-    labs_id: [3, 5, 6],
-    labtest_code: "LT-0003",
-  },
-  {
-    id: 14,
-    name: "Mumbai",
-    labs_id: [4, 6, 7],
-    labtest_code: "LT-0004",
-  },
-  {
-    id: 15,
-    name: "Chennai",
-    labs_id: [5, 8],
-    labtest_code: "LT-0005",
-  },
-  {
-    id: 16,
-    name: "Pune",
-    labs_id: [6, 7, 9],
-    labtest_code: "LT-0006",
-  },
-  {
-    id: 17,
-    name: "Bangalore",
-    labs_id: [7, 8],
-    labtest_code: "LT-0007",
-  },
-  {
-    id: 18,
-    name: "Hyderabad",
-    labs_id: [8, 9, 10],
-    labtest_code: "LT-0008",
-  },
-  {
-    id: 19,
-    name: "Faridabad",
-    labs_id: [9],
-    labtest_code: "LT-0009",
-  },
-  {
-    id: 20,
-    name: "Kolkata",
-    labs_id: [10],
-    labtest_code: "LT-0010",
-  },
-];
 
 function genId(prefix) {
   return `${prefix}-${Date.now().toString(36).toUpperCase()}`;
@@ -448,6 +615,63 @@ function Badge({ status }) {
   );
 }
 
+function EmptyState({ msg = "No records found" }) {
+  return (
+    <div
+      style={{
+        textAlign: "center",
+        padding: "48px 20px",
+        color: C.muted,
+        border: `1.5px dashed ${C.border}`,
+        borderRadius: 12,
+        marginTop: 12,
+      }}
+    >
+      <div style={{ fontSize: 40, marginBottom: 8 }}>📭</div>
+      <p style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{msg}</p>
+      <p style={{ margin: "4px 0 0", fontSize: 12 }}>
+        Add a record using the form above
+      </p>
+    </div>
+  );
+}
+
+function SearchBar({ value, onChange, placeholder }) {
+  return (
+    <div style={{ position: "relative", marginBottom: 12 }}>
+      <span
+        style={{
+          position: "absolute",
+          left: 10,
+          top: "50%",
+          transform: "translateY(-50%)",
+          fontSize: 13,
+          color: C.muted,
+          pointerEvents: "none",
+        }}
+      >
+        🔍
+      </span>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder || "Search..."}
+        style={{
+          width: "100%",
+          boxSizing: "border-box",
+          padding: "8px 12px 8px 32px",
+          borderRadius: 8,
+          border: `1.5px solid ${C.border}`,
+          fontSize: 13,
+          color: C.text,
+          background: C.bg,
+          outline: "none",
+        }}
+      />
+    </div>
+  );
+}
+
 function Divider({ label }) {
   return (
     <div
@@ -471,6 +695,55 @@ function Divider({ label }) {
         {label}
       </span>
       <div style={{ flex: 1, height: 1, background: `${C.primary}30` }} />
+    </div>
+  );
+}
+
+function Th({ children }) {
+  return (
+    <th
+      style={{
+        padding: "10px 14px",
+        textAlign: "left",
+        background: C.primaryLight,
+        color: C.primary,
+        fontWeight: 700,
+        fontSize: 11,
+        textTransform: "uppercase",
+        letterSpacing: "0.5px",
+        borderBottom: `1px solid ${C.border}`,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {children}
+    </th>
+  );
+}
+function Td({ children, s }) {
+  return (
+    <td
+      style={{
+        padding: "10px 14px",
+        borderBottom: `1px solid ${C.border}`,
+        color: C.text,
+        verticalAlign: "middle",
+        ...s,
+      }}
+    >
+      {children}
+    </td>
+  );
+}
+
+function ActionBtns({ onEdit, onDelete }) {
+  return (
+    <div style={{ display: "flex", gap: 6 }}>
+      <Btn variant="ghost" size="sm" onClick={onEdit}>
+        ✏ Edit
+      </Btn>
+      <Btn variant="danger" size="sm" onClick={onDelete}>
+        🗑
+      </Btn>
     </div>
   );
 }
@@ -658,6 +931,98 @@ const ScientistSubTab = forwardRef(function ScientistSubTab(
           placeholder="e.g. LAB-001"
         />
       </div>
+      <div style={{ display: "flex", gap: 10 }}>
+        <Btn variant="primary" onClick={handleSubmit}>
+          {editIdx !== null ? "✔ Update Scientist" : "+ Add Scientist"}
+        </Btn>
+        {editIdx !== null && (
+          <Btn
+            variant="ghost"
+            onClick={() => {
+              setForm(makeBlank());
+              setEditIdx(null);
+              setErrors({});
+            }}
+          >
+            Cancel
+          </Btn>
+        )}
+      </div>
+      <Divider label={`Scientist List (${scientists.length})`} />
+      <SearchBar
+        value={search}
+        onChange={setSearch}
+        placeholder="Search by name or lab code..."
+      />
+      {filtered.length === 0 ? (
+        <EmptyState msg="No scientists added yet" />
+      ) : (
+        <div
+          style={{
+            overflowX: "auto",
+            borderRadius: 10,
+            border: `1px solid ${C.border}`,
+          }}
+        >
+          <table
+            style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}
+          >
+            <thead>
+              <tr>
+                <Th>User ID</Th>
+                <Th>Name</Th>
+                <Th>Role</Th>
+                <Th>Lab Code</Th>
+                <Th>Actions</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((s, i) => {
+                const idx = scientists.indexOf(s);
+                return (
+                  <tr
+                    key={i}
+                    style={{ background: i % 2 === 0 ? C.white : C.bg }}
+                  >
+                    <Td>
+                      <code
+                        style={{
+                          fontSize: 11,
+                          color: C.primary,
+                          background: C.primaryLight,
+                          padding: "2px 7px",
+                          borderRadius: 5,
+                        }}
+                      >
+                        {s.userId}
+                      </code>
+                    </Td>
+                    <Td>
+                      <strong>{s.name}</strong>
+                    </Td>
+                    <Td>
+                      <Badge status={s.role} />
+                    </Td>
+                    <Td>{s.labCode}</Td>
+                    <Td>
+                      <ActionBtns
+                        onEdit={() => {
+                          setForm(s);
+                          setEditIdx(idx);
+                        }}
+                        onDelete={() => {
+                          setScientists((l) => l.filter((_, j) => j !== idx));
+                          showToast("Scientist removed", "error");
+                        }}
+                      />
+                    </Td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 });
@@ -826,6 +1191,115 @@ const RawMaterialSubTab = forwardRef(function RawMaterialSubTab(
           ))}
         </FSelect>
       </div>
+      <div style={{ display: "flex", gap: 10 }}>
+        <Btn variant="primary" onClick={handleSubmit}>
+          {editIdx !== null ? "✔ Update Material" : "+ Add Material"}
+        </Btn>
+        {editIdx !== null && (
+          <Btn
+            variant="ghost"
+            onClick={() => {
+              setForm(makeBlank());
+              setEditIdx(null);
+              setErrors({});
+            }}
+          >
+            Cancel
+          </Btn>
+        )}
+      </div>
+      <Divider label={`Materials List (${materials.length})`} />
+      <SearchBar
+        value={search}
+        onChange={setSearch}
+        placeholder="Search by name or code..."
+      />
+      {filtered.length === 0 ? (
+        <EmptyState msg="No materials added yet" />
+      ) : (
+        <div
+          style={{
+            overflowX: "auto",
+            borderRadius: 10,
+            border: `1px solid ${C.border}`,
+          }}
+        >
+          <table
+            style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}
+          >
+            <thead>
+              <tr>
+                <Th>Code</Th>
+                <Th>Name</Th>
+                <Th>Category</Th>
+                <Th>Supplier</Th>
+                <Th>Storage</Th>
+                <Th>Actions</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((m, i) => {
+                const idx = materials.indexOf(m);
+                const sc = storageTag[m.storageCondition] || {
+                  bg: C.bg,
+                  color: C.muted,
+                };
+                return (
+                  <tr
+                    key={i}
+                    style={{ background: i % 2 === 0 ? C.white : C.bg }}
+                  >
+                    <Td>
+                      <code
+                        style={{
+                          fontSize: 11,
+                          color: C.primary,
+                          background: C.primaryLight,
+                          padding: "2px 7px",
+                          borderRadius: 5,
+                        }}
+                      >
+                        {m.materialCode}
+                      </code>
+                    </Td>
+                    <Td>
+                      <strong>{m.materialName}</strong>
+                    </Td>
+                    <Td>{m.category}</Td>
+                    <Td>{m.supplier}</Td>
+                    <Td>
+                      <span
+                        style={{
+                          background: sc.bg,
+                          color: sc.color,
+                          padding: "2px 10px",
+                          borderRadius: 12,
+                          fontSize: 11,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {m.storageCondition}
+                      </span>
+                    </Td>
+                    <Td>
+                      <ActionBtns
+                        onEdit={() => {
+                          setForm(m);
+                          setEditIdx(idx);
+                        }}
+                        onDelete={() => {
+                          setMaterials((l) => l.filter((_, j) => j !== idx));
+                          showToast("Material removed", "error");
+                        }}
+                      />
+                    </Td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 });
@@ -1003,49 +1477,160 @@ const InstrumentSubTab = forwardRef(function InstrumentSubTab(
           )}
         </div>
       </div>
+      <div style={{ display: "flex", gap: 10 }}>
+        <Btn variant="primary" onClick={handleSubmit}>
+          {editIdx !== null ? "✔ Update Instrument" : "+ Add Instrument"}
+        </Btn>
+        {editIdx !== null && (
+          <Btn
+            variant="ghost"
+            onClick={() => {
+              setForm(makeBlank());
+              setEditIdx(null);
+              setErrors({});
+            }}
+          >
+            Cancel
+          </Btn>
+        )}
+      </div>
+      <Divider label={`Instruments List (${instruments.length})`} />
+      <div
+        style={{
+          display: "flex",
+          gap: 16,
+          marginBottom: 10,
+          fontSize: 11,
+          color: C.muted,
+          flexWrap: "wrap",
+        }}
+      >
+        <span
+          style={{
+            background: "#fffbeb",
+            padding: "2px 10px",
+            borderRadius: 6,
+            fontWeight: 600,
+            color: "#92400e",
+          }}
+        >
+          🟡 Due Soon — within 30 days
+        </span>
+        <span
+          style={{
+            background: "#fff1f2",
+            padding: "2px 10px",
+            borderRadius: 6,
+            fontWeight: 600,
+            color: C.danger,
+          }}
+        >
+          🔴 Expired
+        </span>
+      </div>
+      <SearchBar
+        value={search}
+        onChange={setSearch}
+        placeholder="Search by name or ID..."
+      />
+      {filtered.length === 0 ? (
+        <EmptyState msg="No instruments added yet" />
+      ) : (
+        <div
+          style={{
+            overflowX: "auto",
+            borderRadius: 10,
+            border: `1px solid ${C.border}`,
+          }}
+        >
+          <table
+            style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}
+          >
+            <thead>
+              <tr>
+                <Th>ID</Th>
+                <Th>Name</Th>
+                <Th>Model</Th>
+                <Th>Calibrated</Th>
+                <Th>Next Calib.</Th>
+                <Th>Status</Th>
+                <Th>Actions</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((ins, i) => {
+                const st = getCalibStatus(ins.nextCalibrationDate);
+                const idx = instruments.indexOf(ins);
+                return (
+                  <tr key={i} style={{ background: rowBg(st, i) }}>
+                    <Td>
+                      <code
+                        style={{
+                          fontSize: 11,
+                          color: C.primary,
+                          background: C.primaryLight,
+                          padding: "2px 7px",
+                          borderRadius: 5,
+                        }}
+                      >
+                        {ins.instrumentId}
+                      </code>
+                    </Td>
+                    <Td>
+                      <strong>{ins.instrumentName}</strong>
+                    </Td>
+                    <Td>{ins.model}</Td>
+                    <Td>{ins.calibrationDate}</Td>
+                    <Td>{ins.nextCalibrationDate}</Td>
+                    <Td>
+                      <Badge status={st || "—"} />
+                    </Td>
+                    <Td>
+                      <ActionBtns
+                        onEdit={() => {
+                          setForm(ins);
+                          setEditIdx(idx);
+                        }}
+                        onDelete={() => {
+                          setInstruments((l) => l.filter((_, j) => j !== idx));
+                          showToast("Instrument removed", "error");
+                        }}
+                      />
+                    </Td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 });
 
 // ─── Lab Test Sub-Tab ─────────────────────────────────────────────────────────
 const LabTestSubTab = forwardRef(function LabTestSubTab(
-  { tests, setTests, showToast, initialForm, location, setSelectedLocation },
+  { tests, setTests, showToast, initialForm },
   ref,
 ) {
   const makeBlank = () => ({
-    code: "",
-    labname: "",
-    location: "",
-    labtype: "",
     labCode: "",
     companyCode: "",
     companyName: "",
     labTestCode: "",
     testLocation: "",
     testingCompanyName: "",
-    testingType: [],
+    testingType: "",
   });
   const [form, setForm] = useState(makeBlank());
   const [errors, setErrors] = useState({});
   const [editIdx, setEditIdx] = useState(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
 
   useEffect(() => {
     if (initialForm) {
       setForm(initialForm);
     }
   }, [initialForm]);
-
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setDropdownOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   function commitPending() {
     const nonEmpty = Object.values(form).some((v) =>
@@ -1101,29 +1686,13 @@ const LabTestSubTab = forwardRef(function LabTestSubTab(
     setErrors((e) => ({ ...e, [key]: "" }));
   }
 
-  function toggleTestingType(type) {
-    setForm((f) => {
-      const current = f.testingType || [];
-      const newTypes = current.includes(type)
-        ? current.filter((t) => t !== type)
-        : [...current, type];
-      return resetDynamic({ ...f, testingType: newTypes });
-    });
-    setErrors((e) => ({ ...e, testingType: "" }));
-  }
-
   function validate() {
     const e = {};
-    if (!form.code.trim()) e.code = "Lab Code is required";
-    if (!form.labname.trim()) e.labname = "Lab Name is required";
-    if (!form.location.trim()) e.location = "Location is required";
-    if (!form.labtype.trim()) e.labtype = "Lab Type is required";
     if (!form.labCode.trim()) e.labCode = "Lab Code is required";
     if (!form.companyCode.trim()) e.companyCode = "Company Code is required";
     if (!form.companyName.trim()) e.companyName = "Company Name is required";
     if (!form.labTestCode.trim()) e.labTestCode = "Lab Test Code is required";
-    if (!form.testingType || form.testingType.length === 0)
-      e.testingType = "Select at least one Testing Type";
+    if (!form.testingType) e.testingType = "Testing Type is required";
     return e;
   }
 
@@ -1146,248 +1715,168 @@ const LabTestSubTab = forwardRef(function LabTestSubTab(
     setErrors({});
   }
 
-  const dynFields = form.testingType
-    .flatMap((type) => TESTING_FIELDS[type] || [])
-    .filter((f, i, arr) => arr.findIndex((x) => x.name === f.name) === i);
+  const dynFields = TESTING_FIELDS[form.testingType] || [];
 
   return (
     <div>
-      <Divider label="Lab Information" />
+      <Divider label={editIdx !== null ? "Edit Lab Test" : "Add Lab Test"} />
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "0 20px",
-          marginBottom: 20,
+          gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+          gap: "0 16px",
         }}
       >
+        {[
+          { k: "labCode", l: "Lab Code *", p: "e.g. LAB-001" },
+          { k: "companyCode", l: "Company Code *", p: "e.g. COMP-042" },
+          { k: "companyName", l: "Company Name *", p: "e.g. PharmaCorp" },
+          { k: "labTestCode", l: "Lab Test Code *", p: "e.g. LT-2024-009" },
+          { k: "testLocation", l: "Location", p: "e.g. Mumbai" },
+          {
+            k: "testingCompanyName",
+            l: "Testing Company",
+            p: "e.g. SGS India",
+          },
+        ].map((f) => (
+          <FInput
+            key={f.k}
+            label={f.l}
+            value={form[f.k]}
+            error={errors[f.k]}
+            onChange={(e) => setField(f.k, e.target.value)}
+            placeholder={f.p}
+          />
+        ))}
+      </div>
+      <div style={{ maxWidth: 280 }}>
         <FSelect
-          label="Location *"
-          value={form.location}
-          error={errors.location}
-          onChange={(e) => setField("location", e.target.value)}
+          label="Testing Type *"
+          value={form.testingType}
+          error={errors.testingType}
+          onChange={(e) => setField("testingType", e.target.value)}
         >
-          <option value="">— Select Location —</option>
-          {location?.map((loc) => (
-            <option key={loc?.id}>{loc?.name}</option>
+          <option value="">— Select Testing Type —</option>
+          {Object.keys(TESTING_FIELDS).map((t) => (
+            <option key={t}>{t}</option>
           ))}
         </FSelect>
-        <FSelect
-          label="Lab Name *"
-          value={form.labname}
-          error={errors.labname}
-          onChange={(e) => setField("labname", e.target.value)}
+      </div>
+      {form.testingType && (
+        <div
+          style={{
+            background: `${C.primary}07`,
+            border: `1.5px solid ${C.primary}25`,
+            borderRadius: 12,
+            padding: "18px 20px",
+            marginTop: 4,
+            marginBottom: 8,
+          }}
         >
-          <option value="">— Select Lab Name —</option>
-          {LAB_NAMES.map((name) => (
-            <option key={name}>{name}</option>
-          ))}
-        </FSelect>
-
-        <div style={{ maxWidth: 550 }} ref={dropdownRef}>
-          <label
+          <p
             style={{
-              display: "block",
-              fontSize: 15,
-              fontWeight: 800,
-              color: C.muted,
-              marginBottom: 5,
+              margin: "0 0 14px",
+              fontSize: 11,
+              fontWeight: 700,
+              color: C.primary,
               textTransform: "uppercase",
-              letterSpacing: "0.6px",
+              letterSpacing: "1.2px",
             }}
           >
-            Testing Type *
-          </label>
-          <div style={{ position: "relative" }}>
-            <button
-              type="button"
+            {form.testingType} Parameters
+          </p>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+              gap: "0 16px",
+            }}
+          >
+            {dynFields.map((f) => (
+              <FInput
+                key={f.name}
+                label={f.label}
+                value={form[f.name] || ""}
+                onChange={(e) => setField(f.name, e.target.value)}
+                placeholder={f.placeholder}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      <Btn variant="success" onClick={handleAddTest}>
+        {editIdx !== null ? "✔ Update Test Entry" : "+ Add Test Entry"}
+      </Btn>
+      {editIdx !== null && (
+        <Btn
+          variant="ghost"
+          onClick={() => {
+            setForm(makeBlank());
+            setEditIdx(null);
+            setErrors({});
+          }}
+        >
+          Cancel
+        </Btn>
+      )}
+
+      {false && tests.length > 0 && (
+        <>
+          <Divider label={`Added Tests (${tests.length})`} />
+          <div
+            style={{
+              overflowX: "auto",
+              borderRadius: 10,
+              border: `1px solid ${C.border}`,
+            }}
+          >
+            <table
               style={{
                 width: "100%",
-                boxSizing: "border-box",
-                padding: "13px 15px",
-                borderRadius: 8,
-                border: `2px solid ${errors.testingType ? C.danger : C.border}`,
-                background: C.white,
-                color: form.testingType.length > 0 ? C.text : C.muted,
-                fontSize: 16,
-                fontWeight: 500,
-                textAlign: "left",
-                cursor: "pointer",
-                outline: "none",
-                transition: "border 0.15s",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setDropdownOpen(!dropdownOpen);
+                borderCollapse: "collapse",
+                fontSize: 13,
               }}
             >
-              <span>
-                {form.testingType.length === 0
-                  ? "— Select Testing Types —"
-                  : form.testingType.join(", ")}
-              </span>
-              <span>▼</span>
-            </button>
-            <div
-              style={{
-                display: dropdownOpen ? "block" : "none",
-                position: "absolute",
-                top: "100%",
-                left: 0,
-                right: 0,
-                background: C.white,
-                border: `2px solid ${C.primary}`,
-                borderTop: "none",
-                borderBottomLeftRadius: 8,
-                borderBottomRightRadius: 8,
-                zIndex: 1000,
-                maxHeight: 300,
-                overflowY: "auto",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              }}
-            >
-              {Object.keys(TESTING_FIELDS).map((testType) => (
-                <label
-                  key={testType}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "12px 16px",
-                    cursor: "pointer",
-                    userSelect: "none",
-                    borderBottom: `1px solid ${C.border}`,
-                    background: form.testingType.includes(testType)
-                      ? C.primaryLight
-                      : C.white,
-                    transition: "background 0.15s",
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  onMouseEnter={(e) => {
-                    if (!form.testingType.includes(testType)) {
-                      e.currentTarget.style.background = C.bg;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background =
-                      form.testingType.includes(testType)
-                        ? C.primaryLight
-                        : C.white;
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={form.testingType.includes(testType)}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      toggleTestingType(testType);
-                      setDropdownOpen(false);
-                    }}
-                    style={{
-                      width: 18,
-                      height: 18,
-                      cursor: "pointer",
-                      accentColor: C.primary,
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: 14,
-                      fontWeight: 600,
-                      color: form.testingType.includes(testType)
-                        ? C.primary
-                        : C.text,
-                    }}
+              <thead>
+                <tr>
+                  <Th>#</Th>
+                  <Th>Lab Code</Th>
+                  <Th>Company</Th>
+                  <Th>Test Code</Th>
+                  <Th>Type</Th>
+                  <Th>Action</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {tests.map((t, i) => (
+                  <tr
+                    key={i}
+                    style={{ background: i % 2 === 0 ? C.white : C.bg }}
                   >
-                    {testType}
-                  </span>
-                </label>
-              ))}
-            </div>
+                    <Td>{i + 1}</Td>
+                    <Td>{t.labCode}</Td>
+                    <Td>{t.companyName}</Td>
+                    <Td>{t.labTestCode}</Td>
+                    <Td>
+                      <Badge status={t.testingType} />
+                    </Td>
+                    <Td>
+                      <ActionBtns
+                        onEdit={() => {
+                          setForm(t);
+                          setEditIdx(i);
+                        }}
+                        onDelete={() =>
+                          setTests((l) => l.filter((_, j) => j !== i))
+                        }
+                      />
+                    </Td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          {errors.testingType && (
-            <p
-              style={{
-                color: C.danger,
-                fontSize: 12,
-                margin: "5px 0 0",
-                fontWeight: 700,
-              }}
-            >
-              ⚠ {errors.testingType}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {form.testingType.length > 0 && (
-        <div style={{ marginTop: 16 }}>
-          {form.testingType.map((testType) => {
-            const typeFields = TESTING_FIELDS[testType] || [];
-            return (
-              <div
-                key={testType}
-                style={{
-                  background: `${C.primary}07`,
-                  border: `1.5px solid ${C.primary}25`,
-                  borderRadius: 12,
-                  padding: "18px 20px",
-                  marginBottom: 16,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 12,
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: C.primary,
-                      textTransform: "uppercase",
-                      letterSpacing: "1.2px",
-                    }}
-                  >
-                    {testType} Parameters
-                  </p>
-                  <Btn
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleTestingType(testType)}
-                    style={{ color: C.danger }}
-                  >
-                    ✕ Remove
-                  </Btn>
-                </div>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
-                    gap: "0 16px",
-                  }}
-                >
-                  {typeFields.map((f) => (
-                    <FInput
-                      key={f.name}
-                      label={f.label}
-                      value={form[f.name] || ""}
-                      onChange={(e) => setField(f.name, e.target.value)}
-                      placeholder={f.placeholder}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        </>
       )}
     </div>
   );
@@ -1398,13 +1887,22 @@ export default function CentralLabForm({ onSaved }) {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const [activeTab, setActiveTab] = useState("lab-test");
+  const [activeTab, setActiveTab] = useState("lab-info");
   const [toasts, setToasts] = useState([]);
 
   const labTestRef = useRef(null);
   const scientistRef = useRef(null);
   const materialsRef = useRef(null);
   const instrumentsRef = useRef(null);
+
+  // Lab Info state
+  const [data, setData] = useState({
+    code: "",
+    labname: "",
+    location: "",
+    labtype: "",
+  });
+  const [errors, setErrors] = useState({});
 
   // Sub-records state
   const [tests, setTests] = useState([]);
@@ -1422,26 +1920,17 @@ export default function CentralLabForm({ onSaved }) {
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
 
-  const [location, setLocation] = useState(LOCATIONS || []);
-  const [selectedLocation, setSelectedLocation] = useState("");
-  const fetchLocations = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/api/locations");
-      console.log(response.data.data);
-      const resData = response.data.data;
-      setLocation(resData);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  useEffect(() => {
-    fetchLocations();
-  }, []);
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("centrallab") || "[]");
     if (id != null) {
       const rec = stored[Number(id)];
       if (rec) {
+        setData({
+          code: rec.code || "",
+          labname: rec.labname || "",
+          location: rec.location || "",
+          labtype: rec.labtype || "",
+        });
         setTests(rec.tests || []);
         setScientists(rec.scientists || []);
         setMaterials(rec.materials || []);
@@ -1465,8 +1954,26 @@ export default function CentralLabForm({ onSaved }) {
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== tid)), 3500);
   }, []);
 
-  // ─── Common Submit — saves all sub-records together ────────────
+  function handleChange(e) {
+    setData((d) => ({ ...d, [e.target.name]: e.target.value }));
+    setErrors((er) => ({ ...er, [e.target.name]: "" }));
+  }
+
+  // ─── Common Submit — saves Lab Info + all sub-records together ────────────
   function handleFinalSubmit() {
+    const er = {};
+    if (!data.code.trim()) er.code = "Code is required";
+    if (!data.labname.trim()) er.labname = "Lab Name is required";
+    if (!data.location.trim()) er.location = "Location is required";
+    if (!data.labtype.trim()) er.labtype = "Lab Type is required";
+
+    if (Object.keys(er).length) {
+      setErrors(er);
+      setActiveTab("lab-info");
+      showToast("Please fill required Lab Info fields", "error");
+      return;
+    }
+
     const subTabs = [
       { ref: labTestRef, key: "lab-test" },
       { ref: scientistRef, key: "scientist" },
@@ -1514,6 +2021,7 @@ export default function CentralLabForm({ onSaved }) {
     }
 
     const record = {
+      ...data,
       tests: testsFinal,
       scientists: scientistsFinal,
       materials: materialsFinal,
@@ -1559,12 +2067,17 @@ export default function CentralLabForm({ onSaved }) {
   const hasPendingInstruments = instrumentsRef.current?.hasContent?.() ?? false;
 
   const canSubmit =
+    data.code.trim() &&
+    data.labname.trim() &&
+    data.location.trim() &&
+    data.labtype.trim() &&
     (tests.length > 0 || hasPendingTest) &&
     (scientists.length > 0 || hasPendingScientist) &&
     (materials.length > 0 || hasPendingMaterials) &&
     (instruments.length > 0 || hasPendingInstruments);
 
   const TABS = [
+    { key: "lab-info", label: "Lab Info", icon: "🏢" },
     { key: "lab-test", label: "Lab Test", icon: "🧪" },
     { key: "scientist", label: "Scientist", icon: "🔬" },
     { key: "raw-material", label: "Raw Material", icon: "📦" },
@@ -1705,6 +2218,51 @@ export default function CentralLabForm({ onSaved }) {
             {/* Tab Content */}
             <div className="cl-content">
               <div
+                style={{ display: activeTab === "lab-info" ? "block" : "none" }}
+              >
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                    gap: "0 20px",
+                  }}
+                >
+                  <FInput
+                    label="Code *"
+                    name="code"
+                    value={data.code}
+                    error={errors.code}
+                    onChange={handleChange}
+                    placeholder="e.g. CL-001"
+                  />
+                  <FInput
+                    label="Lab Name *"
+                    name="labname"
+                    value={data.labname}
+                    error={errors.labname}
+                    onChange={handleChange}
+                    placeholder="Lab Name"
+                  />
+                  <FInput
+                    label="Location *"
+                    name="location"
+                    value={data.location}
+                    error={errors.location}
+                    onChange={handleChange}
+                    placeholder="City / Region"
+                  />
+                  <FInput
+                    label="Lab Type *"
+                    name="labtype"
+                    value={data.labtype}
+                    error={errors.labtype}
+                    onChange={handleChange}
+                    placeholder="e.g. Microbiology"
+                  />
+                </div>
+              </div>
+
+              <div
                 style={{ display: activeTab === "lab-test" ? "block" : "none" }}
               >
                 <LabTestSubTab
@@ -1713,8 +2271,6 @@ export default function CentralLabForm({ onSaved }) {
                   setTests={setTests}
                   showToast={showToast}
                   initialForm={initialTestForm}
-                  location={location}
-                  setSelectedLocation={setSelectedLocation}
                 />
               </div>
 
@@ -1774,7 +2330,13 @@ export default function CentralLabForm({ onSaved }) {
                 gap: 12,
               }}
             >
-              <div style={{ fontSize: 12, color: C.muted }}></div>
+              <div style={{ fontSize: 12, color: C.muted }}>
+                {tests.length > 0 && `${tests.length} test(s)  `}
+                {scientists.length > 0 && `${scientists.length} scientist(s)  `}
+                {materials.length > 0 && `${materials.length} material(s)  `}
+                {instruments.length > 0 &&
+                  `${instruments.length} instrument(s)`}
+              </div>
               <Btn
                 variant="primary"
                 size="lg"
@@ -1791,6 +2353,690 @@ export default function CentralLabForm({ onSaved }) {
           </div>
         </div>
       </div>
+
+      {false && showSummaryModal && summaryRecord && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 99999,
+            padding: 20,
+            overflow: "auto",
+          }}
+        >
+          <div
+            style={{
+              background: C.white,
+              borderRadius: 16,
+              width: "95%",
+              maxWidth: 1200,
+              maxHeight: "90vh",
+              overflowY: "auto",
+              boxShadow: "0 25px 50px rgba(0,0,0,0.3)",
+              zIndex: 100000,
+              position: "relative",
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                background: `linear-gradient(135deg, ${C.primary} 0%, #1d4ed8 100%)`,
+                padding: "24px 28px",
+                borderRadius: "16px 16px 0 0",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <div>
+                <h2 style={{ margin: "0 0 4px", color: C.white, fontSize: 26 }}>
+                  Submission Summary
+                </h2>
+                <p
+                  style={{
+                    margin: 0,
+                    color: "rgba(255,255,255,0.9)",
+                    fontSize: 13,
+                  }}
+                >
+                  Lab: <strong>{summaryRecord.labname}</strong> • Location:{" "}
+                  <strong>{summaryRecord.location}</strong>
+                </p>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Btn
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setShowPrintModal(true)}
+                  style={{
+                    background: "rgba(255,255,255,0.2)",
+                    color: C.white,
+                    borderColor: C.white,
+                    fontWeight: 600,
+                  }}
+                >
+                  Print Preview
+                </Btn>
+                <Btn
+                  variant="primary"
+                  size="sm"
+                  onClick={() => generateLabPDF(summaryRecord)}
+                  style={{ background: C.success, fontWeight: 600 }}
+                >
+                  Download PDF
+                </Btn>
+                <Btn
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowSummaryModal(false);
+                    setSummaryRecord(null);
+                    navigate("/centrallab");
+                    window.location.reload();
+                  }}
+                  style={{ color: C.white, fontWeight: 600 }}
+                >
+                  Close
+                </Btn>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: "28px" }}>
+              {/* Lab Info Card */}
+              <div
+                style={{
+                  background: "#f0f4ff",
+                  borderLeft: "4px solid " + C.primary,
+                  borderRadius: 8,
+                  padding: "16px",
+                  marginBottom: "20px",
+                }}
+              >
+                <h4
+                  style={{
+                    margin: "0 0 12px",
+                    color: C.primary,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  Lab Information
+                </h4>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(4, 1fr)",
+                    gap: 12,
+                  }}
+                >
+                  {[
+                    ["Code", summaryRecord.code],
+                    ["Lab Name", summaryRecord.labname],
+                    ["Location", summaryRecord.location],
+                    ["Lab Type", summaryRecord.labtype],
+                  ].map(([label, value]) => (
+                    <div key={label}>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: C.muted,
+                          fontWeight: 600,
+                          marginBottom: 4,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {label}
+                      </div>
+                      <div
+                        style={{ fontSize: 14, color: C.text, fontWeight: 600 }}
+                      >
+                        {value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Lab Test Entries Card */}
+              <div
+                style={{
+                  background: "#f9fafb",
+                  border: `1px solid ${C.border}`,
+                  borderRadius: 8,
+                  padding: "16px",
+                  marginBottom: "20px",
+                }}
+              >
+                <h4
+                  style={{
+                    margin: "0 0 12px",
+                    color: "#ea580c",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  Lab Entries{" "}
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      background: "#fed7aa",
+                      color: "#92400e",
+                      padding: "2px 8px",
+                      borderRadius: 4,
+                      marginLeft: 8,
+                    }}
+                  >
+                    {summaryRecord.tests?.length || 0}
+                  </span>
+                </h4>
+                <div style={{ maxHeight: 200, overflowY: "auto" }}>
+                  <table
+                    style={{
+                      width: "100%",
+                      borderCollapse: "collapse",
+                      fontSize: 13,
+                    }}
+                  >
+                    <thead>
+                      <tr
+                        style={{
+                          background: "#fef9e7",
+                          borderBottom: "2px solid #fcd34d",
+                        }}
+                      >
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#92400e",
+                          }}
+                        >
+                          Lab Code
+                        </th>
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#92400e",
+                          }}
+                        >
+                          Company
+                        </th>
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#92400e",
+                          }}
+                        >
+                          Test Code
+                        </th>
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#92400e",
+                          }}
+                        >
+                          Type
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {summaryRecord.tests?.map((t, i) => (
+                        <tr
+                          key={i}
+                          style={{
+                            borderBottom: `1px solid ${C.border}`,
+                            background: i % 2 === 0 ? "#fff" : "#fafaf9",
+                          }}
+                        >
+                          <td style={{ padding: "10px", color: C.text }}>
+                            {t.labCode}
+                          </td>
+                          <td style={{ padding: "10px", color: C.text }}>
+                            {t.companyName}
+                          </td>
+                          <td style={{ padding: "10px", color: C.text }}>
+                            {t.labTestCode}
+                          </td>
+                          <td style={{ padding: "10px", color: C.text }}>
+                            <span
+                              style={{
+                                display: "inline-block",
+                                padding: "3px 10px",
+                                background: "#dbeafe",
+                                color: C.primary,
+                                borderRadius: 4,
+                                fontSize: 12,
+                                fontWeight: 600,
+                              }}
+                            >
+                              {t.testingType}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Scientists Card */}
+              <div
+                style={{
+                  background: "#f9fafb",
+                  border: `1px solid ${C.border}`,
+                  borderRadius: 8,
+                  padding: "16px",
+                  marginBottom: "20px",
+                }}
+              >
+                <h4
+                  style={{
+                    margin: "0 0 12px",
+                    color: "#7c3aed",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  Scientists{" "}
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      background: "#ede9fe",
+                      color: "#7c3aed",
+                      padding: "2px 8px",
+                      borderRadius: 4,
+                      marginLeft: 8,
+                    }}
+                  >
+                    {summaryRecord.scientists?.length || 0}
+                  </span>
+                </h4>
+                <div style={{ maxHeight: 180, overflowY: "auto" }}>
+                  <table
+                    style={{
+                      width: "100%",
+                      borderCollapse: "collapse",
+                      fontSize: 13,
+                    }}
+                  >
+                    <thead>
+                      <tr
+                        style={{
+                          background: "#f3e8ff",
+                          borderBottom: "2px solid #ddd6fe",
+                        }}
+                      >
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#7c3aed",
+                          }}
+                        >
+                          ID
+                        </th>
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#7c3aed",
+                          }}
+                        >
+                          Name
+                        </th>
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#7c3aed",
+                          }}
+                        >
+                          Role
+                        </th>
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#7c3aed",
+                          }}
+                        >
+                          Lab Code
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {summaryRecord.scientists?.map((s, i) => (
+                        <tr
+                          key={i}
+                          style={{
+                            borderBottom: `1px solid ${C.border}`,
+                            background: i % 2 === 0 ? "#fff" : "#fafaf9",
+                          }}
+                        >
+                          <td
+                            style={{
+                              padding: "10px",
+                              color: C.text,
+                              fontSize: 12,
+                            }}
+                          >
+                            {s.userId}
+                          </td>
+                          <td
+                            style={{
+                              padding: "10px",
+                              color: C.text,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {s.name}
+                          </td>
+                          <td style={{ padding: "10px", color: C.text }}>
+                            {s.role}
+                          </td>
+                          <td style={{ padding: "10px", color: C.text }}>
+                            {s.labCode}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Materials Card */}
+              <div
+                style={{
+                  background: "#f9fafb",
+                  border: `1px solid ${C.border}`,
+                  borderRadius: 8,
+                  padding: "16px",
+                  marginBottom: "20px",
+                }}
+              >
+                <h4
+                  style={{
+                    margin: "0 0 12px",
+                    color: "#15803d",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  Materials{" "}
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      background: "#dcfce7",
+                      color: "#15803d",
+                      padding: "2px 8px",
+                      borderRadius: 4,
+                      marginLeft: 8,
+                    }}
+                  >
+                    {summaryRecord.materials?.length || 0}
+                  </span>
+                </h4>
+                <div style={{ maxHeight: 180, overflowY: "auto" }}>
+                  <table
+                    style={{
+                      width: "100%",
+                      borderCollapse: "collapse",
+                      fontSize: 13,
+                    }}
+                  >
+                    <thead>
+                      <tr
+                        style={{
+                          background: "#f0fdf4",
+                          borderBottom: "2px solid #bbf7d0",
+                        }}
+                      >
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#15803d",
+                          }}
+                        >
+                          Code
+                        </th>
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#15803d",
+                          }}
+                        >
+                          Name
+                        </th>
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#15803d",
+                          }}
+                        >
+                          Category
+                        </th>
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#15803d",
+                          }}
+                        >
+                          Supplier
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {summaryRecord.materials?.map((m, i) => (
+                        <tr
+                          key={i}
+                          style={{
+                            borderBottom: `1px solid ${C.border}`,
+                            background: i % 2 === 0 ? "#fff" : "#fafaf9",
+                          }}
+                        >
+                          <td
+                            style={{
+                              padding: "10px",
+                              color: C.text,
+                              fontSize: 12,
+                            }}
+                          >
+                            {m.materialCode}
+                          </td>
+                          <td
+                            style={{
+                              padding: "10px",
+                              color: C.text,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {m.materialName}
+                          </td>
+                          <td style={{ padding: "10px", color: C.text }}>
+                            {m.category}
+                          </td>
+                          <td style={{ padding: "10px", color: C.text }}>
+                            {m.supplier}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Instruments Card */}
+              <div
+                style={{
+                  background: "#f9fafb",
+                  border: `1px solid ${C.border}`,
+                  borderRadius: 8,
+                  padding: "16px",
+                }}
+              >
+                <h4
+                  style={{
+                    margin: "0 0 12px",
+                    color: "#dc2626",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  Instruments{" "}
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      background: "#fee2e2",
+                      color: "#dc2626",
+                      padding: "2px 8px",
+                      borderRadius: 4,
+                      marginLeft: 8,
+                    }}
+                  >
+                    {summaryRecord.instruments?.length || 0}
+                  </span>
+                </h4>
+                <div style={{ maxHeight: 180, overflowY: "auto" }}>
+                  <table
+                    style={{
+                      width: "100%",
+                      borderCollapse: "collapse",
+                      fontSize: 13,
+                    }}
+                  >
+                    <thead>
+                      <tr
+                        style={{
+                          background: "#fef2f2",
+                          borderBottom: "2px solid #fecaca",
+                        }}
+                      >
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#dc2626",
+                          }}
+                        >
+                          ID
+                        </th>
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#dc2626",
+                          }}
+                        >
+                          Name
+                        </th>
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#dc2626",
+                          }}
+                        >
+                          Model
+                        </th>
+                        <th
+                          style={{
+                            padding: "10px",
+                            textAlign: "left",
+                            fontWeight: 700,
+                            color: "#dc2626",
+                          }}
+                        >
+                          Next Calib.
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {summaryRecord.instruments?.map((ins, i) => (
+                        <tr
+                          key={i}
+                          style={{
+                            borderBottom: `1px solid ${C.border}`,
+                            background: i % 2 === 0 ? "#fff" : "#fafaf9",
+                          }}
+                        >
+                          <td
+                            style={{
+                              padding: "10px",
+                              color: C.text,
+                              fontSize: 12,
+                            }}
+                          >
+                            {ins.instrumentId}
+                          </td>
+                          <td
+                            style={{
+                              padding: "10px",
+                              color: C.text,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {ins.instrumentName}
+                          </td>
+                          <td style={{ padding: "10px", color: C.text }}>
+                            {ins.model}
+                          </td>
+                          <td style={{ padding: "10px", color: C.text }}>
+                            {ins.nextCalibrationDate}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showPrintModal && summaryRecord && (
         <div
@@ -1842,6 +3088,23 @@ export default function CentralLabForm({ onSaved }) {
               </div>
             </div>
             <div style={{ padding: "14px 18px" }}>
+              <h4>Lab Info</h4>
+              <table style={{ width: "100%", marginBottom: 14 }}>
+                <tbody>
+                  {[
+                    ["Code", summaryRecord.code],
+                    ["Lab Name", summaryRecord.labname],
+                    ["Location", summaryRecord.location],
+                    ["Lab Type", summaryRecord.labtype],
+                  ].map(([l, v]) => (
+                    <tr key={l}>
+                      <td style={{ fontWeight: 700, width: "20%" }}>{l}</td>
+                      <td>{v}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
               <h4>Lab Test Entries ({summaryRecord.tests?.length || 0})</h4>
               <div
                 style={{ maxHeight: 180, overflowY: "auto", marginBottom: 10 }}
@@ -1849,14 +3112,6 @@ export default function CentralLabForm({ onSaved }) {
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr>
-                      <th
-                        style={{
-                          textAlign: "left",
-                          borderBottom: `1px solid ${C.border}`,
-                        }}
-                      >
-                        Lab Name
-                      </th>
                       <th
                         style={{
                           textAlign: "left",
@@ -1887,22 +3142,17 @@ export default function CentralLabForm({ onSaved }) {
                           borderBottom: `1px solid ${C.border}`,
                         }}
                       >
-                        Testing Types
+                        Type
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {summaryRecord.tests?.map((t, i) => (
                       <tr key={i}>
-                        <td>{t.labname}</td>
                         <td>{t.labCode}</td>
                         <td>{t.companyName}</td>
                         <td>{t.labTestCode}</td>
-                        <td>
-                          {Array.isArray(t.testingType)
-                            ? t.testingType.join(", ")
-                            : t.testingType}
-                        </td>
+                        <td>{t.testingType}</td>
                       </tr>
                     ))}
                   </tbody>
