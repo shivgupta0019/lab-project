@@ -1,6 +1,6 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { FaUserCircle, FaEdit } from "react-icons/fa";
-import { FaFlask, FaVial, FaChartLine } from "react-icons/fa";
+import { FaFlask, FaVial, FaChartLine, FaUserShield } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import "../home/Navbar.css";
 
@@ -8,12 +8,12 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-  const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-  if (!token) {
-    navigate("/");
-  }
-}, []);
+    if (!token) {
+      navigate("/");
+    }
+  }, []);
 
   //  pehle profileData dekho (profile page se save hota hai)
   // agar nahi hai to loggedInUser lo (login/signup se)
@@ -22,18 +22,23 @@ export default function Dashboard() {
     const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser")) || {};
 
     return {
-      name:     profileData.name     || loggedInUser.name     || "Guest",
+      name: profileData.name || loggedInUser.name || "Guest",
       username: profileData.username || loggedInUser.username || "guest",
-      email:    profileData.email    || loggedInUser.email    || "N/A",
-      phone:    profileData.phone    || loggedInUser.phone    || "N/A",
-      role:     loggedInUser.role    || "User",
-      photo:    profileData.photo    || null,
+      email: profileData.email || loggedInUser.email || "N/A",
+      phone: profileData.phone || loggedInUser.phone || "N/A",
+      role: loggedInUser.role || "User",
+      photo: profileData.photo || null,
     };
   });
 
   //  initials for avatar
-  const initials = user.name
-    ?.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) || "?";
+  const initials =
+    user.name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "?";
 
   //  Logout
   function handleLogout() {
@@ -45,10 +50,16 @@ export default function Dashboard() {
     <>
       <nav className="navbar navbar-expand-lg modern-navbar">
         <div className="container-fluid">
-
           {/* LOGO */}
-          <a className="navbar-brand brand-logo d-flex align-items-center" href="#">
-            <img src="assets/photos/aryan.jpeg" alt="Aryan Logo" className="logo-img" />
+          <a
+            className="navbar-brand brand-logo d-flex align-items-center"
+            href="#"
+          >
+            <img
+              src="assets/photos/aryan.jpeg"
+              alt="Aryan Logo"
+              className="logo-img"
+            />
             <span className="ms-2">Aryan Group</span>
           </a>
 
@@ -62,12 +73,16 @@ export default function Dashboard() {
           </button>
 
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
-
             {/* LEFT MENU */}
             <ul className="navbar-nav me-auto mb-2 mb-lg-0 nav-links-modern">
               <li className="nav-item">
+                <Link className="nav-link" to="/admin">
+                  <FaUserShield className="nav-icon" /> Admin
+                </Link>
+              </li>
+              <li className="nav-item">
                 <Link className="nav-link" to="/centrallab">
-                  <FaFlask className="nav-icon" /> Labs
+                  <FaFlask className="nav-icon" /> Labs Report
                 </Link>
               </li>
               <li className="nav-item">
@@ -85,14 +100,17 @@ export default function Dashboard() {
             {/*  RIGHT PROFILE */}
             <div className="profile-container">
               <div className="profile-box">
-
                 {/* ✅ Photo ya icon */}
                 {user.photo ? (
                   <img
-                    src={user.photo} alt="avatar"
+                    src={user.photo}
+                    alt="avatar"
                     style={{
-                      width: "34px", height: "34px", borderRadius: "50%",
-                      objectFit: "cover", border: "2px solid white"
+                      width: "34px",
+                      height: "34px",
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      border: "2px solid white",
                     }}
                   />
                 ) : (
@@ -108,33 +126,51 @@ export default function Dashboard() {
 
               {/*  DROPDOWN */}
               <div className="dropdown-menu-modern">
-
                 {/* Avatar + Name - dropdown top */}
-                <div style={{
-                  display: "flex", flexDirection: "column",
-                  alignItems: "center", marginBottom: "12px"
-                }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    marginBottom: "12px",
+                  }}
+                >
                   {user.photo ? (
                     <img
-                      src={user.photo} alt="avatar"
+                      src={user.photo}
+                      alt="avatar"
                       style={{
-                        width: "65px", height: "65px", borderRadius: "50%",
-                        objectFit: "cover", border: "2px solid #185fa5",
-                        marginBottom: "8px"
+                        width: "65px",
+                        height: "65px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        border: "2px solid #185fa5",
+                        marginBottom: "8px",
                       }}
                     />
                   ) : (
-                    <div style={{
-                      width: "65px", height: "65px", borderRadius: "50%",
-                      background: "#e6f1fb", border: "2px solid #185fa5",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: "22px", fontWeight: "500", color: "#185fa5",
-                      marginBottom: "8px"
-                    }}>
+                    <div
+                      style={{
+                        width: "65px",
+                        height: "65px",
+                        borderRadius: "50%",
+                        background: "#e6f1fb",
+                        border: "2px solid #185fa5",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "22px",
+                        fontWeight: "500",
+                        color: "#185fa5",
+                        marginBottom: "8px",
+                      }}
+                    >
                       {initials}
                     </div>
                   )}
-                  <p style={{ fontWeight: "500", fontSize: "14px", margin: "0" }}>
+                  <p
+                    style={{ fontWeight: "500", fontSize: "14px", margin: "0" }}
+                  >
                     {user.name}
                   </p>
                   <p style={{ fontSize: "12px", color: "#888", margin: 0 }}>
@@ -164,13 +200,19 @@ export default function Dashboard() {
                 <button
                   onClick={() => navigate("/profile")}
                   style={{
-                    width: "100%", padding: "8px",
-                    background: "#185fa5", color: "white",
-                    border: "none", borderRadius: "8px",
-                    fontSize: "13px", cursor: "pointer",
+                    width: "100%",
+                    padding: "8px",
+                    background: "#185fa5",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontSize: "13px",
+                    cursor: "pointer",
                     marginBottom: "8px",
-                    display: "flex", alignItems: "center",
-                    justifyContent: "center", gap: "6px"
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
                   }}
                 >
                   <FaEdit style={{ fontSize: "13px" }} />
@@ -181,10 +223,8 @@ export default function Dashboard() {
                 <button className="logout-btn" onClick={handleLogout}>
                   Logout
                 </button>
-
               </div>
             </div>
-
           </div>
         </div>
       </nav>
