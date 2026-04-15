@@ -1,7 +1,7 @@
 
 i{
  color: #1e293b !important;
- font-size: 24px !important;
+ font-size: 15px !important;
 }
 
 .form-container {
@@ -19,7 +19,7 @@ i{
 }
 
 .form-card {
-  /* background: rgb(243,239,239), rgb(57,158,192); */
+ 
   background: #ffffff;
   border: 1px solid #e2e8f0;
   padding: 40px 30px;

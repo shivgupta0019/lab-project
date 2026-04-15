@@ -1,6 +1,7 @@
 import React, { useState, } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../Style/userotp.css";
+import axios from "axios";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -14,25 +15,25 @@ export default function LoginPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
+  async function handleSubmit(e) {
+  e.preventDefault();
 
-    if (!form.username || !form.password) {
-      alert("Please fill all fields");
-      return;
-    }
+  try {
+    let res = await axios.post("http://localhost:5000/api/login", {
+      email: form.username, // username ki jagah email bhej
+      password: form.password,
+    });
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    alert(res.data.message);
 
-    localStorage.setItem("user", JSON.stringify(form));
-    localStorage.setItem("otp", otp);
-
-    alert("Your OTP is: " + otp);
+    localStorage.setItem("email", form.username);
 
     navigate("/otp");
+
+  } catch (err) {
+    alert(err.response?.data?.message);
   }
-
-
+}
   return (
     <div className="main-container">
       <div className="login-card">
@@ -56,7 +57,7 @@ export default function LoginPage() {
               <input
                 type="text"
                 name="username"
-                placeholder="Enter your username"
+                placeholder="Enter your Email"
                 onChange={handleChange}
               />
             </div>
@@ -70,9 +71,9 @@ export default function LoginPage() {
                 onChange={handleChange}
               />
             </div>
-            <p className="forgot ms-4">Forgot your Password?</p>
-
-
+            <p className="forgot ms-4">
+              <Link to="/forgot-password">Forgot your Password?</Link>
+            </p>
 
 
             <div className="btn-group">
@@ -83,7 +84,7 @@ export default function LoginPage() {
             </div>
             <div className="create">
               <p className="forgot d-flex fs-6 mt-4 ms-5"><Link to="/signup" >Create Your Account?</Link></p>
-              
+
             </div>
           </form>
         </div>

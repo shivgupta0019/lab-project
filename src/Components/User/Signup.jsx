@@ -3,11 +3,12 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import "../../Components/Style/userotp.css";
 import FormValidators from './FormValidators';
+import axios from 'axios';
+
 
 export default function SignupPage() {
     let [data, setData] = useState({
         name: "",
-        username: "",
         email: "",
         phone: "",
         password: "",
@@ -16,7 +17,6 @@ export default function SignupPage() {
 
     let [errorMessage, setErrorMessage] = useState({
         name: "Name Field is Mendatory",
-        username: "User Name Field is Mendatory",
         email: "Email Address Field is Mendatory",
         phone: "Phone Number Field is Mendatory",
         password: "Password Field is Mendatory",
@@ -31,57 +31,42 @@ export default function SignupPage() {
         setErrorMessage({ ...errorMessage, [name]: FormValidators(e) })
     }
 
-    async function postData(e) {
-        e.preventDefault()
 
-        let error = Object.values(errorMessage).find(x => x !== "")
-        if (error)
-            setShow(true)
 
-        else if (data.password !== data.cpassword) {
-            setShow(true)
-            setErrorMessage({ ...errorMessage, password: 'Password And Confirm Password Does not Matched' })
-        }
 
-        else {
-            //  localStorage se users lo
-            let users = JSON.parse(localStorage.getItem("users")) || []
+async function postData(e) {
+    e.preventDefault();
 
-            //  duplicate check
-            let item = users.find(x =>
-                x.username?.toLowerCase() === data.username.toLowerCase() ||
-                x.email?.toLowerCase() === data.email.toLowerCase()
-            )
-
-            if (item) {
-                setShow(true)
-                setErrorMessage({
-                    ...errorMessage,
-                    username: item.username?.toLowerCase() === data.username.toLowerCase() ? "Username Already Taken" : "",
-                    email: item.email?.toLowerCase() === data.email.toLowerCase() ? "Email Address Already Registered" : ""
-                })
-            }
-            else {
-                //  new user save (cpassword nahi save karenge)
-                let newUser = {
-                    name: data.name,
-                    username: data.username,
-                    email: data.email,
-                    phone: data.phone,
-                    password: data.password,
-                    role: "Buyer",
-                    status: true
-                }
-
-                users.push(newUser)
-                localStorage.setItem("users", JSON.stringify(users))
-
-                alert("Signup Successful ")
-                navigate("/") 
-            }
-        }
+    let error = Object.values(errorMessage).find(x => x !== "");
+    if (error) {
+        setShow(true);
+        return;
     }
 
+    if (data.password !== data.cpassword) {
+        newFunction();
+        return;
+    }
+
+    try {
+        let res = await axios.post("http://localhost:5000/api/signup", {
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+            password: data.password
+        });
+
+        alert(res.data.message);
+        navigate("/");
+
+    } catch (err) {
+        alert(err.response?.data?.message || "Error");
+    }
+
+    function newFunction() {
+        setShow(true);
+    }
+}
     return (
         <>
             <section className="login  footer-padding">
@@ -106,15 +91,7 @@ export default function SignupPage() {
                                 {show && errorMessage.phone ? <p className='text-danger'>{errorMessage.phone}</p> : null}
                             </div>
 
-                            <div className='col-md-6 mb-3'>
-                                <label>User Name*</label>
-                                <input type='text' name='username' onChange={getInputData}
-                                    className={`form-control ${show && errorMessage.username ? 'border-danger' : 'myborder'}`}
-                                    placeholder='User Name' />
-                                {show && errorMessage.username ? <p className='text-danger'>{errorMessage.username}</p> : null}
-                            </div>
-
-                            <div className='col-md-6 mb-3'>
+                            <div className='col-12 mb-3'>
                                 <label>Email*</label>
                                 <input type='email' name='email' onChange={getInputData}
                                     className={`form-control ${show && errorMessage.email ? 'border-danger' : 'myborder'}`}

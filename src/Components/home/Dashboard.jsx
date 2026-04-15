@@ -1,57 +1,54 @@
-import React, { useState, useEffect } from "react";
+import React, { useState,useEffect } from "react";
 import { FaUserCircle, FaEdit } from "react-icons/fa";
-import {
-  // FaFlask,
-  // FaUsers,
-  // FaProjectDiagram,
-  // FaBoxes,
-  FaFlask,
-  FaVial,
-  FaChartLine,
-} from "react-icons/fa";
-
-import { Link } from "react-router-dom";
+import { FaFlask, FaVial, FaChartLine } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
 import "../home/Navbar.css";
 
 export default function Dashboard() {
-  //  logged-in user id
-  const userId = localStorage.getItem("userId");
-  const [userData, setUserData] = useState(null);
-  const [labData, setLabData] = useState(null);
+  const navigate = useNavigate();
 
-  // Load user and lab data from localStorage
   useEffect(() => {
-    // Get user data
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const user = users.find((u) => u.empid === userId || u.userId === userId);
-    if (user) {
-      setUserData(user);
+  const token = localStorage.getItem("token");
 
-      // Get lab data based on user's lab code
-      if (user.labCode || user.labcode) {
-        const labs = JSON.parse(localStorage.getItem("centrallab")) || [];
-        const lab = labs.find((l) => l.code === (user.labCode || user.labcode));
-        if (lab) {
-          setLabData(lab);
-        }
-      }
-    }
-  }, [userId]);
+  if (!token) {
+    navigate("/");
+  }
+}, []);
+
+  //  pehle profileData dekho (profile page se save hota hai)
+  // agar nahi hai to loggedInUser lo (login/signup se)
+  const [user] = useState(() => {
+    const profileData = JSON.parse(localStorage.getItem("profileData")) || {};
+    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser")) || {};
+
+    return {
+      name:     profileData.name     || loggedInUser.name     || "Guest",
+      username: profileData.username || loggedInUser.username || "guest",
+      email:    profileData.email    || loggedInUser.email    || "N/A",
+      phone:    profileData.phone    || loggedInUser.phone    || "N/A",
+      role:     loggedInUser.role    || "User",
+      photo:    profileData.photo    || null,
+    };
+  });
+
+  //  initials for avatar
+  const initials = user.name
+    ?.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) || "?";
+
+  //  Logout
+  function handleLogout() {
+    localStorage.removeItem("loggedInUser");
+    navigate("/");
+  }
 
   return (
     <>
       <nav className="navbar navbar-expand-lg modern-navbar">
         <div className="container-fluid">
+
           {/* LOGO */}
-          <a
-            className="navbar-brand brand-logo d-flex align-items-center"
-            href="#"
-          >
-            <img
-              src="assets/photos/aryan.jpeg"
-              alt="Aryan Logo"
-              className="logo-img"
-            />
+          <a className="navbar-brand brand-logo d-flex align-items-center" href="#">
+            <img src="assets/photos/aryan.jpeg" alt="Aryan Logo" className="logo-img" />
             <span className="ms-2">Aryan Group</span>
           </a>
 
@@ -65,6 +62,7 @@ export default function Dashboard() {
           </button>
 
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
+
             {/* LEFT MENU */}
             <ul className="navbar-nav me-auto mb-2 mb-lg-0 nav-links-modern">
               <li className="nav-item">
@@ -72,83 +70,121 @@ export default function Dashboard() {
                   <FaFlask className="nav-icon" /> Labs
                 </Link>
               </li>
-
               <li className="nav-item">
                 <Link className="nav-link" to="/project">
                   <FaVial className="nav-icon" /> Research & Development
                 </Link>
               </li>
-
               <li className="nav-item">
                 <Link className="nav-link" to="/result">
                   <FaChartLine className="nav-icon" /> Result
                 </Link>
               </li>
             </ul>
-            {/* RIGHT PROFILE */}
+
+            {/*  RIGHT PROFILE */}
             <div className="profile-container">
               <div className="profile-box">
-                <FaUserCircle className="profile-icon" />
+
+                {/* ✅ Photo ya icon */}
+                {user.photo ? (
+                  <img
+                    src={user.photo} alt="avatar"
+                    style={{
+                      width: "34px", height: "34px", borderRadius: "50%",
+                      objectFit: "cover", border: "2px solid white"
+                    }}
+                  />
+                ) : (
+                  <FaUserCircle className="profile-icon" />
+                )}
 
                 <div className="profile-text">
-                  {/* NAME + EDIT BUTTON */}
-                  {/* <div className="name-row">
-                    <span className="username">JohnDoe</span>
-
-                    <FaEdit
-                      className="edit-icon"
-                      title="Edit Profile"
-                      onClick={() => navigate(/user/edit/${userId})}
-                    />
-                  </div> */}
-                  <span className="username">
-                    {userData
-                      ? `${userData.firstname || ""} ${userData.lastname || ""}`.trim()
-                      : "Loading..."}
-                  </span>
-
-                  <span className="role">{userData?.role || "User"}</span>
+                  {/*  Real name from localStorage */}
+                  <span className="username">{user.name}</span>
+                  <span className="role">{user.role}</span>
                 </div>
               </div>
 
-              {/* DROPDOWN */}
+              {/*  DROPDOWN */}
               <div className="dropdown-menu-modern">
-                <FaEdit
-                  className="dropdown-edit-icon"
-                  title="Edit Profile"
-                  // onClick={() => navigate(/user/edit/${userId})}
-                />
-                <p>
-                  <strong>Name:</strong>{" "}
-                  {userData
-                    ? `${userData.firstname || ""} ${userData.lastname || ""}`.trim()
-                    : "Loading..."}
-                </p>
-                <p>
-                  <strong>Employee ID:</strong> {userData?.empid || "N/A"}
-                </p>
-                <p>
-                  <strong>Role:</strong> {userData?.role || "N/A"}
-                </p>
-                <p>
-                  <strong>Department:</strong> {userData?.department || "N/A"}
-                </p>
-                <p>
-                  <strong>Lab:</strong>{" "}
-                  {labData?.labname ||
-                    userData?.labCode ||
-                    userData?.labcode ||
-                    "N/A"}
-                </p>
-                {labData && (
-                  <p>
-                    <strong>Location:</strong> {labData?.location || "N/A"}
+
+                {/* Avatar + Name - dropdown top */}
+                <div style={{
+                  display: "flex", flexDirection: "column",
+                  alignItems: "center", marginBottom: "12px"
+                }}>
+                  {user.photo ? (
+                    <img
+                      src={user.photo} alt="avatar"
+                      style={{
+                        width: "65px", height: "65px", borderRadius: "50%",
+                        objectFit: "cover", border: "2px solid #185fa5",
+                        marginBottom: "8px"
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: "65px", height: "65px", borderRadius: "50%",
+                      background: "#e6f1fb", border: "2px solid #185fa5",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: "22px", fontWeight: "500", color: "#185fa5",
+                      marginBottom: "8px"
+                    }}>
+                      {initials}
+                    </div>
+                  )}
+                  <p style={{ fontWeight: "500", fontSize: "14px", margin: "0" }}>
+                    {user.name}
                   </p>
-                )}
-                <hr />
-                <button className="logout-btn">Logout</button>
+                  <p style={{ fontSize: "12px", color: "#888", margin: 0 }}>
+                    {user.role}
+                  </p>
+                </div>
+
+                <hr style={{ margin: "8px 0" }} />
+
+                {/*  Real Data */}
+                <p style={{ fontSize: "13px", margin: "5px 0" }}>
+                  <strong>Name:</strong> {user.name}
+                </p>
+                <p style={{ fontSize: "13px", margin: "5px 0" }}>
+                  <strong>Username:</strong> {user.username}
+                </p>
+                <p style={{ fontSize: "13px", margin: "5px 0" }}>
+                  <strong>Email:</strong> {user.email}
+                </p>
+                <p style={{ fontSize: "13px", margin: "5px 0" }}>
+                  <strong>Contact:</strong> {user.phone}
+                </p>
+
+                <hr style={{ margin: "10px 0" }} />
+
+                {/*  Edit Profile - profile page pe jao */}
+                <button
+                  onClick={() => navigate("/profile")}
+                  style={{
+                    width: "100%", padding: "8px",
+                    background: "#185fa5", color: "white",
+                    border: "none", borderRadius: "8px",
+                    fontSize: "13px", cursor: "pointer",
+                    marginBottom: "8px",
+                    display: "flex", alignItems: "center",
+                    justifyContent: "center", gap: "6px"
+                  }}
+                >
+                  <FaEdit style={{ fontSize: "13px" }} />
+                  Edit Profile
+                </button>
+
+                {/*  Logout */}
+                <button className="logout-btn" onClick={handleLogout}>
+                  Logout
+                </button>
+
               </div>
             </div>
+
           </div>
         </div>
       </nav>
