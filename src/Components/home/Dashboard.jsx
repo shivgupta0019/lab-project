@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { FaUserCircle, FaEdit } from "react-icons/fa";
 import { FaFlask, FaVial, FaChartLine } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
@@ -6,6 +6,14 @@ import "../home/Navbar.css";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    navigate("/");
+  }
+}, []);
 
   //  pehle profileData dekho (profile page se save hota hai)
   // agar nahi hai to loggedInUser lo (login/signup se)
