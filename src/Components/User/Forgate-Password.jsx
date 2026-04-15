@@ -9,21 +9,21 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
 
-  // 🔥 MAIN FUNCTION
+  // 🔥 YE FUNCTION ADD KARNA THA
   async function handleSendLink(e) {
     e.preventDefault();
     setError("");
 
     try {
-      let res = await axios.post(
+      const res = await axios.post(
         "http://localhost:5000/api/forgot-password",
         { email }
       );
 
-      alert(res.data.message);
+      alert(res.data.message); //  "Reset link sent"
 
     } catch (err) {
-      setError(err.response?.data?.message);
+      setError(err.response?.data?.message || "Something went wrong");
     }
   }
 

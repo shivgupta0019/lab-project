@@ -16,6 +16,7 @@ import Dashboard from './Components/home/Dashboard'
 import ProfilePage from './Components/User/ProfilePage'
 import DownloadResults from './Components/DownloadResults'
 import ForgotPassword from './Components/User/Forgate-Password'
+import ResetPassword from './Components/User/ResetPassword'
 
 
 export default function App() {
@@ -29,7 +30,7 @@ export default function App() {
   const location = useLocation();
 
   // 👉 jin routes pe dashboard nahi chahiye
-  const hideRoutes = ["/", "/signup", "/otp","/forgot-password"];
+  const hideRoutes = ["/", "/signup", "/otp","/forgot-password","/reset-password"];
 
   const hideDashboard = hideRoutes.includes(location.pathname);
 
@@ -58,7 +59,7 @@ export default function App() {
         <Route path='/otp' element={<OTPPage />} />
         <Route path='/profile' element={<ProfilePage />} />
         <Route path='/forgot-password' element={<ForgotPassword />} />
-
+        <Route path="/reset-password" element={<ResetPassword />} />
 
       </Routes>
       <Footer />
