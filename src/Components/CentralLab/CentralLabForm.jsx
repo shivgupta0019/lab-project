@@ -2074,7 +2074,6 @@ export default function CentralLabForm({ onSaved }) {
           </div>
         </div>
       )}
-
       <ToastStack toasts={toasts} />
     </>
   );

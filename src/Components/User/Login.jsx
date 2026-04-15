@@ -1,6 +1,7 @@
 import React, { useState, } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../Style/userotp.css";
+import axios from "axios";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -14,40 +15,25 @@ export default function LoginPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
+  async function handleSubmit(e) {
+  e.preventDefault();
 
-    if (!form.username || !form.password) {
-      alert("Please fill all fields");
-      return;
-    }
+  try {
+    let res = await axios.post("http://localhost:5000/api/login", {
+      email: form.username, // username ki jagah email bhej
+      password: form.password,
+    });
 
-    //  localStorage se users lo
-    const users = JSON.parse(localStorage.getItem("users")) || [];
+    alert(res.data.message);
 
-    //  username aur password dono match karo
-    const matchedUser = users.find(
-      (x) =>
-        x.username?.toLowerCase() === form.username.toLowerCase() &&
-        x.password === form.password
-    );
-
-    if (!matchedUser) {
-      alert("Invalid Username or Password ");
-      return;
-    }
-
-    // OTP generate karo
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    localStorage.setItem("loggedInUser", JSON.stringify(matchedUser));
-    localStorage.setItem("otp", otp);
-
-    alert("Your OTP is: " + otp);
+    localStorage.setItem("email", form.username);
 
     navigate("/otp");
-  }
 
+  } catch (err) {
+    alert(err.response?.data?.message);
+  }
+}
   return (
     <div className="main-container">
       <div className="login-card">
@@ -71,7 +57,7 @@ export default function LoginPage() {
               <input
                 type="text"
                 name="username"
-                placeholder="Enter your username"
+                placeholder="Enter your Email"
                 onChange={handleChange}
               />
             </div>
