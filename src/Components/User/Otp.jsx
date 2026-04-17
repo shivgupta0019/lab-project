@@ -1,3 +1,4 @@
+import { jwtDecode } from "jwt-decode";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "../Style/userotp.css";
@@ -98,17 +99,44 @@ export default function OTPPage() {
   }, [otp]);
 
   //  VERIFY
-  async function handleVerify() {
+//   async function handleVerify() {
+//   try {
+//     let res = await axios.post("http://localhost:5000/api/verify-otp", {
+//       email: localStorage.getItem("email"),
+//       otp: otp.join(""),
+//     });
+
+//     localStorage.setItem("token", res.data.token);
+
+//     alert(res.data.message);
+//     navigate("/dashboard");
+
+//   } catch (err) {
+//     alert(err.response?.data?.message);
+//   }
+// }
+
+async function handleVerify() {
   try {
     let res = await axios.post("http://localhost:5000/api/verify-otp", {
       email: localStorage.getItem("email"),
       otp: otp.join(""),
     });
 
+    // 🔥 TOKEN SAVE (already correct)
     localStorage.setItem("token", res.data.token);
 
+    // 🔥 ROLE DECODE
+    const decoded = jwtDecode(res.data.token);
+
     alert(res.data.message);
-    navigate("/dashboard");
+
+    // 🔥 ROLE BASED REDIRECT
+    if (decoded.role === "admin") {
+      navigate("/admin-dashboard");
+    } else {
+      navigate("/dashboard"); // ya /lab
+    }
 
   } catch (err) {
     alert(err.response?.data?.message);

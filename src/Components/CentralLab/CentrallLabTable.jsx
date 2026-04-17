@@ -1123,9 +1123,9 @@ export default function CentralLabTable({
     <>
       <div className="main-content">
         <div className="container-fluid mt-3" style={{ marginTop: "100px" }}>
-          <div className="card" style={{ marginTop: "30px" }}>
+          <div className="card" style={{ marginTop: "30px" ,marginTop:"118px"}}>
             {/* Top Action Buttons */}
-            <div className="d-flex justify-content-end p-3 gap-2 flex-wrap">
+            <div className="d-flex justify-content-end p-3 gap-2 flex-wrap " >
               {/* <button className="btn btn-light">
                 <Link
                   to="/centrallab/lablist"

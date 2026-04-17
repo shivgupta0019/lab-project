@@ -18,6 +18,9 @@ import DownloadResults from './Components/DownloadResults'
 import ForgotPassword from './Components/User/Forgate-Password'
 import ResetPassword from './Components/User/ResetPassword'
 import UsersPage from './Components/User/Users'
+import LabManagement from "./Components/admin/LabManagement";
+import AdminRoute from "./Components/routes/AdminRoute";
+import ProtectedRoute from "./Components/routes/ProtectedRoute";
 
 
 export default function App() {
@@ -46,24 +49,38 @@ function Layout() {
       {/*  Dashboard sirf tab dikhe jab allowed ho */}
       {!hideDashboard && <Dashboard />}
       <Routes>
-        <Route path="/centrallab" element={<CentrallabPage />} />
+        {/* <Route path="/centrallab" element={<CentrallabPage />} /> */}
         <Route path="/centrallab/create" element={<CentralLabForm />} />
         <Route path="/centrallab/create/:id" element={<CentralLabForm />} />
 
-        <Route path="/admin" element={<LabManagement />} />
-        <Route path="/project" element={<ProjecPage />} />
+        {/* <Route path="/admin" element={<LabManagement />} /> */}
+        {/* <Route path="/project" element={<ProjecPage />} /> */}
         <Route path="/project/create/:id" element={<ProjectForm />} />
         <Route path="/project/create" element={<ProjectForm />} />
 
-        <Route path="/result" element={<DownloadResults />} />
+        {/* <Route path="/result" element={<DownloadResults />} /> */}
 
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/" element={<LoginPage />} />
         <Route path="/otp" element={<OTPPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+        {/* <Route path="/profile" element={<ProfilePage />} /> */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/users" element={<UsersPage />} />
+        {/* <Route path="/users" element={<UsersPage />} /> */}
+///////////////////////////////////////
+<Route element={<ProtectedRoute />}>
+  <Route path="/centrallab" element={<CentrallabPage />} />
+  <Route path="/project" element={<ProjecPage />} />
+  
+  <Route path="/result" element={<DownloadResults />} />
+  <Route path="/profile" element={<ProfilePage />} />
+</Route>
+
+       /////////////////////////////////////
+    <Route element={<AdminRoute />}>
+  <Route path="/users" element={<UsersPage />} />
+  <Route path="/admin" element={<LabManagement />} />
+</Route>
 
 
       </Routes>

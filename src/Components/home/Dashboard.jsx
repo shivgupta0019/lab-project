@@ -1,22 +1,36 @@
+import { jwtDecode } from "jwt-decode";
 import React, { useState, useEffect } from "react";
 import { FaUserCircle, FaEdit } from "react-icons/fa";
 import { FaFlask, FaVial, FaChartLine, FaUserShield } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import "../home/Navbar.css";
 
-export default function Dashboard() {
-  const navigate = useNavigate();
 
+export default function Dashboard() {
+ 
+
+const navigate = useNavigate();
+
+  const [role, setRole] = useState("");
+
+  //  FIXED: useEffect yaha hona chahiye (NOT inside useState)
   useEffect(() => {
     const token = localStorage.getItem("token");
 
     if (!token) {
       navigate("/");
+    } else {
+      try {
+        const decoded = jwtDecode(token);
+        setRole(decoded.role); //  admin/user set hoga
+      } catch {
+        localStorage.clear();
+        navigate("/");
+      }
     }
   }, []);
 
-  //  pehle profileData dekho (profile page se save hota hai)
-  // agar nahi hai to loggedInUser lo (login/signup se)
+  // user data
   const [user] = useState(() => {
     const profileData = JSON.parse(localStorage.getItem("profileData")) || {};
     const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser")) || {};
@@ -31,7 +45,6 @@ export default function Dashboard() {
     };
   });
 
-  //  initials for avatar
   const initials =
     user.name
       ?.split(" ")
@@ -40,11 +53,17 @@ export default function Dashboard() {
       .toUpperCase()
       .slice(0, 2) || "?";
 
-  //  Logout
+  //  FINAL LOGOUT (PROPER)
   function handleLogout() {
+    // clear all auth data
+    localStorage.removeItem("token");
     localStorage.removeItem("loggedInUser");
-    navigate("/");
+    localStorage.removeItem("profileData");
+
+    //  important: pura app reset
+    window.location.href = "/";
   }
+
 
   return (
     <>
@@ -64,7 +83,7 @@ export default function Dashboard() {
           </a>
 
           <button
-            className="navbar-toggler text-white"
+            className="navbar-toggler text-black"
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#navbarSupportedContent"
@@ -75,7 +94,7 @@ export default function Dashboard() {
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
             {/* LEFT MENU */}
             <ul className="navbar-nav me-auto mb-2 mb-lg-0 nav-links-modern">
-              <li className="nav-item">
+              {/* <li className="nav-item">
                 <Link className="nav-link" to="/admin">
                   <FaUserShield className="nav-icon" /> Admin
                 </Link>
@@ -90,6 +109,42 @@ export default function Dashboard() {
                   <FaVial className="nav-icon" /> Research & Development
                 </Link>
               </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/result">
+                  <FaChartLine className="nav-icon" /> Result
+                </Link>
+              </li> */}
+
+              {/* 🔥 ADMIN ONLY */}
+              {role === "admin" && (
+                <>
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/admin">
+                      <FaUserShield className="nav-icon" /> Admin
+                    </Link>
+                  </li>
+
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/users">
+                      <FaUserShield className="nav-icon" /> Users
+                    </Link>
+                  </li>
+                </>
+              )}
+
+              {/* ✅ Sabko dikhe */}
+              <li className="nav-item">
+                <Link className="nav-link" to="/centrallab">
+                  <FaFlask className="nav-icon" /> Labs Report
+                </Link>
+              </li>
+
+              <li className="nav-item">
+                <Link className="nav-link" to="/project">
+                  <FaVial className="nav-icon" /> Research & Development
+                </Link>
+              </li>
+
               <li className="nav-item">
                 <Link className="nav-link" to="/result">
                   <FaChartLine className="nav-icon" /> Result
@@ -120,7 +175,7 @@ export default function Dashboard() {
                 <div className="profile-text">
                   {/*  Real name from localStorage */}
                   <span className="username">{user.name}</span>
-                  <span className="role">{user.role}</span>
+                  <span className="role">{role}</span>
                 </div>
               </div>
 
