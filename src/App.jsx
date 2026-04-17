@@ -19,6 +19,9 @@ import ForgotPassword from "./Components/User/Forgate-Password";
 import ResetPassword from "./Components/User/ResetPassword";
 import UsersPage from "./Components/User/Users";
 import LabManagement from "./Components/admin/LabManagement";
+import TestRequestForm from "./Components/testReqForm/TestRequestForm.jsx";
+import AllTestRequests from "./Components/testReqForm/AllTestRequests.jsx";
+import AllReports from "./Components/testReqForm/AllReports.jsx";
 
 export default function App() {
   return (
@@ -49,8 +52,10 @@ function Layout() {
         <Route path="/centrallab" element={<CentrallabPage />} />
         <Route path="/centrallab/create" element={<CentralLabForm />} />
         <Route path="/centrallab/create/:id" element={<CentralLabForm />} />
-
+        <Route path="/allreports" element={<AllReports />} />
+        <Route path="/alltrf" element={<AllTestRequests />} />
         <Route path="/admin" element={<LabManagement />} />
+        <Route path="/trf" element={<TestRequestForm />} />
         <Route path="/project" element={<ProjecPage />} />
         <Route path="/project/create/:id" element={<ProjectForm />} />
         <Route path="/project/create" element={<ProjectForm />} />
