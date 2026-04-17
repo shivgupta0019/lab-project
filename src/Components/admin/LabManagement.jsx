@@ -50,6 +50,7 @@ const globalStyles = `
     gap: 0.5rem;
     border-bottom: 1px solid #eaeef2;
     margin-bottom: 2rem;
+    flex-wrap: wrap;
   }
 
   .lm-tab {
@@ -348,6 +349,14 @@ const globalStyles = `
     border-collapse: collapse;
     margin-top: 2rem;
     font-size: 0.85rem;
+    overflow-x: auto;
+    display: block;
+  }
+
+  .lm-table thead,
+  .lm-table tbody {
+    display: table;
+    width: 100%;
   }
 
   .lm-table th,
@@ -446,8 +455,17 @@ const globalStyles = `
   }
 `;
 
-// Predefined field definitions for default tests
+// Helper to generate unique codes
+const generateCode = (prefix = "ARY") => {
+  const now = new Date();
+  const datePart = now.toISOString().slice(0, 10).replace(/-/g, "");
+  const random = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, "0");
+  return `${prefix}-${datePart}-${random}`;
+};
 
+// Predefined test fields (same as original)
 const TESTING_FIELDS = {
   ETO: [
     {
@@ -561,20 +579,22 @@ const TESTING_FIELDS = {
   ],
 };
 
-// Helper to generate lab code
-const generateLabCode = () => {
-  const now = new Date();
-  const datePart = now.toISOString().slice(0, 10).replace(/-/g, "");
-  const random = Math.floor(Math.random() * 1000)
-    .toString()
-    .padStart(3, "0");
-  return `ARY-${datePart}-${random}`;
-};
-
 export default function LabManagement() {
   const [activeTab, setActiveTab] = useState("lab");
 
-  // Lab form state
+  // ---------- Company State ----------
+  const [companyData, setCompanyData] = useState({
+    companyName: "",
+    gst: "",
+    address: "",
+    phone: "",
+    headName: "",
+  });
+  const [savedCompanies, setSavedCompanies] = useState([]);
+  const [editingCompanyId, setEditingCompanyId] = useState(null);
+  const [editingCompanyData, setEditingCompanyData] = useState(null);
+
+  // ---------- Lab State (unchanged) ----------
   const [labData, setLabData] = useState({
     labName: "",
     gst: "",
@@ -587,7 +607,7 @@ export default function LabManagement() {
   const [editingLabId, setEditingLabId] = useState(null);
   const [editingLabData, setEditingLabData] = useState(null);
 
-  // Product form state
+  // ---------- Product State (unchanged) ----------
   const [productData, setProductData] = useState({
     productName: "",
     productId: "",
@@ -596,7 +616,7 @@ export default function LabManagement() {
   const [editingProductId, setEditingProductId] = useState(null);
   const [editingProductData, setEditingProductData] = useState(null);
 
-  // Testing state
+  // ---------- Testing State (unchanged) ----------
   const defaultTests = [
     { id: "ETO", label: "ETO", fields: TESTING_FIELDS.ETO },
     { id: "Micro", label: "Micro", fields: TESTING_FIELDS.Micro },
@@ -614,14 +634,65 @@ export default function LabManagement() {
   const [savedTests, setSavedTests] = useState([]);
   const [editingTestId, setEditingTestId] = useState(null);
   const [editingTestData, setEditingTestData] = useState(null);
-
-  // New custom test builder state
   const [newTestLabel, setNewTestLabel] = useState("");
   const [newTestFields, setNewTestFields] = useState([
     { name: "", label: "", placeholder: "" },
   ]);
 
-  // ------------------- Lab Functions -------------------
+  // ---------- Company Functions ----------
+  const updateCompany = (field, value) =>
+    setCompanyData((prev) => ({ ...prev, [field]: value }));
+  const resetCompany = () =>
+    setCompanyData({
+      companyName: "",
+      gst: "",
+      address: "",
+      phone: "",
+      headName: "",
+    });
+  const handleSaveCompany = () => {
+    if (!companyData.companyName.trim()) {
+      alert("Company Name is required.");
+      return;
+    }
+    const newCompany = {
+      ...companyData,
+      id: Date.now(),
+      savedAt: new Date().toLocaleString(),
+      companyCode: generateCode("CMP"),
+    };
+    setSavedCompanies((prev) => [newCompany, ...prev]);
+    resetCompany();
+  };
+  const startEditCompany = (comp) => {
+    setEditingCompanyId(comp.id);
+    setEditingCompanyData({ ...comp });
+  };
+  const cancelEditCompany = () => {
+    setEditingCompanyId(null);
+    setEditingCompanyData(null);
+  };
+  const saveEditCompany = () => {
+    if (!editingCompanyData.companyName.trim()) {
+      alert("Company Name required.");
+      return;
+    }
+    setSavedCompanies((prev) =>
+      prev.map((comp) =>
+        comp.id === editingCompanyId
+          ? { ...editingCompanyData, savedAt: new Date().toLocaleString() }
+          : comp,
+      ),
+    );
+    cancelEditCompany();
+  };
+  const deleteCompany = (id) => {
+    if (window.confirm("Delete this company record?")) {
+      setSavedCompanies((prev) => prev.filter((comp) => comp.id !== id));
+    }
+  };
+
+  // ---------- Lab Functions (identical to original, included fully) ----------
   const updateLab = (field, value) =>
     setLabData((prev) => ({ ...prev, [field]: value }));
   const resetLab = () =>
@@ -642,12 +713,11 @@ export default function LabManagement() {
       ...labData,
       id: Date.now(),
       savedAt: new Date().toLocaleString(),
-      labCode: generateLabCode(),
+      labCode: generateCode("LAB"),
     };
     setSavedLabs((prev) => [newLab, ...prev]);
     resetLab();
   };
-
   const startEditLab = (lab) => {
     setEditingLabId(lab.id);
     setEditingLabData({ ...lab });
@@ -671,12 +741,11 @@ export default function LabManagement() {
     cancelEditLab();
   };
   const deleteLab = (id) => {
-    if (window.confirm("Delete this lab record?")) {
+    if (window.confirm("Delete this lab record?"))
       setSavedLabs((prev) => prev.filter((lab) => lab.id !== id));
-    }
   };
 
-  // ------------------- Product Functions -------------------
+  // ---------- Product Functions ----------
   const updateProduct = (field, value) =>
     setProductData((prev) => ({ ...prev, [field]: value }));
   const resetProduct = () => setProductData({ productName: "", productId: "" });
@@ -719,12 +788,11 @@ export default function LabManagement() {
     cancelEditProduct();
   };
   const deleteProduct = (id) => {
-    if (window.confirm("Delete this product?")) {
+    if (window.confirm("Delete this product?"))
       setSavedProducts((prev) => prev.filter((p) => p.id !== id));
-    }
   };
 
-  // ------------------- Testing Functions (same as before, plus edit/delete) -------------------
+  // ---------- Testing Functions (unchanged from original, included fully) ----------
   const handleToggleTest = (testId) => {
     setSelectedTestIds((prev) =>
       prev.includes(testId)
@@ -742,14 +810,12 @@ export default function LabManagement() {
       }
     }
   };
-
   const handleTestFieldChange = (testId, fieldName, value) => {
     setTestValues((prev) => ({
       ...prev,
       [testId]: { ...(prev[testId] || {}), [fieldName]: value },
     }));
   };
-
   const addCustomField = () =>
     setNewTestFields([
       ...newTestFields,
@@ -765,7 +831,6 @@ export default function LabManagement() {
     updated[index][key] = value;
     setNewTestFields(updated);
   };
-
   const handleAddNewTest = () => {
     if (!newTestLabel.trim()) return;
     const invalid = newTestFields.some(
@@ -795,7 +860,6 @@ export default function LabManagement() {
     setNewTestLabel("");
     setNewTestFields([{ name: "", label: "", placeholder: "" }]);
   };
-
   const resetTesting = () => {
     setSelectedTestIds([]);
     setTestValues({});
@@ -803,7 +867,6 @@ export default function LabManagement() {
     setNewTestLabel("");
     setNewTestFields([{ name: "", label: "", placeholder: "" }]);
   };
-
   const handleSaveTesting = () => {
     const selectedTestsData = selectedTestIds.map((id) => {
       const test = availableTests.find((t) => t.id === id);
@@ -825,11 +888,9 @@ export default function LabManagement() {
     alert(`Saved ${selectedTestsData.length} test(s).`);
     setSelectedTestIds([]);
   };
-
-  // Edit/Delete for saved tests
   const startEditTest = (entry) => {
     setEditingTestId(entry.id);
-    setEditingTestData(JSON.parse(JSON.stringify(entry))); // deep copy
+    setEditingTestData(JSON.parse(JSON.stringify(entry)));
   };
   const cancelEditTest = () => {
     setEditingTestId(null);
@@ -846,18 +907,16 @@ export default function LabManagement() {
     cancelEditTest();
   };
   const deleteTest = (id) => {
-    if (window.confirm("Delete this test configuration?")) {
+    if (window.confirm("Delete this test configuration?"))
       setSavedTests((prev) => prev.filter((t) => t.id !== id));
-    }
   };
-  // Helper to update nested test fields in editing mode
   const updateEditingTestField = (testIndex, fieldIndex, newValue) => {
     const updated = { ...editingTestData };
     updated.tests[testIndex].fields[fieldIndex].value = newValue;
     setEditingTestData(updated);
   };
 
-  // ------------------- Render -------------------
+  // ---------- Render ----------
   return (
     <>
       <style>{globalStyles}</style>
@@ -866,7 +925,7 @@ export default function LabManagement() {
           <div className="lm-header">
             <h1 className="lm-title">Lab Management System</h1>
             <p className="lm-subtitle">
-              Manage labs, products, and test configurations with dynamic fields
+              Manage companies, labs, products, and test configurations
             </p>
           </div>
 
@@ -889,9 +948,217 @@ export default function LabManagement() {
             >
               Testing
             </button>
+            <button
+              className={`lm-tab ${activeTab === "company" ? "active" : ""}`}
+              onClick={() => setActiveTab("company")}
+            >
+              Company
+            </button>
           </div>
 
-          {/* ===================== LAB TAB ===================== */}
+          {/* ========== COMPANY TAB ========== */}
+          {activeTab === "company" && (
+            <div className="lm-panel">
+              <div className="lm-form-grid">
+                <div className="lm-field">
+                  <label className="lm-label">Company Name</label>
+                  <input
+                    className="lm-input"
+                    value={companyData.companyName}
+                    onChange={(e) =>
+                      updateCompany("companyName", e.target.value)
+                    }
+                  />
+                </div>
+                <div className="lm-field">
+                  <label className="lm-label">GST Number</label>
+                  <input
+                    className="lm-input"
+                    value={companyData.gst}
+                    onChange={(e) => updateCompany("gst", e.target.value)}
+                  />
+                </div>
+                <div className="lm-field lm-full-width">
+                  <label className="lm-label">Address</label>
+                  <textarea
+                    className="lm-textarea"
+                    value={companyData.address}
+                    onChange={(e) => updateCompany("address", e.target.value)}
+                  />
+                </div>
+                <div className="lm-field">
+                  <label className="lm-label">Phone Number</label>
+                  <input
+                    className="lm-input"
+                    value={companyData.phone}
+                    onChange={(e) => updateCompany("phone", e.target.value)}
+                  />
+                </div>
+                <div className="lm-field">
+                  <label className="lm-label">Head Name</label>
+                  <input
+                    className="lm-input"
+                    value={companyData.headName}
+                    onChange={(e) => updateCompany("headName", e.target.value)}
+                  />
+                </div>
+              </div>
+              {(companyData.companyName || companyData.gst) && (
+                <div className="lm-info-card">
+                  <strong>🏢 Company Profile</strong>
+                  <p>
+                    {companyData.companyName || "—"} ·{" "}
+                    {companyData.headName
+                      ? `Head: ${companyData.headName}`
+                      : ""}
+                  </p>
+                </div>
+              )}
+              <div className="lm-actions">
+                <button className="lm-btn-secondary" onClick={resetCompany}>
+                  Clear
+                </button>
+                <button className="lm-btn-primary" onClick={handleSaveCompany}>
+                  Save Company
+                </button>
+              </div>
+
+              {savedCompanies.length > 0 && (
+                <div style={{ marginTop: "2rem" }}>
+                  <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
+                    Saved Companies
+                  </h3>
+                  <table className="lm-table">
+                    <thead>
+                      <tr>
+                        <th>Company Code</th>
+                        <th>Company Name</th>
+                        <th>GST</th>
+                        <th>Phone</th>
+                        <th>Head Name</th>
+                        <th>Address</th>
+                        <th>Saved At</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {savedCompanies.map((comp) => (
+                        <tr key={comp.id}>
+                          {editingCompanyId === comp.id ? (
+                            <>
+                              <td>{comp.companyCode}</td>
+                              <td>
+                                <input
+                                  className="lm-editable-input"
+                                  value={editingCompanyData.companyName}
+                                  onChange={(e) =>
+                                    setEditingCompanyData({
+                                      ...editingCompanyData,
+                                      companyName: e.target.value,
+                                    })
+                                  }
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  className="lm-editable-input"
+                                  value={editingCompanyData.gst}
+                                  onChange={(e) =>
+                                    setEditingCompanyData({
+                                      ...editingCompanyData,
+                                      gst: e.target.value,
+                                    })
+                                  }
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  className="lm-editable-input"
+                                  value={editingCompanyData.phone}
+                                  onChange={(e) =>
+                                    setEditingCompanyData({
+                                      ...editingCompanyData,
+                                      phone: e.target.value,
+                                    })
+                                  }
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  className="lm-editable-input"
+                                  value={editingCompanyData.headName}
+                                  onChange={(e) =>
+                                    setEditingCompanyData({
+                                      ...editingCompanyData,
+                                      headName: e.target.value,
+                                    })
+                                  }
+                                />
+                              </td>
+                              <td>
+                                <textarea
+                                  className="lm-editable-input"
+                                  rows={2}
+                                  value={editingCompanyData.address}
+                                  onChange={(e) =>
+                                    setEditingCompanyData({
+                                      ...editingCompanyData,
+                                      address: e.target.value,
+                                    })
+                                  }
+                                />
+                              </td>
+                              <td>{comp.savedAt}</td>
+                              <td className="lm-action-buttons">
+                                <button
+                                  className="lm-icon-btn"
+                                  onClick={saveEditCompany}
+                                >
+                                  💾
+                                </button>
+                                <button
+                                  className="lm-icon-btn"
+                                  onClick={cancelEditCompany}
+                                >
+                                  ✖️
+                                </button>
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td>{comp.companyCode}</td>
+                              <td>{comp.companyName}</td>
+                              <td>{comp.gst}</td>
+                              <td>{comp.phone}</td>
+                              <td>{comp.headName}</td>
+                              <td>{comp.address}</td>
+                              <td>{comp.savedAt}</td>
+                              <td className="lm-action-buttons">
+                                <button
+                                  className="lm-icon-btn"
+                                  onClick={() => startEditCompany(comp)}
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  className="lm-icon-btn"
+                                  onClick={() => deleteCompany(comp.id)}
+                                >
+                                  🗑️
+                                </button>
+                              </td>
+                            </>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ========== LAB TAB (original, fully included) ========== */}
           {activeTab === "lab" && (
             <div className="lm-panel">
               <div className="lm-form-grid">
@@ -974,7 +1241,6 @@ export default function LabManagement() {
                   Save Lab
                 </button>
               </div>
-
               {savedLabs.length > 0 && (
                 <div style={{ marginTop: "2rem" }}>
                   <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
@@ -999,6 +1265,7 @@ export default function LabManagement() {
                         <tr key={lab.id}>
                           {editingLabId === lab.id ? (
                             <>
+                              {" "}
                               <td>{lab.labCode}</td>
                               <td>
                                 <input
@@ -1097,6 +1364,7 @@ export default function LabManagement() {
                             </>
                           ) : (
                             <>
+                              {" "}
                               <td>{lab.labCode}</td>
                               <td>{lab.labName}</td>
                               <td>{lab.gst}</td>
@@ -1136,7 +1404,7 @@ export default function LabManagement() {
             </div>
           )}
 
-          {/* ===================== PRODUCT TAB ===================== */}
+          {/* ========== PRODUCT TAB (original) ========== */}
           {activeTab === "product" && (
             <div className="lm-panel">
               <div className="lm-form-grid">
@@ -1176,7 +1444,6 @@ export default function LabManagement() {
                   Save Product
                 </button>
               </div>
-
               {savedProducts.length > 0 && (
                 <div style={{ marginTop: "2rem" }}>
                   <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
@@ -1266,7 +1533,7 @@ export default function LabManagement() {
             </div>
           )}
 
-          {/* ===================== TESTING TAB ===================== */}
+          {/* ========== TESTING TAB (original) ========== */}
           {activeTab === "testing" && (
             <div className="lm-panel">
               <div className="lm-field lm-full-width">
@@ -1285,7 +1552,6 @@ export default function LabManagement() {
                   ))}
                 </div>
               </div>
-
               <div className="lm-new-test">
                 <div className="lm-new-test-title">➕ Create New Test</div>
                 <div className="lm-row">
@@ -1363,7 +1629,6 @@ export default function LabManagement() {
                   Create Test
                 </button>
               </div>
-
               {selectedTestIds.length > 0 && (
                 <div className="lm-test-section">
                   <div className="lm-test-heading">📋 Test Parameters</div>
@@ -1406,7 +1671,6 @@ export default function LabManagement() {
                   })}
                 </div>
               )}
-
               <div className="lm-actions">
                 <button className="lm-btn-secondary" onClick={resetTesting}>
                   Clear All
@@ -1415,7 +1679,6 @@ export default function LabManagement() {
                   Apply Testing
                 </button>
               </div>
-
               {savedTests.length > 0 && (
                 <div style={{ marginTop: "2rem" }}>
                   <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
