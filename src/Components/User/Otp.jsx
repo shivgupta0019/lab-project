@@ -99,69 +99,73 @@ export default function OTPPage() {
   }, [otp]);
 
   //  VERIFY
-//   async function handleVerify() {
-//   try {
-//     let res = await axios.post("http://localhost:5000/api/verify-otp", {
-//       email: localStorage.getItem("email"),
-//       otp: otp.join(""),
-//     });
+  //   async function handleVerify() {
+  //   try {
+  //     let res = await axios.post("http://localhost:5000/api/verify-otp", {
+  //       email: localStorage.getItem("email"),
+  //       otp: otp.join(""),
+  //     });
 
-//     localStorage.setItem("token", res.data.token);
+  //     localStorage.setItem("token", res.data.token);
 
-//     alert(res.data.message);
-//     navigate("/dashboard");
+  //     alert(res.data.message);
+  //     navigate("/dashboard");
 
-//   } catch (err) {
-//     alert(err.response?.data?.message);
-//   }
-// }
+  //   } catch (err) {
+  //     alert(err.response?.data?.message);
+  //   }
+  // }
 
-async function handleVerify() {
-  try {
-    let res = await axios.post("http://localhost:5000/api/verify-otp", {
-      email: localStorage.getItem("email"),
-      otp: otp.join(""),
-    });
+  async function handleVerify() {
+    try {
+      let res = await axios.post(
+        "http://localhost:5000/api/verify-otp",
+        {
+          email: localStorage.getItem("email"),
+          otp: otp.join(""),
+        },
+        {
+          withCredentials: true, // 🔥 VERY IMPORTANT
+        },
+      );
 
-    // 🔥 TOKEN SAVE (already correct)
-    localStorage.setItem("token", res.data.token);
+      // 🔥 TOKEN SAVE (already correct)
+      localStorage.setItem("token", res.data.token);
 
-    // 🔥 ROLE DECODE
-    const decoded = jwtDecode(res.data.token);
+      // 🔥 ROLE DECODE
+      const decoded = jwtDecode(res.data.token);
 
-    alert(res.data.message);
+      alert(res.data.message);
 
-    // 🔥 ROLE BASED REDIRECT
-    if (decoded.role === "admin") {
-      navigate("/admin-dashboard");
-    } else {
-      navigate("/dashboard"); // ya /lab
+      // 🔥 ROLE BASED REDIRECT
+      if (decoded.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/centrallab"); // ya /lab
+      }
+    } catch (err) {
+      alert(err.response?.data?.message);
     }
-
-  } catch (err) {
-    alert(err.response?.data?.message);
   }
-}
 
   // 🔁 RESEND OTP (MAIN LOGIC)
- async function handleResend() {
-  if (!resendActive) return;
+  async function handleResend() {
+    if (!resendActive) return;
 
-  try {
-    let res = await axios.post("http://localhost:5000/api/resend-otp", {
-      email: localStorage.getItem("email"),
-    });
+    try {
+      let res = await axios.post("http://localhost:5000/api/resend-otp", {
+        email: localStorage.getItem("email"),
+      });
 
-    alert(res.data.message);
+      alert(res.data.message);
 
-    setTimeLeft(60);
-    setResendActive(false);
-    setOtp(["", "", "", "", "", ""]);
-
-  } catch (err) {
-    alert(err.response?.data?.message);
+      setTimeLeft(60);
+      setResendActive(false);
+      setOtp(["", "", "", "", "", ""]);
+    } catch (err) {
+      alert(err.response?.data?.message);
+    }
   }
-}
 
   return (
     <div className="auth-container">
