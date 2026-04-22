@@ -1,5 +1,5 @@
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
+import axios from "axios";
 const globalStyles = `
   * {
     margin: 0;
@@ -234,6 +234,7 @@ const globalStyles = `
     color: #2c3e4e;
     cursor: pointer;
     transition: all 0.2s;
+    margin:auto;
   }
 
   .lm-btn-outline:hover {
@@ -466,7 +467,7 @@ const generateCode = (prefix = "ARY") => {
 };
 
 // Predefined test fields (same as original)
-const TESTING_FIELDS = {
+const TESTING_FIELDS1 = {
   ETO: [
     {
       name: "etoConcentration",
@@ -581,14 +582,14 @@ const TESTING_FIELDS = {
 
 export default function LabManagement() {
   const [activeTab, setActiveTab] = useState("lab");
-
+  const [allTestingFilds, setAllTestingFilds] = useState([]);
   // ---------- Company State ----------
   const [companyData, setCompanyData] = useState({
     companyName: "",
     gst: "",
     address: "",
     phone: "",
-    headName: "",
+    adminName: "",
   });
   const [savedCompanies, setSavedCompanies] = useState([]);
   const [editingCompanyId, setEditingCompanyId] = useState(null);
@@ -600,7 +601,7 @@ export default function LabManagement() {
     gst: "",
     address: "",
     phone: "",
-    headName: "",
+    adminName: "",
     tabType: "",
   });
   const [savedLabs, setSavedLabs] = useState([]);
@@ -610,25 +611,33 @@ export default function LabManagement() {
   // ---------- Product State (unchanged) ----------
   const [productData, setProductData] = useState({
     productName: "",
-    productId: "",
   });
   const [savedProducts, setSavedProducts] = useState([]);
   const [editingProductId, setEditingProductId] = useState(null);
   const [editingProductData, setEditingProductData] = useState(null);
 
   // ---------- Testing State (unchanged) ----------
-  const defaultTests = [
-    { id: "ETO", label: "ETO", fields: TESTING_FIELDS.ETO },
-    { id: "Micro", label: "Micro", fields: TESTING_FIELDS.Micro },
-    { id: "Physical", label: "Physical", fields: TESTING_FIELDS.Physical },
-    { id: "Chemical", label: "Chemical", fields: TESTING_FIELDS.Chemical },
-    {
-      id: "Presticide",
-      label: "Presticide",
-      fields: TESTING_FIELDS.Presticide,
-    },
-  ];
+  // const defaultTests = [
+  //   { id: "ETO", label: "ETO", fields: allTestingFilds?.ETO },
+  //   { id: "Micro", label: "Micro", fields: allTestingFilds?.Micro },
+  //   { id: "Physical", label: "Physical", fields: allTestingFilds?.Physical },
+  //   { id: "Chemical", label: "Chemical", fields: allTestingFilds?.Chemical },
+  //   {
+  //     id: "Presticide",
+  //     label: "Presticide",
+  //     fields: allTestingFilds?.Presticide,
+  //   },
+  // ];
+  const defaultTests = Object.keys(allTestingFilds || {}).map((key) => ({
+    id: key,
+    label: key,
+    fields: allTestingFilds[key],
+  }));
   const [availableTests, setAvailableTests] = useState(defaultTests);
+
+  useEffect(() => {
+    setAvailableTests(defaultTests);
+  }, [allTestingFilds]);
   const [selectedTestIds, setSelectedTestIds] = useState([]);
   const [testValues, setTestValues] = useState({});
   const [savedTests, setSavedTests] = useState([]);
@@ -639,6 +648,30 @@ export default function LabManagement() {
     { name: "", label: "", placeholder: "" },
   ]);
 
+  const handleGetAllTests = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/tests");
+
+      if (response.data && response.data.TESTING_FIELDS) {
+        setAllTestingFilds(response.data.TESTING_FIELDS);
+      }
+    } catch (error) {
+      console.error("Error saving company:", error);
+      // Handle specific error (e.g., duplicate company code)
+      if (error.response && error.response.status === 409) {
+        alert(
+          "Company code already exists. Please try again (new code will be generated).",
+        );
+        // Optionally recall the function to retry with a fresh code
+        // handleSaveCompany();
+      } else {
+        const errorMsg =
+          error.response?.data?.error || "Failed to save company.";
+        alert(errorMsg);
+      }
+    }
+  };
+
   // ---------- Company Functions ----------
   const updateCompany = (field, value) =>
     setCompanyData((prev) => ({ ...prev, [field]: value }));
@@ -648,22 +681,109 @@ export default function LabManagement() {
       gst: "",
       address: "",
       phone: "",
-      headName: "",
+      adminName: "",
     });
-  const handleSaveCompany = () => {
+
+  const handleSaveCompany = async () => {
+    // 1. Validate
     if (!companyData.companyName.trim()) {
       alert("Company Name is required.");
       return;
     }
-    const newCompany = {
-      ...companyData,
-      id: Date.now(),
-      savedAt: new Date().toLocaleString(),
-      companyCode: generateCode("CMP"),
+
+    // 2. Generate company code (same logic as before)
+    const generatedCode = generateCode("ARY");
+
+    // 3. Prepare payload
+    const payload = {
+      companyName: companyData.companyName,
+      gst: companyData.gst,
+      address: companyData.address,
+      phone: companyData.phone,
+      adminName: companyData.adminName,
+      companyCode: generatedCode,
     };
-    setSavedCompanies((prev) => [newCompany, ...prev]);
-    resetCompany();
+
+    try {
+      // 4. POST to backend API
+      const response = await axios.post(
+        "http://localhost:5000/api/companies",
+        payload,
+      );
+
+      // 5. On success: update savedCompanies with the full list from response
+      if (response.data && response.data.allCompanies) {
+        setSavedCompanies(response.data.allCompanies);
+        alert("Company saved successfully!");
+      } else {
+        // Fallback: just prepend the new company (if API doesn't return all)
+        // const newCompany = {
+        //   ...companyData,
+        //   id: Date.now(),
+        //   savedAt: new Date().toLocaleString(),
+        //   companyCode: generatedCode,
+        // };
+        // setSavedCompanies((prev) => [newCompany, ...prev]);
+      }
+
+      // 6. Clear the form
+      resetCompany();
+    } catch (error) {
+      console.error("Error saving company:", error);
+      // Handle specific error (e.g., duplicate company code)
+      if (error.response && error.response.status === 409) {
+        alert(
+          "Company code already exists. Please try again (new code will be generated).",
+        );
+        // Optionally recall the function to retry with a fresh code
+        // handleSaveCompany();
+      } else {
+        const errorMsg =
+          error.response?.data?.error || "Failed to save company.";
+        alert(errorMsg);
+      }
+    }
   };
+  const handleGetAllCompany = async () => {
+    try {
+      // 4. POST to backend API
+      const response = await axios.get(
+        "http://localhost:5000/api/getCompanies",
+      );
+
+      // 5. On success: update savedCompanies with the full list from response
+      if (response.data && response.data.allCompanies) {
+        setSavedCompanies(response.data.allCompanies);
+      } else {
+        // Fallback: just prepend the new company (if API doesn't return all)
+        // const newCompany = {
+        //   ...companyData,
+        //   id: Date.now(),
+        //   savedAt: new Date().toLocaleString(),
+        //   companyCode: generatedCode,
+        // };
+        // setSavedCompanies((prev) => [newCompany, ...prev]);
+      }
+
+      // 6. Clear the form
+      resetCompany();
+    } catch (error) {
+      console.error("Error saving company:", error);
+      // Handle specific error (e.g., duplicate company code)
+      if (error.response && error.response.status === 409) {
+        alert(
+          "Company code already exists. Please try again (new code will be generated).",
+        );
+        // Optionally recall the function to retry with a fresh code
+        // handleSaveCompany();
+      } else {
+        const errorMsg =
+          error.response?.data?.error || "Failed to save company.";
+        alert(errorMsg);
+      }
+    }
+  };
+
   const startEditCompany = (comp) => {
     setEditingCompanyId(comp.id);
     setEditingCompanyData({ ...comp });
@@ -672,23 +792,90 @@ export default function LabManagement() {
     setEditingCompanyId(null);
     setEditingCompanyData(null);
   };
-  const saveEditCompany = () => {
+  const saveEditCompany = async () => {
+    // Validation
     if (!editingCompanyData.companyName.trim()) {
       alert("Company Name required.");
       return;
     }
-    setSavedCompanies((prev) =>
-      prev.map((comp) =>
-        comp.id === editingCompanyId
-          ? { ...editingCompanyData, savedAt: new Date().toLocaleString() }
-          : comp,
-      ),
-    );
-    cancelEditCompany();
+
+    try {
+      // Send PUT request to backend
+      const response = await axios.put(
+        `http://localhost:5000/api/companies/${editingCompanyId}`,
+        {
+          companyName: editingCompanyData.companyName,
+          gst: editingCompanyData.gst,
+          address: editingCompanyData.address,
+          phone: editingCompanyData.phone,
+          adminName: editingCompanyData.adminName,
+          companyCode: editingCompanyData.companyCode, // include if you allow editing code
+        },
+      );
+
+      // Update the entire savedCompanies list from the API response
+      if (response.data && response.data.allCompanies) {
+        setSavedCompanies(response.data.allCompanies);
+        alert("Company updated successfully!");
+      } else {
+        // Fallback: manually update the list (if API doesn't return allCompanies)
+        setSavedCompanies((prev) =>
+          prev.map((comp) =>
+            comp.id === editingCompanyId
+              ? { ...editingCompanyData, savedAt: new Date().toLocaleString() }
+              : comp,
+          ),
+        );
+        alert("Company updated successfully!");
+      }
+
+      // Exit edit mode
+      cancelEditCompany();
+    } catch (error) {
+      console.error("Error updating company:", error);
+
+      // Handle specific HTTP status codes
+      if (error.response) {
+        switch (error.response.status) {
+          case 404:
+            alert("Company not found. It may have been deleted.");
+            break;
+          case 409:
+            alert("Company Code already exists. Please change it.");
+            break;
+          default:
+            alert(error.response.data?.error || "Failed to update company.");
+        }
+      } else {
+        alert("Network error. Please check your connection.");
+      }
+    }
   };
-  const deleteCompany = (id) => {
-    if (window.confirm("Delete this company record?")) {
-      setSavedCompanies((prev) => prev.filter((comp) => comp.id !== id));
+
+  const deleteCompany = async (id) => {
+    if (!window.confirm("Delete this company record?")) return;
+
+    try {
+      const response = await axios.delete(
+        `http://localhost:5000/api/companies/${id}`,
+      );
+
+      // Update the savedCompanies list from API response
+      if (response.data && response.data.allCompanies) {
+        setSavedCompanies(response.data.allCompanies);
+        alert("Company deleted successfully!");
+      } else {
+        // Fallback: filter locally if API doesn't return allCompanies
+        setSavedCompanies((prev) => prev.filter((comp) => comp.id !== id));
+        alert("Company deleted successfully!");
+      }
+    } catch (error) {
+      console.error("Error deleting company:", error);
+      if (error.response?.status === 404) {
+        alert("Company not found. It may have already been deleted.");
+      } else {
+        alert(error.response?.data?.error || "Failed to delete company.");
+      }
     }
   };
 
@@ -701,10 +888,63 @@ export default function LabManagement() {
       gst: "",
       address: "",
       phone: "",
-      headName: "",
+      adminName: "",
       tabType: "",
     });
-  const handleSaveLab = () => {
+  const handleGetLab = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/labs");
+
+      if (response.data && response.data.allLabs) {
+        setSavedLabs(response.data.allLabs); // full list from DB
+      }
+    } catch (error) {
+      console.error("Error saving lab:", error);
+      if (error.response?.status === 409) {
+        alert("Lab Code already exists. Please try again.");
+      } else {
+        alert(error.response?.data?.error || "Failed to save lab.");
+      }
+    }
+  };
+  const handleSaveLab = async () => {
+    if (!labData.labName.trim()) {
+      alert("Lab Name is required.");
+      return;
+    }
+    if (!labData.tabType) {
+      alert("Please select Lab Type.");
+      return;
+    }
+
+    const generatedCode = generateCode("LAB"); // e.g., LAB-20260420-001
+
+    try {
+      const response = await axios.post("http://localhost:5000/api/labs", {
+        labName: labData.labName,
+        gst: labData.gst,
+        address: labData.address,
+        phone: labData.phone,
+        adminName: labData.adminName,
+        tabType: labData.tabType,
+        labCode: generatedCode,
+      });
+
+      if (response.data && response.data.allLabs) {
+        setSavedLabs(response.data.allLabs); // full list from DB
+        alert("Lab saved successfully!");
+      }
+      resetLab();
+    } catch (error) {
+      console.error("Error saving lab:", error);
+      if (error.response?.status === 409) {
+        alert("Lab Code already exists. Please try again.");
+      } else {
+        alert(error.response?.data?.error || "Failed to save lab.");
+      }
+    }
+  };
+  const handleSaveLab1 = () => {
     if (!labData.labName.trim()) {
       alert("Lab Name is required.");
       return;
@@ -726,7 +966,54 @@ export default function LabManagement() {
     setEditingLabId(null);
     setEditingLabData(null);
   };
-  const saveEditLab = () => {
+  const saveEditLab = async () => {
+    if (!editingLabData.labName.trim()) {
+      alert("Lab Name required.");
+      return;
+    }
+
+    try {
+      const response = await axios.put(
+        `http://localhost:5000/api/labs/${editingLabId}`,
+        {
+          labName: editingLabData.labName,
+          gst: editingLabData.gst,
+          address: editingLabData.address,
+          phone: editingLabData.phone,
+          adminName: editingLabData.adminName,
+          tabType: editingLabData.tabType,
+          labCode: editingLabData.labCode, // include if editable, otherwise omit
+        },
+      );
+
+      if (response.data && response.data.allLabs) {
+        setSavedLabs(response.data.allLabs);
+        alert("Lab updated successfully!");
+      } else {
+        // Fallback: manual update if API doesn't return allLabs
+        setSavedLabs((prev) =>
+          prev.map((lab) =>
+            lab.id === editingLabId
+              ? { ...editingLabData, savedAt: new Date().toLocaleString() }
+              : lab,
+          ),
+        );
+        alert("Lab updated successfully!");
+      }
+
+      cancelEditLab();
+    } catch (error) {
+      console.error("Error updating lab:", error);
+      if (error.response?.status === 409) {
+        alert("Lab Code already exists. Please change it.");
+      } else if (error.response?.status === 404) {
+        alert("Lab not found. It may have been deleted.");
+      } else {
+        alert(error.response?.data?.error || "Failed to update lab.");
+      }
+    }
+  };
+  const saveEditLab1 = () => {
     if (!editingLabData.labName.trim()) {
       alert("Lab Name required.");
       return;
@@ -740,7 +1027,32 @@ export default function LabManagement() {
     );
     cancelEditLab();
   };
-  const deleteLab = (id) => {
+  const deleteLab = async (id) => {
+    if (!window.confirm("Delete this lab record?")) return;
+
+    try {
+      const response = await axios.delete(
+        `http://localhost:5000/api/labs/${id}`,
+      );
+
+      if (response.data && response.data.allLabs) {
+        setSavedLabs(response.data.allLabs);
+        alert("Lab deleted successfully!");
+      } else {
+        // Fallback: manual removal if API doesn't return allLabs
+        setSavedLabs((prev) => prev.filter((lab) => lab.id !== id));
+        alert("Lab deleted successfully!");
+      }
+    } catch (error) {
+      console.error("Error deleting lab:", error);
+      if (error.response?.status === 404) {
+        alert("Lab not found. It may have already been deleted.");
+      } else {
+        alert(error.response?.data?.error || "Failed to delete lab.");
+      }
+    }
+  };
+  const deleteLab1 = (id) => {
     if (window.confirm("Delete this lab record?"))
       setSavedLabs((prev) => prev.filter((lab) => lab.id !== id));
   };
@@ -749,13 +1061,61 @@ export default function LabManagement() {
   const updateProduct = (field, value) =>
     setProductData((prev) => ({ ...prev, [field]: value }));
   const resetProduct = () => setProductData({ productName: "", productId: "" });
-  const handleSaveProduct = () => {
-    if (!productData.productName.trim() || !productData.productId.trim()) {
+
+  const handleGetProduct = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/products");
+
+      if (response.data && response.data.allProducts) {
+        setSavedProducts(response.data.allProducts);
+      }
+      resetProduct();
+    } catch (error) {
+      console.error("Error saving product:", error);
+      if (error.response?.status === 409) {
+        alert("Product ID already exists. Please try again.");
+      } else {
+        alert(error.response?.data?.error || "Failed to save product.");
+      }
+    }
+  };
+
+  const handleSaveProduct = async () => {
+    if (!productData.productName.trim()) {
+      alert("Product Name is required.");
+      return;
+    }
+
+    const generatedId = generateCode("SMP"); // e.g., SMP-20260420-001
+
+    try {
+      const response = await axios.post("http://localhost:5000/api/products", {
+        productName: productData.productName,
+        productId: generatedId,
+      });
+
+      if (response.data && response.data.allProducts) {
+        setSavedProducts(response.data.allProducts);
+      }
+      resetProduct();
+    } catch (error) {
+      console.error("Error saving product:", error);
+      if (error.response?.status === 409) {
+        alert("Product ID already exists. Please try again.");
+      } else {
+        alert(error.response?.data?.error || "Failed to save product.");
+      }
+    }
+  };
+
+  const handleSaveProduct1 = () => {
+    if (!productData.productName.trim()) {
       alert("Product Name and Product ID are required.");
       return;
     }
     const newProduct = {
       ...productData,
+      productId: generateCode("SMP"),
       id: Date.now(),
       savedAt: new Date().toLocaleString(),
     };
@@ -787,11 +1147,37 @@ export default function LabManagement() {
     );
     cancelEditProduct();
   };
-  const deleteProduct = (id) => {
+
+  const deleteProduct = async (id) => {
+    if (!window.confirm("Delete this product?")) return;
+    try {
+      const response = await axios.delete(
+        `http://localhost:5000/api/products/${id}`,
+      );
+      if (response.data && response.data.allProducts) {
+        setSavedProducts(response.data.allProducts);
+        alert("Product deleted successfully!");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      if (error.response?.status === 404) {
+        alert("Product not found.");
+      } else {
+        alert("Failed to delete product.");
+      }
+    }
+  };
+
+  const deleteProduct1 = (id) => {
     if (window.confirm("Delete this product?"))
       setSavedProducts((prev) => prev.filter((p) => p.id !== id));
   };
-
+  useEffect(() => {
+    handleGetAllCompany();
+    handleGetLab();
+    handleGetProduct();
+    handleGetAllTests();
+  }, []);
   // ---------- Testing Functions (unchanged from original, included fully) ----------
   const handleToggleTest = (testId) => {
     setSelectedTestIds((prev) =>
@@ -803,8 +1189,8 @@ export default function LabManagement() {
       const test = availableTests.find((t) => t.id === testId);
       if (test) {
         const initialValues = {};
-        test.fields.forEach((field) => {
-          initialValues[field.name] = "";
+        test?.fields?.forEach((field) => {
+          initialValues[field?.name] = "";
         });
         setTestValues((prev) => ({ ...prev, [testId]: initialValues }));
       }
@@ -831,7 +1217,55 @@ export default function LabManagement() {
     updated[index][key] = value;
     setNewTestFields(updated);
   };
-  const handleAddNewTest = () => {
+  const handleAddNewTest = async () => {
+    if (!newTestLabel.trim()) return;
+
+    const invalid = newTestFields.some(
+      (f) => !f.name.trim() || !f.label.trim(),
+    );
+
+    if (invalid) {
+      alert("Please fill in both Name and Label for each field.");
+      return;
+    }
+
+    const payload = {
+      test_name: newTestLabel.trim(),
+      fields: newTestFields.map((f) => ({
+        name: f.name.trim(),
+        label: f.label.trim(),
+        placeholder: f.placeholder || "",
+      })),
+    };
+
+    try {
+      const res = await fetch("http://localhost:5000/api/create-test", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      handleGetAllTests();
+      if (!res.ok) {
+        alert(data.error || "Failed to create test");
+        return;
+      }
+
+      // 🔥 IMPORTANT: DB se naya test reload karo
+      fetchAllTests(); // tumhara GET API
+
+      // UI reset
+      setNewTestLabel("");
+      setNewTestFields([{ name: "", label: "", placeholder: "" }]);
+    } catch (err) {
+      console.error(err);
+      alert("Error creating test");
+    }
+  };
+  const handleAddNewTest1 = () => {
     if (!newTestLabel.trim()) return;
     const invalid = newTestFields.some(
       (f) => !f.name.trim() || !f.label.trim(),
@@ -995,11 +1429,11 @@ export default function LabManagement() {
                   />
                 </div>
                 <div className="lm-field">
-                  <label className="lm-label">Head Name</label>
+                  <label className="lm-label">Admin Name</label>
                   <input
                     className="lm-input"
-                    value={companyData.headName}
-                    onChange={(e) => updateCompany("headName", e.target.value)}
+                    value={companyData.adminName}
+                    onChange={(e) => updateCompany("adminName", e.target.value)}
                   />
                 </div>
               </div>
@@ -1008,8 +1442,8 @@ export default function LabManagement() {
                   <strong>🏢 Company Profile</strong>
                   <p>
                     {companyData.companyName || "—"} ·{" "}
-                    {companyData.headName
-                      ? `Head: ${companyData.headName}`
+                    {companyData.adminName
+                      ? `Head: ${companyData.adminName}`
                       : ""}
                   </p>
                 </div>
@@ -1035,7 +1469,7 @@ export default function LabManagement() {
                         <th>Company Name</th>
                         <th>GST</th>
                         <th>Phone</th>
-                        <th>Head Name</th>
+                        <th>Admin Name</th>
                         <th>Address</th>
                         <th>Saved At</th>
                         <th>Actions</th>
@@ -1086,11 +1520,11 @@ export default function LabManagement() {
                               <td>
                                 <input
                                   className="lm-editable-input"
-                                  value={editingCompanyData.headName}
+                                  value={editingCompanyData.adminName}
                                   onChange={(e) =>
                                     setEditingCompanyData({
                                       ...editingCompanyData,
-                                      headName: e.target.value,
+                                      adminName: e.target.value,
                                     })
                                   }
                                 />
@@ -1130,7 +1564,7 @@ export default function LabManagement() {
                               <td>{comp.companyName}</td>
                               <td>{comp.gst}</td>
                               <td>{comp.phone}</td>
-                              <td>{comp.headName}</td>
+                              <td>{comp.adminName}</td>
                               <td>{comp.address}</td>
                               <td>{comp.savedAt}</td>
                               <td className="lm-action-buttons">
@@ -1195,11 +1629,11 @@ export default function LabManagement() {
                   />
                 </div>
                 <div className="lm-field">
-                  <label className="lm-label">Head Name</label>
+                  <label className="lm-label">Admin Name</label>
                   <input
                     className="lm-input"
-                    value={labData.headName}
-                    onChange={(e) => updateLab("headName", e.target.value)}
+                    value={labData.adminName}
+                    onChange={(e) => updateLab("adminName", e.target.value)}
                   />
                 </div>
                 <div className="lm-field">
@@ -1253,7 +1687,7 @@ export default function LabManagement() {
                         <th>Lab Name</th>
                         <th>GST</th>
                         <th>Phone</th>
-                        <th>Head Name</th>
+                        <th>Admin Name</th>
                         <th>Tab Type</th>
                         <th>Address</th>
                         <th>Saved At</th>
@@ -1261,9 +1695,9 @@ export default function LabManagement() {
                       </tr>
                     </thead>
                     <tbody>
-                      {savedLabs.map((lab) => (
-                        <tr key={lab.id}>
-                          {editingLabId === lab.id ? (
+                      {savedLabs?.map((lab) => (
+                        <tr key={lab?.id}>
+                          {editingLabId === lab?.id ? (
                             <>
                               {" "}
                               <td>{lab.labCode}</td>
@@ -1306,11 +1740,11 @@ export default function LabManagement() {
                               <td>
                                 <input
                                   className="lm-editable-input"
-                                  value={editingLabData.headName}
+                                  value={editingLabData.adminName}
                                   onChange={(e) =>
                                     setEditingLabData({
                                       ...editingLabData,
-                                      headName: e.target.value,
+                                      adminName: e.target.value,
                                     })
                                   }
                                 />
@@ -1369,7 +1803,7 @@ export default function LabManagement() {
                               <td>{lab.labName}</td>
                               <td>{lab.gst}</td>
                               <td>{lab.phone}</td>
-                              <td>{lab.headName}</td>
+                              <td>{lab.adminName}</td>
                               <td>
                                 {lab.tabType === "internal"
                                   ? "Internal"
@@ -1388,7 +1822,7 @@ export default function LabManagement() {
                                 </button>
                                 <button
                                   className="lm-icon-btn"
-                                  onClick={() => deleteLab(lab.id)}
+                                  onClick={() => deleteLab(lab?.id)}
                                 >
                                   🗑️
                                 </button>
@@ -1412,20 +1846,20 @@ export default function LabManagement() {
                   <label className="lm-label">Product Name</label>
                   <input
                     className="lm-input"
-                    value={productData.productName}
+                    value={productData?.productName}
                     onChange={(e) =>
                       updateProduct("productName", e.target.value)
                     }
                   />
                 </div>
-                <div className="lm-field">
+                {/* <div className="lm-field">
                   <label className="lm-label">Product ID</label>
                   <input
                     className="lm-input"
                     value={productData.productId}
                     onChange={(e) => updateProduct("productId", e.target.value)}
                   />
-                </div>
+                </div> */}
               </div>
               {productData.productName && productData.productId && (
                 <div className="lm-info-card">
@@ -1509,12 +1943,12 @@ export default function LabManagement() {
                               <td>{prod.productId}</td>
                               <td>{prod.savedAt}</td>
                               <td className="lm-action-buttons">
-                                <button
+                                {/* <button
                                   className="lm-icon-btn"
                                   onClick={() => startEditProduct(prod)}
                                 >
                                   ✏️
-                                </button>
+                                </button> */}
                                 <button
                                   className="lm-icon-btn"
                                   onClick={() => deleteProduct(prod.id)}
@@ -1634,6 +2068,7 @@ export default function LabManagement() {
                   <div className="lm-test-heading">📋 Test Parameters</div>
                   {selectedTestIds.map((testId) => {
                     const test = availableTests.find((t) => t.id === testId);
+
                     if (!test) return null;
                     const values = testValues[testId] || {};
                     return (
@@ -1648,17 +2083,17 @@ export default function LabManagement() {
                           {test.label}
                         </h3>
                         <div className="lm-form-grid">
-                          {test.fields.map((field) => (
-                            <div key={field.name} className="lm-field">
-                              <label className="lm-label">{field.label}</label>
+                          {test?.fields?.map((field) => (
+                            <div key={field?.name} className="lm-field">
+                              <label className="lm-label">{field?.label}</label>
                               <input
                                 className="lm-input"
-                                placeholder={field.placeholder}
-                                value={values[field.name] || ""}
+                                placeholder={field?.placeholder}
+                                value={values[field?.name] || ""}
                                 onChange={(e) =>
                                   handleTestFieldChange(
                                     testId,
-                                    field.name,
+                                    field?.name,
                                     e.target.value,
                                   )
                                 }
