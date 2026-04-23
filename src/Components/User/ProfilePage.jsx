@@ -1,6 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaEdit } from "react-icons/fa";
+import axios from "axios";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -10,22 +11,43 @@ export default function ProfilePage() {
 
   const [editMode, setEditMode] = useState(false);
 
-  const [profileData, setProfileData] = useState(() => {
-    const saved = JSON.parse(localStorage.getItem("profileData")) || {};
-    return {
-      name:     saved.name     || loggedInUser.name     || "",
-      username: saved.username || loggedInUser.username || "",
-      email:    saved.email    || loggedInUser.email    || "",
-      phone:    saved.phone    || loggedInUser.phone    || "",
-      dob:      saved.dob      || "",
-      gender:   saved.gender   || "",
-      address:  saved.address  || "",
-      city:     saved.city     || "",
-      state:    saved.state    || "",
-      bio:      saved.bio      || "",
-      photo:    saved.photo    || null,
-    };
+  const [profileData, setProfileData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    dob: "",
+    gender: "",
+    address: "",
+    city: "",
+    state: "",
+    bio: "",
+    photo: null,
   });
+
+   useEffect(() => {
+    async function loadProfile() {
+      try {
+        const token = localStorage.getItem("token");
+
+        const res = await axios.get(
+          "http://localhost:5000/api/profile",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            },
+            withCredentials: true
+          }
+        );
+
+        setProfileData(res.data);
+
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    loadProfile();
+  }, []);
 
   const initials = profileData.name
     ?.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) || "?";
@@ -44,31 +66,28 @@ export default function ProfilePage() {
     reader.readAsDataURL(file);
   }
 
-  function handleUpdate() {
-    if (!profileData.name.trim()) {
-      alert("Full Name required hai!");
-      return;
+   // ✅ UPDATE PROFILE (DB SAVE)
+  async function handleUpdate() {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.put(
+        "http://localhost:5000/api/profile",
+        profileData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          withCredentials: true
+        }
+      );
+
+      alert(res.data.message);
+      setEditMode(false);
+
+    } catch (err) {
+      alert(err.response?.data?.message);
     }
-
-    localStorage.setItem("profileData", JSON.stringify(profileData));
-
-    const updatedUser = {
-      ...loggedInUser,
-      name: profileData.name,
-      phone: profileData.phone,
-    };
-    localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
-
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const updatedUsers = users.map((x) =>
-      x.username === loggedInUser.username
-        ? { ...x, name: profileData.name, phone: profileData.phone }
-        : x
-    );
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-
-    setEditMode(false);
-    alert("Profile Updated");
   }
 
   const inp = {
@@ -94,17 +113,14 @@ export default function ProfilePage() {
         boxShadow: "0 2px 12px rgba(0,0,0,0.06)"
       }}>
 
-        {/* TOP BANNER */}
         <div style={{ background: "#185fa5", height: "100px" }}></div>
 
         <div style={{ padding: "0 1.5rem 2rem" }}>
 
-          {/* ── PHOTO + AVATAR SECTION ── */}
           <div style={{
             display: "flex", flexDirection: "column",
             alignItems: "center", marginTop: "-50px", marginBottom: "1.5rem"
           }}>
-            {/* Photo ya Initials */}
             <div style={{ position: "relative" }}>
               {profileData.photo ? (
                 <img
@@ -125,7 +141,6 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {/* Camera icon - sirf edit mode me */}
               {editMode && (
                 <div
                   onClick={() => fileRef.current.click()}
@@ -137,11 +152,7 @@ export default function ProfilePage() {
                     justifyContent: "center", cursor: "pointer"
                   }}
                 >
-                  <svg width="13" height="13" viewBox="0 0 24 24"
-                    fill="none" stroke="white" strokeWidth="2.5">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                    <circle cx="12" cy="13" r="4" />
-                  </svg>
+                  📷
                 </div>
               )}
 
@@ -152,15 +163,14 @@ export default function ProfilePage() {
               />
             </div>
 
-            {/* Name + Role */}
             <p style={{ fontSize: "18px", fontWeight: "500", margin: "10px 0 2px", color: "#222" }}>
               {profileData.name || "Your Name"}
             </p>
+
             <p style={{ fontSize: "13px", color: "#888", margin: 0 }}>
-              @{profileData.username || "username"} &nbsp;•&nbsp; {loggedInUser.role || "User"}
+              {profileData.email} • {loggedInUser.role || "User"}
             </p>
 
-            {/* ✅ Edit Profile icon - avatar ke niche */}
             {!editMode && (
               <div
                 onClick={() => setEditMode(true)}
