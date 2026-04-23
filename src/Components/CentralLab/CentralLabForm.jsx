@@ -2115,6 +2115,7 @@ export default function CentralLabForm({ onSaved }) {
               boxShadow: "0 2px 20px rgba(37,99,235,0.09)",
               border: `1px solid ${C.border}`,
               padding: "28px 26px",
+              // marginTop:"118px"
             }}
           >
             {/* Header */}

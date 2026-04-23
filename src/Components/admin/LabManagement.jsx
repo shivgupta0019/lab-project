@@ -1355,7 +1355,7 @@ export default function LabManagement() {
     <>
       <style>{globalStyles}</style>
       <div className="lm-app">
-        <div className="lm-container">
+        <div className="lm-container" >
           <div className="lm-header">
             <h1 className="lm-title">Lab Management System</h1>
             <p className="lm-subtitle">

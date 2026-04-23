@@ -23,6 +23,9 @@ import TestRequestForm from "./Components/testReqForm/TestRequestForm.jsx";
 import AllTestRequests from "./Components/testReqForm/AllTestRequests.jsx";
 import AllReports from "./Components/testReqForm/AllReports.jsx";
 
+import AdminRoute from "./Components/routes/AdminRoute";
+import ProtectedRoute from "./Components/routes/ProtectedRoute";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -49,26 +52,39 @@ function Layout() {
       {/*  Dashboard sirf tab dikhe jab allowed ho */}
       {!hideDashboard && <Dashboard />}
       <Routes>
-        <Route path="/centrallab" element={<CentrallabPage />} />
+        {/* <Route path="/centrallab" element={<CentrallabPage />} /> */}
         <Route path="/centrallab/create" element={<CentralLabForm />} />
         <Route path="/centrallab/create/:id" element={<CentralLabForm />} />
-        <Route path="/allreports" element={<AllReports />} />
-        <Route path="/alltrf" element={<AllTestRequests />} />
-        <Route path="/admin" element={<LabManagement />} />
-        <Route path="/trf" element={<TestRequestForm />} />
-        <Route path="/project" element={<ProjecPage />} />
+        {/* <Route path="/allreports" element={<AllReports />} /> */}
+        {/* <Route path="/admin" element={<LabManagement />} /> */}
+        {/* <Route path="/trf" element={<TestRequestForm />} /> */}
+        {/* <Route path="/project" element={<ProjecPage />} /> */}
         <Route path="/project/create/:id" element={<ProjectForm />} />
         <Route path="/project/create" element={<ProjectForm />} />
-
-        <Route path="/result" element={<DownloadResults />} />
-
+        {/* <Route path="/result" element={<DownloadResults />} /> */}
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/" element={<LoginPage />} />
         <Route path="/otp" element={<OTPPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+        {/* <Route path="/profile" element={<ProfilePage />} /> */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/users" element={<UsersPage />} />
+        {/* <Route path="/users" element={<UsersPage />} /> */}
+        ///////////////////////////////////////
+        <Route element={<ProtectedRoute />}>
+          <Route path="/centrallab" element={<CentrallabPage />} />
+          <Route path="/project" element={<ProjecPage />} />
+          <Route path="/result" element={<DownloadResults />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/alltrf" element={<AllTestRequests />} />
+        </Route>
+        /////////////////////////////////////admin routes//
+        <Route element={<AdminRoute />}>
+          <Route path="/users" element={<UsersPage />} />
+          <Route path="/admin" element={<LabManagement />} />
+          <Route path="/trf" element={<TestRequestForm />} />
+          <Route path="/allreports" element={<AllReports />} />
+          
+        </Route>
       </Routes>
       <Footer />
     </>
