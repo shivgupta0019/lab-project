@@ -15,25 +15,7 @@ export default function LoginPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-//   async function handleSubmit(e) {
-//   e.preventDefault();
 
-//   try {
-//     let res = await axios.post("http://localhost:5000/api/login", {
-//       email: form.username, // username ki jagah email bhej
-//       password: form.password,
-//     });
-
-//     alert(res.data.message);
-
-//     localStorage.setItem("email", form.username);
-
-//     navigate("/otp");
-
-//   } catch (err) {
-//     alert(err.response?.data?.message);
-//   }
-// }
 
 async function handleSubmit(e) {
   e.preventDefault();

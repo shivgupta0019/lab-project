@@ -5,7 +5,7 @@ const api = axios.create({
   withCredentials: true, // cookie ke liye
 });
 
-// 🔐 request me token attach
+//  request me token attach
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -14,7 +14,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// 🔄 response me auto refresh
+//  response me auto refresh
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
@@ -50,3 +50,4 @@ api.interceptors.response.use(
 );
 
 export default api;
+
