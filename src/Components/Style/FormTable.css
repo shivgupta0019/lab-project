@@ -1,4 +1,7 @@
 /* TABLE HEADER STICKY */
+/* .card-vs{
+  margin-top: 118px;
+} */
 .table thead th {
   position: sticky;
   top: 0;

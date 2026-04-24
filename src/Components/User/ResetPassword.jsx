@@ -12,14 +12,13 @@ export default function ResetPassword() {
   const [error, setError] = useState("");
 
 const query = new URLSearchParams(useLocation().search);
-const token = query.get("key");
-
+const token = query.get("session");
   //  RESET FUNCTION
   async function handleReset(e) {
   e.preventDefault();
 
   if (newPassword !== confirmPassword) {
-    setError("Passwords do not match ❌");
+    setError("Passwords do not match ");
     return;
   }
 
