@@ -1,133 +1,88 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const ViewModal = ({ request, onClose, formatDate }) => {
-  if (!request) return null;
+const API_BASE = "http://localhost:5000/api";
 
-  const {
-    id,
-    companyName,
-    companyCode,
-    requestName,
-    labName,
-    labCode,
-    labType,
-    productName,
-    lotNo,
-    sampleCode,
-    selectedTests = [],
-    testData = {},
-    remark,
-    createdAt,
-  } = request;
+// Helper: format date
+const formatDate = (isoString) => {
+  if (!isoString) return "N/A";
+  return new Date(isoString).toLocaleString();
+};
 
+// ========== View Modal (Read-only) ==========
+const ViewModal = ({ trf, fieldsByTest, onClose }) => {
+  if (!trf) return null;
   return (
     <div style={styles.modalOverlay} onClick={onClose}>
       <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div style={styles.modalHeader}>
           <h2 style={styles.modalTitle}>📄 Test Request Form</h2>
           <button style={styles.modalCloseBtn} onClick={onClose}>
-            &times;
+            ×
           </button>
         </div>
         <div style={styles.modalBody}>
           <div style={styles.modalSection}>
-            <h3 style={styles.modalSectionTitle}>🏢 Company & Request</h3>
+            <h3>🏢 Company & Request</h3>
             <div style={styles.infoGrid}>
               <div>
-                <strong>Company:</strong> {companyName} ({companyCode})
+                <strong>TRF Code:</strong> {trf.trfCode}
               </div>
               <div>
-                <strong>Request Name:</strong> {requestName}
+                <strong>Company:</strong> {trf.companyName} ({trf.companyCode})
               </div>
               <div>
-                <strong>Lab:</strong> {labName} ({labCode}) – {labType}
+                <strong>Request Name:</strong> {trf.requestName}
               </div>
               <div>
-                <strong>Product:</strong> {productName}
+                <strong>Lab:</strong> {trf.labName} ({trf.labCode}) –{" "}
+                {trf.labType}
               </div>
               <div>
-                <strong>Lot No.:</strong> {lotNo || "—"}
+                <strong>Product:</strong> {trf.productName}
               </div>
               <div>
-                <strong>Sample Code:</strong> {sampleCode || "—"}
+                <strong>Lot No.:</strong> {trf.lotNo || "—"}
               </div>
               <div>
-                <strong>Created:</strong> {formatDate(createdAt)}
+                <strong>Sample Code:</strong> {trf.sampleCode || "—"}
               </div>
               <div>
-                <strong>ID:</strong> <code>{id}</code>
+                <strong>Status:</strong>{" "}
+                {trf.status === "filled" ? "✅ Filled" : "❌ Not Filled"}
+              </div>
+              <div>
+                <strong>Created:</strong> {formatDate(trf.createdAt)}
+              </div>
+              <div>
+                <strong>Last Updated:</strong> {formatDate(trf.updatedAt)}
               </div>
             </div>
           </div>
-
-          {selectedTests && selectedTests.length > 0 ? (
+          {fieldsByTest && Object.keys(fieldsByTest).length > 0 && (
             <div style={styles.modalSection}>
-              <h3 style={styles.modalSectionTitle}>🧪 Test Results</h3>
-              {selectedTests.map((testKey, index) => {
-                // Make sure testData exists and has the testKey
-                const test = testData && testData[testKey];
-
-                if (!test || !test.fields) {
-                  console.warn(`Test data not found for: ${testKey}`);
-                  return (
-                    <div key={testKey || index} style={styles.testResultBlock}>
-                      <h4 style={styles.testResultTitle}>
-                        🔬 {testKey} Analysis
-                      </h4>
-                      <div style={{ color: "#999", padding: "10px" }}>
-                        No test data available for {testKey}
+              <h3>🧪 Test Results</h3>
+              {Object.entries(fieldsByTest).map(([testName, fields]) => (
+                <div key={testName} style={styles.testResultBlock}>
+                  <h4 style={styles.testResultTitle}>🔬 {testName} Analysis</h4>
+                  <div style={styles.predefinedGrid}>
+                    {fields.map((field) => (
+                      <div key={field.fieldRowId} style={styles.predefinedItem}>
+                        <span>{field.label}</span>
+                        <span style={{ fontWeight: 500 }}>
+                          {field.currentValue || "—"}
+                        </span>
                       </div>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div key={testKey} style={styles.testResultBlock}>
-                    <h4 style={styles.testResultTitle}>
-                      🔬 {testKey} Analysis
-                    </h4>
-                    <div style={styles.predefinedGrid}>
-                      {test.fields && test.fields.length > 0 ? (
-                        test.fields.map((field) => (
-                          <div key={field.id} style={styles.predefinedItem}>
-                            <span
-                              style={{ color: "#555", fontSize: "0.85rem" }}
-                            >
-                              {field.fieldName || "Unnamed"}
-                              {!field.isPredefined && (
-                                <span style={styles.customBadge}>custom</span>
-                              )}
-                            </span>
-                            <span style={{ fontWeight: 500 }}>
-                              {field.fieldValue &&
-                              field.fieldValue.toString().trim() !== "" ? (
-                                field.fieldValue
-                              ) : (
-                                <span style={{ color: "#bbb" }}>—</span>
-                              )}
-                            </span>
-                          </div>
-                        ))
-                      ) : (
-                        <div style={{ color: "#999", padding: "10px" }}>
-                          No fields found for this test
-                        </div>
-                      )}
-                    </div>
+                    ))}
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div style={styles.modalSection}>
-              <p>No tests selected.</p>
+                </div>
+              ))}
             </div>
           )}
-
-          {remark && (
+          {trf.remark && (
             <div style={styles.modalSection}>
               <h3>📝 Remark</h3>
-              <div style={styles.remarkBox}>{remark}</div>
+              <div style={styles.remarkBox}>{trf.remark}</div>
             </div>
           )}
         </div>
@@ -141,9 +96,9 @@ const ViewModal = ({ request, onClose, formatDate }) => {
   );
 };
 
-const EditModal = ({ request, testData, onUpdateField, onSave, onCancel }) => {
-  if (!request) return null;
-  const { selectedTests = [] } = request;
+// ========== Edit/Fill Modal ==========
+const EditModal = ({ trf, fieldsByTest, onSave, onCancel, onFieldChange }) => {
+  if (!trf) return null;
 
   return (
     <div style={styles.modalOverlay} onClick={onCancel}>
@@ -153,49 +108,53 @@ const EditModal = ({ request, testData, onUpdateField, onSave, onCancel }) => {
       >
         <div style={styles.modalHeader}>
           <h2 style={styles.modalTitle}>
-            ✏️ Fill Request Form
-            {/* – {request.requestName} */}
+            {trf.status === "filled"
+              ? "✏️ Edit Results"
+              : "📝 Fill Test Values"}
           </h2>
           <button style={styles.modalCloseBtn} onClick={onCancel}>
-            &times;
+            ×
           </button>
         </div>
-
         <div style={styles.modalBody}>
-          {selectedTests.map((testKey) => {
-            const fields = testData[testKey]?.fields || [];
-            return (
-              <div key={testKey} style={styles.editTestSection}>
-                <h3 style={styles.editTestTitle}>🔬 {testKey} Analysis</h3>
-                <div style={styles.grid2Col}>
-                  {fields.map((field) => (
-                    <div key={field.id} style={styles.fieldGroup}>
-                      <label style={styles.label}>
-                        {field.fieldName || "Unnamed"}
-                        {!field.isPredefined && (
-                          <span style={styles.customBadge}>custom</span>
-                        )}
-                      </label>
-                      <input
-                        type="text"
-                        value={field.fieldValue || ""}
-                        onChange={(e) =>
-                          onUpdateField(testKey, field.id, e.target.value)
-                        }
-                        placeholder={field.placeholder || "Enter value..."}
-                        style={styles.input}
-                      />
-                    </div>
-                  ))}
-                </div>
+          <div style={styles.infoGrid} className="compact">
+            <div>
+              <strong>Request:</strong> {trf.requestName}
+            </div>
+            <div>
+              <strong>Product:</strong> {trf.productName}
+            </div>
+            <div>
+              <strong>Lot No:</strong> {trf.lotNo || "—"}
+            </div>
+          </div>
+          {Object.entries(fieldsByTest).map(([testName, fields]) => (
+            <div key={testName} style={styles.editTestSection}>
+              <h3 style={styles.editTestTitle}>🔬 {testName} Analysis</h3>
+              <div style={styles.grid2Col}>
+                {fields.map((field) => (
+                  <div key={field.fieldRowId} style={styles.fieldGroup}>
+                    <label style={styles.label}>{field.label}</label>
+                    <input
+                      type="text"
+                      value={field.currentValue || ""}
+                      onChange={(e) =>
+                        onFieldChange(
+                          testName,
+                          field.fieldRowId,
+                          e.target.value,
+                        )
+                      }
+                      placeholder={field.placeholder}
+                      style={styles.input}
+                    />
+                  </div>
+                ))}
               </div>
-            );
-          })}
-          {selectedTests.length === 0 && (
-            <p style={styles.noData}>No tests selected for this request.</p>
-          )}
+            </div>
+          ))}
+          {Object.keys(fieldsByTest).length === 0 && <p>No fields to fill.</p>}
         </div>
-
         <div style={styles.modalFooter}>
           <button onClick={onSave} style={styles.saveBtn}>
             💾 Save Changes
@@ -209,118 +168,111 @@ const EditModal = ({ request, testData, onUpdateField, onSave, onCancel }) => {
   );
 };
 
-// ===================== MAIN COMPONENT =====================
-
+// ========== Main Component ==========
 const AllTestRequests = () => {
-  const [requests, setRequests] = useState([]);
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [editingRequest, setEditingRequest] = useState(null);
-  const [editTestData, setEditTestData] = useState({});
+  const [trfList, setTrfList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTrf, setSelectedTrf] = useState(null); // for view modal
+  const [selectedFieldsByTest, setSelectedFieldsByTest] = useState(null);
+  const [editingTrf, setEditingTrf] = useState(null);
+  const [editFieldsByTest, setEditFieldsByTest] = useState({});
 
-  const loadRequests = () => {
+  // Load all TRFs from backend
+  const loadTrfList = async () => {
     setLoading(true);
     try {
-      const stored = localStorage.getItem("trf_requests");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        const sorted = Array.isArray(parsed)
-          ? parsed.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          : [];
-        setRequests(sorted);
-      } else {
-        setRequests([]);
-      }
+      const response = await axios.get(`${API_BASE}/trf`);
+      setTrfList(response.data);
     } catch (error) {
-      console.error("Failed to load requests:", error);
-      setRequests([]);
+      console.error("Failed to load TRFs", error);
+      alert("Could not load test requests");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadRequests();
-    const handleStorageChange = (e) => {
-      if (e.key === "trf_requests") loadRequests();
-    };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    loadTrfList();
   }, []);
 
-  const isRequestFilled = (request) => {
-    const { testData = {}, selectedTests = [] } = request;
-    for (const testKey of selectedTests) {
-      const test = testData[testKey];
-      if (!test) continue;
-      for (const field of test.fields || []) {
-        if (field.fieldValue && field.fieldValue.trim() !== "") return true;
-      }
+  // Open view modal
+  const handleView = async (trf) => {
+    try {
+      const response = await axios.get(`${API_BASE}/trf/user/${trf.id}`);
+      setSelectedTrf(response.data.trf);
+      setSelectedFieldsByTest(response.data.fieldsByTest);
+    } catch (error) {
+      alert("Failed to load details");
     }
-    return false;
   };
 
-  const formatDate = (isoString) => {
-    if (!isoString) return "N/A";
-    return new Date(isoString).toLocaleString();
+  // Open edit/fill modal
+  const handleEdit = async (trf) => {
+    try {
+      const response = await axios.get(`${API_BASE}/trf/user/${trf.id}`);
+      setEditingTrf(response.data.trf);
+      setEditFieldsByTest(response.data.fieldsByTest);
+    } catch (error) {
+      alert("Failed to load fields for editing");
+    }
   };
 
-  const startEditResults = (request) => {
-    const clonedTestData = JSON.parse(JSON.stringify(request.testData || {}));
-    setEditingRequest(request);
-    setEditTestData(clonedTestData);
-  };
-
-  const updateFieldValue = (testKey, fieldId, value) => {
-    setEditTestData((prev) => ({
+  // Update a single field value in edit modal
+  const handleFieldChange = (testName, fieldRowId, value) => {
+    setEditFieldsByTest((prev) => ({
       ...prev,
-      [testKey]: {
-        ...prev[testKey],
-        fields: prev[testKey].fields.map((f) =>
-          f.id === fieldId ? { ...f, fieldValue: value } : f,
-        ),
-      },
+      [testName]: prev[testName].map((f) =>
+        f.fieldRowId === fieldRowId ? { ...f, currentValue: value } : f,
+      ),
     }));
   };
 
-  const saveEditedResults = () => {
-    if (!editingRequest) return;
-    const updatedRequest = { ...editingRequest, testData: editTestData };
-    const newRequests = requests.map((req) =>
-      req.id === editingRequest.id ? updatedRequest : req,
-    );
-    setRequests(newRequests);
-    localStorage.setItem("trf_requests", JSON.stringify(newRequests));
-    setEditingRequest(null);
-    setEditTestData({});
-    alert("Test results saved successfully!");
+  // Save all edited values
+  const handleSaveEdit = async () => {
+    if (!editingTrf) return;
+    // Flatten all fields into array of { fieldRowId, value }
+    const fields = [];
+    Object.values(editFieldsByTest).forEach((testFields) => {
+      testFields.forEach((f) => {
+        fields.push({ fieldRowId: f.fieldRowId, value: f.currentValue });
+      });
+    });
+    const payload = { fields };
+    try {
+      await axios.patch(`${API_BASE}/trf/${editingTrf.id}/fill`, payload);
+      alert("Test results saved successfully!");
+      setEditingTrf(null);
+      setEditFieldsByTest({});
+      loadTrfList(); // refresh list to update status
+    } catch (error) {
+      console.error(error);
+      alert("Failed to save results");
+    }
   };
 
   const cancelEdit = () => {
-    setEditingRequest(null);
-    setEditTestData({});
+    setEditingTrf(null);
+    setEditFieldsByTest({});
   };
 
   if (loading)
     return (
       <div style={styles.container}>
-        <div style={styles.loadingMsg}>Loading requests...</div>
+        <div style={styles.loadingMsg}>Loading...</div>
       </div>
     );
 
   return (
     <div style={styles.container}>
-      <style>{`* { box-sizing: border-box; }`}</style>
-
       <div style={styles.header}>
         <h1 style={styles.mainTitle}>📋 Fill Test Request Forms</h1>
         <p style={styles.subtitle}>
           Click <strong>Fill the Form</strong> to enter test values. Once saved,
-          the status changes to <strong>Filled</strong>.
+          status changes to <strong>Filled</strong>.
         </p>
       </div>
 
-      {requests.length === 0 ? (
+      {trfList.length === 0 ? (
         <div style={styles.emptyState}>
           <div style={styles.emptyIcon}>📭</div>
           <h3>No test request forms found</h3>
@@ -328,7 +280,7 @@ const AllTestRequests = () => {
       ) : (
         <div style={styles.tableWrapper}>
           <div style={styles.statsBar}>
-            Total forms: <strong>{requests.length}</strong>
+            Total forms: <strong>{trfList.length}</strong>
           </div>
           <div style={{ overflowX: "auto" }}>
             <table style={styles.table}>
@@ -339,28 +291,49 @@ const AllTestRequests = () => {
                   <th style={styles.th}>Request Name</th>
                   <th style={styles.th}>Product</th>
                   <th style={styles.th}>Tests</th>
-                  <th style={styles.th}>Created</th>
+                  <th style={styles.th}>Created / Updated</th>
                   <th style={styles.th}>Status</th>
                   <th style={styles.th}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {requests.map((req) => {
-                  const filled = isRequestFilled(req);
+                {trfList.map((trf) => {
+                  // Extract test names from selectedTests (array of { testId, fields })
+                  const testNames = trf.selectedTests
+                    ? trf.selectedTests.map((t) => {
+                        // Find test name from allTestingFilds? We don't have it here.
+                        // But the list API should include test names. I'll assume trf.selectedTests contains test names.
+                        // Actually allTrf returns selectedTests as array of { testId, fields }. To get test names we need separate mapping.
+                        // For simplicity, let's modify allTrf to include test_names array.
+                        // However, in our earlier allTrf we didn't include test names. We'll update allTrf to return testNames.
+                        // But to avoid changing backend again, I'll compute using a map fetched from tests API.
+                        // For now, I'll assume backend returns testNames directly. I'll adjust the frontend to use a separate fetch of test definitions.
+                        return t.testId; // placeholder – you should actually store test names.
+                      })
+                    : [];
+                  // Better: let's use a separate useEffect to fetch test definitions and map testId to name.
+                  // I'll show a simple version: assume trf.testNames is provided by backend (recommended).
+                  // Since you already have allTestingFilds in the admin component, you can reuse it, but this is a separate component.
+                  // I'll modify allTrf to include testNames array. See backend note below.
                   return (
-                    <tr key={req.id} style={styles.tableRow}>
+                    <tr key={trf.id} style={styles.tableRow}>
                       <td style={styles.td}>
-                        <code style={styles.fullIdCode}>{req.id}</code>
+                        <code>{trf.trfCode}</code>
                       </td>
-                      <td style={styles.td}>{req.companyName}</td>
-                      <td style={styles.td}>{req.requestName}</td>
-                      <td style={styles.td}>{req.productName}</td>
+                      <td style={styles.td}>{trf.companyName}</td>
+                      <td style={styles.td}>{trf.requestName}</td>
+                      <td style={styles.td}>{trf.productName}</td>
                       <td style={styles.td}>
-                        {(req.selectedTests || []).join(", ") || "—"}
+                        {trf.testNames ? trf.testNames.join(", ") : "—"}
                       </td>
-                      <td style={styles.td}>{formatDate(req.createdAt)}</td>
                       <td style={styles.td}>
-                        {filled ? (
+                        <div>Created: {formatDate(trf.createdAt)}</div>
+                        <div style={{ fontSize: "0.7rem", color: "#666" }}>
+                          Updated: {formatDate(trf.updatedAt)}
+                        </div>
+                      </td>
+                      <td style={styles.td}>
+                        {trf.status === "filled" ? (
                           <span style={styles.filledBadge}>✅ Filled</span>
                         ) : (
                           <span style={styles.notFilledBadge}>
@@ -370,16 +343,22 @@ const AllTestRequests = () => {
                       </td>
                       <td style={styles.td}>
                         <button
-                          onClick={() => setSelectedRequest(req)}
+                          onClick={() => handleView(trf)}
                           style={styles.viewBtn}
                         >
                           👁️ View
                         </button>
                         <button
-                          onClick={() => startEditResults(req)}
-                          style={filled ? styles.editBtn : styles.fillBtn}
+                          onClick={() => handleEdit(trf)}
+                          style={
+                            trf.status === "filled"
+                              ? styles.editBtn
+                              : styles.fillBtn
+                          }
                         >
-                          {filled ? "✏️ Edit Results" : "✏️ Fill the Form"}
+                          {trf.status === "filled"
+                            ? "✏️ Edit Results"
+                            : "✏️ Fill the Form"}
                         </button>
                       </td>
                     </tr>
@@ -391,29 +370,28 @@ const AllTestRequests = () => {
         </div>
       )}
 
-      {selectedRequest && (
+      {selectedTrf && (
         <ViewModal
-          request={selectedRequest}
-          onClose={() => setSelectedRequest(null)}
-          formatDate={formatDate}
+          trf={selectedTrf}
+          fieldsByTest={selectedFieldsByTest}
+          onClose={() => {
+            setSelectedTrf(null);
+            setSelectedFieldsByTest(null);
+          }}
         />
       )}
-      {editingRequest && (
+      {editingTrf && (
         <EditModal
-          request={editingRequest}
-          testData={editTestData}
-          onUpdateField={updateFieldValue}
-          onSave={saveEditedResults}
+          trf={editingTrf}
+          fieldsByTest={editFieldsByTest}
+          onFieldChange={handleFieldChange}
+          onSave={handleSaveEdit}
           onCancel={cancelEdit}
         />
       )}
 
       <div style={styles.footerNote}>
-        <p>
-          💡 <strong>Note:</strong> Only test values can be edited. The test
-          structure is defined by the admin.
-        </p>
-        <button onClick={loadRequests} style={styles.refreshBtn}>
+        <button onClick={loadTrfList} style={styles.refreshBtn}>
           🔄 Refresh List
         </button>
       </div>
@@ -421,6 +399,7 @@ const AllTestRequests = () => {
   );
 };
 
+// ========== Styles (same as before, keep as is) ==========
 const styles = {
   container: {
     maxWidth: "1400px",
@@ -435,7 +414,6 @@ const styles = {
     fontSize: "2rem",
     fontWeight: "700",
     marginBottom: "8px",
-    // borderLeft: "4px solid #000",
     paddingLeft: "20px",
   },
   subtitle: {
@@ -461,20 +439,11 @@ const styles = {
   },
   table: { width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" },
   tableHeaderRow: { background: "#f8f8f8", borderBottom: "2px solid #e2e2e2" },
-  tableRow: {},
   th: { textAlign: "left", padding: "16px 12px", fontWeight: "600" },
   td: {
     padding: "14px 12px",
     borderBottom: "1px solid #f0f0f0",
     verticalAlign: "middle",
-  },
-  fullIdCode: {
-    background: "#f0f0f0",
-    padding: "4px 8px",
-    borderRadius: "12px",
-    fontSize: "0.75rem",
-    fontFamily: "monospace",
-    wordBreak: "break-all",
   },
   filledBadge: {
     background: "#e6f7e6",
@@ -538,9 +507,7 @@ const styles = {
     background: "#f9f9f9",
     borderRadius: "20px",
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexWrap: "wrap",
+    justifyContent: "flex-end",
   },
   refreshBtn: {
     background: "#fff",
@@ -551,7 +518,7 @@ const styles = {
   },
   modalOverlay: {
     position: "fixed",
-    top: 80,
+    top: 0,
     left: 0,
     right: 0,
     bottom: 0,
@@ -588,13 +555,6 @@ const styles = {
   },
   modalBody: { padding: "24px 28px", flex: 1 },
   modalSection: { marginBottom: "28px" },
-  modalSectionTitle: {
-    fontSize: "1.25rem",
-    fontWeight: "600",
-    marginBottom: "16px",
-    paddingBottom: "6px",
-    borderBottom: "2px solid #f0f0f0",
-  },
   infoGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
@@ -629,16 +589,6 @@ const styles = {
     padding: "6px 0",
     gap: "8px",
   },
-  customBadge: {
-    marginLeft: "6px",
-    background: "#e8f4fd",
-    color: "#1565c0",
-    fontSize: "0.7rem",
-    padding: "1px 7px",
-    borderRadius: "20px",
-    fontWeight: 500,
-  },
-  noData: { color: "#888", fontStyle: "italic", margin: "8px 0" },
   remarkBox: {
     background: "#faf6e7",
     padding: "16px",

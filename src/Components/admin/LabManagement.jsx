@@ -466,120 +466,6 @@ const generateCode = (prefix = "ARY") => {
   return `${prefix}-${datePart}-${random}`;
 };
 
-// Predefined test fields (same as original)
-const TESTING_FIELDS1 = {
-  ETO: [
-    {
-      name: "etoConcentration",
-      label: "ETO Concentration",
-      placeholder: "e.g. 600 mg/L",
-    },
-    {
-      name: "exposureTime",
-      label: "Exposure Time",
-      placeholder: "e.g. 4 hours",
-    },
-    { name: "temperature", label: "Temperature", placeholder: "e.g. 54°C" },
-    { name: "humidity", label: "Humidity", placeholder: "e.g. 60%" },
-    {
-      name: "residueLevel",
-      label: "Residue Level",
-      placeholder: "e.g. < 10 ppm",
-    },
-  ],
-  Micro: [
-    {
-      name: "totalPlateCount",
-      label: "Total Plate Count",
-      placeholder: "e.g. < 100 CFU/g",
-    },
-    {
-      name: "yeastMold",
-      label: "Yeast & Mold",
-      placeholder: "e.g. < 10 CFU/g",
-    },
-    { name: "eColi", label: "E. Coli", placeholder: "e.g. Absent/25g" },
-    { name: "salmonella", label: "Salmonella", placeholder: "e.g. Absent/25g" },
-    {
-      name: "coliformBacteria",
-      label: "Coliform Bacteria",
-      placeholder: "e.g. < 3 MPN/g",
-    },
-  ],
-  Physical: [
-    {
-      name: "textureAnalysis",
-      label: "Texture Analysis",
-      placeholder: "e.g. Firm, 8.5 N",
-    },
-    {
-      name: "colorMeasurement",
-      label: "Color Measurement",
-      placeholder: "e.g. L*=92",
-    },
-    {
-      name: "moistureContent",
-      label: "Moisture Content",
-      placeholder: "e.g. 12.5%",
-    },
-    {
-      name: "particleSizeShape",
-      label: "Particle Size & Shape",
-      placeholder: "e.g. 50–100 µm",
-    },
-    { name: "viscosity", label: "Viscosity", placeholder: "e.g. 450 mPa·s" },
-    {
-      name: "densitySpecificGravity",
-      label: "Density / Specific",
-      placeholder: "e.g. 1.05 g/cm³",
-    },
-    {
-      name: "waterActivity",
-      label: "Water Activity",
-      placeholder: "e.g. 0.87 aw",
-    },
-  ],
-  Chemical: [
-    { name: "phLevel", label: "pH Level", placeholder: "e.g. 6.8" },
-    { name: "ashContent", label: "Ash Content", placeholder: "e.g. 1.2%" },
-    {
-      name: "proteinContent",
-      label: "Protein Content",
-      placeholder: "e.g. 18.5%",
-    },
-    { name: "fatContent", label: "Fat Content", placeholder: "e.g. 5.3%" },
-    {
-      name: "peroxideValue",
-      label: "Peroxide Value",
-      placeholder: "e.g. 2.1 meq/kg",
-    },
-    {
-      name: "heavyMetals",
-      label: "Heavy Metals",
-      placeholder: "e.g. Pb < 0.5 ppm",
-    },
-  ],
-  Presticide: [
-    {
-      name: "activeIngredient",
-      label: "Active Ingredient",
-      placeholder: "e.g. Chlorpyrifos",
-    },
-    {
-      name: "concentration",
-      label: "Concentration",
-      placeholder: "e.g. 500 g/L",
-    },
-    { name: "solventUsed", label: "Solvent Used", placeholder: "e.g. Xylene" },
-    {
-      name: "stabilityTest",
-      label: "Stability Test",
-      placeholder: "e.g. Stable at 54°C",
-    },
-    { name: "phOfSolution", label: "pH of Solution", placeholder: "e.g. 6.5" },
-  ],
-};
-
 export default function LabManagement() {
   const [activeTab, setActiveTab] = useState("lab");
   const [allTestingFilds, setAllTestingFilds] = useState([]);
@@ -602,7 +488,7 @@ export default function LabManagement() {
     address: "",
     phone: "",
     adminName: "",
-    tabType: "",
+    labType: "",
   });
   const [savedLabs, setSavedLabs] = useState([]);
   const [editingLabId, setEditingLabId] = useState(null);
@@ -889,7 +775,7 @@ export default function LabManagement() {
       address: "",
       phone: "",
       adminName: "",
-      tabType: "",
+      labType: "",
     });
   const handleGetLab = async () => {
     try {
@@ -912,7 +798,7 @@ export default function LabManagement() {
       alert("Lab Name is required.");
       return;
     }
-    if (!labData.tabType) {
+    if (!labData.labType) {
       alert("Please select Lab Type.");
       return;
     }
@@ -926,7 +812,7 @@ export default function LabManagement() {
         address: labData.address,
         phone: labData.phone,
         adminName: labData.adminName,
-        tabType: labData.tabType,
+        labType: labData.labType,
         labCode: generatedCode,
       });
 
@@ -944,20 +830,7 @@ export default function LabManagement() {
       }
     }
   };
-  const handleSaveLab1 = () => {
-    if (!labData.labName.trim()) {
-      alert("Lab Name is required.");
-      return;
-    }
-    const newLab = {
-      ...labData,
-      id: Date.now(),
-      savedAt: new Date().toLocaleString(),
-      labCode: generateCode("LAB"),
-    };
-    setSavedLabs((prev) => [newLab, ...prev]);
-    resetLab();
-  };
+
   const startEditLab = (lab) => {
     setEditingLabId(lab.id);
     setEditingLabData({ ...lab });
@@ -981,7 +854,7 @@ export default function LabManagement() {
           address: editingLabData.address,
           phone: editingLabData.phone,
           adminName: editingLabData.adminName,
-          tabType: editingLabData.tabType,
+          labType: editingLabData.labType,
           labCode: editingLabData.labCode, // include if editable, otherwise omit
         },
       );
@@ -1013,20 +886,7 @@ export default function LabManagement() {
       }
     }
   };
-  const saveEditLab1 = () => {
-    if (!editingLabData.labName.trim()) {
-      alert("Lab Name required.");
-      return;
-    }
-    setSavedLabs((prev) =>
-      prev.map((lab) =>
-        lab.id === editingLabId
-          ? { ...editingLabData, savedAt: new Date().toLocaleString() }
-          : lab,
-      ),
-    );
-    cancelEditLab();
-  };
+
   const deleteLab = async (id) => {
     if (!window.confirm("Delete this lab record?")) return;
 
@@ -1051,10 +911,6 @@ export default function LabManagement() {
         alert(error.response?.data?.error || "Failed to delete lab.");
       }
     }
-  };
-  const deleteLab1 = (id) => {
-    if (window.confirm("Delete this lab record?"))
-      setSavedLabs((prev) => prev.filter((lab) => lab.id !== id));
   };
 
   // ---------- Product Functions ----------
@@ -1108,20 +964,6 @@ export default function LabManagement() {
     }
   };
 
-  const handleSaveProduct1 = () => {
-    if (!productData.productName.trim()) {
-      alert("Product Name and Product ID are required.");
-      return;
-    }
-    const newProduct = {
-      ...productData,
-      productId: generateCode("SMP"),
-      id: Date.now(),
-      savedAt: new Date().toLocaleString(),
-    };
-    setSavedProducts((prev) => [newProduct, ...prev]);
-    resetProduct();
-  };
   const startEditProduct = (prod) => {
     setEditingProductId(prod.id);
     setEditingProductData({ ...prod });
@@ -1168,10 +1010,6 @@ export default function LabManagement() {
     }
   };
 
-  const deleteProduct1 = (id) => {
-    if (window.confirm("Delete this product?"))
-      setSavedProducts((prev) => prev.filter((p) => p.id !== id));
-  };
   useEffect(() => {
     handleGetAllCompany();
     handleGetLab();
@@ -1265,35 +1103,7 @@ export default function LabManagement() {
       alert("Error creating test");
     }
   };
-  const handleAddNewTest1 = () => {
-    if (!newTestLabel.trim()) return;
-    const invalid = newTestFields.some(
-      (f) => !f.name.trim() || !f.label.trim(),
-    );
-    if (invalid) {
-      alert("Please fill in both Name and Label for each field.");
-      return;
-    }
-    const newId = `custom_${Date.now()}`;
-    const newTest = {
-      id: newId,
-      label: newTestLabel.trim(),
-      fields: newTestFields.map((f) => ({
-        name: f.name.trim(),
-        label: f.label.trim(),
-        placeholder: f.placeholder || "",
-      })),
-    };
-    setAvailableTests((prev) => [...prev, newTest]);
-    setSelectedTestIds((prev) => [...prev, newId]);
-    const initialValues = {};
-    newTest.fields.forEach((field) => {
-      initialValues[field.name] = "";
-    });
-    setTestValues((prev) => ({ ...prev, [newId]: initialValues }));
-    setNewTestLabel("");
-    setNewTestFields([{ name: "", label: "", placeholder: "" }]);
-  };
+
   const resetTesting = () => {
     setSelectedTestIds([]);
     setTestValues({});
@@ -1640,8 +1450,8 @@ export default function LabManagement() {
                   <label className="lm-label">Tab Type</label>
                   <select
                     className="lm-select"
-                    value={labData.tabType}
-                    onChange={(e) => updateLab("tabType", e.target.value)}
+                    value={labData.labType}
+                    onChange={(e) => updateLab("labType", e.target.value)}
                   >
                     <option value="">Select type</option>
                     <option value="internal">Internal</option>
@@ -1649,19 +1459,19 @@ export default function LabManagement() {
                   </select>
                 </div>
               </div>
-              {labData.tabType && (
+              {labData.labType && (
                 <div className="lm-info-card">
                   <strong>
                     ⚙️{" "}
-                    {labData.tabType === "internal"
+                    {labData.labType === "internal"
                       ? "Internal Lab"
                       : "Third Party Lab"}
                   </strong>
                   <span className="lm-badge">
-                    {labData.tabType === "internal" ? "IN-HOUSE" : "EXTERNAL"}
+                    {labData.labType === "internal" ? "IN-HOUSE" : "EXTERNAL"}
                   </span>
                   <p style={{ marginTop: "0.5rem", fontSize: "0.8rem" }}>
-                    {labData.tabType === "internal"
+                    {labData.labType === "internal"
                       ? "Operates within the organization."
                       : "Accredited external partner."}
                   </p>
@@ -1752,11 +1562,11 @@ export default function LabManagement() {
                               <td>
                                 <select
                                   className="lm-editable-select"
-                                  value={editingLabData.tabType}
+                                  value={editingLabData.labType}
                                   onChange={(e) =>
                                     setEditingLabData({
                                       ...editingLabData,
-                                      tabType: e.target.value,
+                                      labType: e.target.value,
                                     })
                                   }
                                 >
@@ -1805,9 +1615,9 @@ export default function LabManagement() {
                               <td>{lab.phone}</td>
                               <td>{lab.adminName}</td>
                               <td>
-                                {lab.tabType === "internal"
+                                {lab.labType === "internal"
                                   ? "Internal"
-                                  : lab.tabType === "thirdparty"
+                                  : lab.labType === "thirdparty"
                                     ? "Third Party"
                                     : "-"}
                               </td>
