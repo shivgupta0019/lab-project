@@ -1,205 +1,17 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
-
-// ===================== CONSTANTS =====================
-const TESTING_FIELDS = {
-  ETO: [
-    {
-      name: "etoConcentration",
-      label: "ETO Concentration",
-      placeholder: "e.g. 600 mg/L",
-    },
-    {
-      name: "exposureTime",
-      label: "Exposure Time",
-      placeholder: "e.g. 4 hours",
-    },
-    { name: "temperature", label: "Temperature", placeholder: "e.g. 54°C" },
-    { name: "humidity", label: "Humidity", placeholder: "e.g. 60%" },
-    {
-      name: "residueLevel",
-      label: "Residue Level",
-      placeholder: "e.g. < 10 ppm",
-    },
-  ],
-  Micro: [
-    {
-      name: "totalPlateCount",
-      label: "Total Plate Count",
-      placeholder: "e.g. < 100 CFU/g",
-    },
-    {
-      name: "yeastMold",
-      label: "Yeast & Mold",
-      placeholder: "e.g. < 10 CFU/g",
-    },
-    { name: "eColi", label: "E. Coli", placeholder: "e.g. Absent/25g" },
-    { name: "salmonella", label: "Salmonella", placeholder: "e.g. Absent/25g" },
-    {
-      name: "coliformBacteria",
-      label: "Coliform Bacteria",
-      placeholder: "e.g. < 3 MPN/g",
-    },
-  ],
-  Physical: [
-    {
-      name: "textureAnalysis",
-      label: "Texture Analysis",
-      placeholder: "e.g. Firm, 8.5 N",
-    },
-    {
-      name: "colorMeasurement",
-      label: "Color Measurement",
-      placeholder: "e.g. L*=92",
-    },
-    {
-      name: "moistureContent",
-      label: "Moisture Content",
-      placeholder: "e.g. 12.5%",
-    },
-    {
-      name: "particleSizeShape",
-      label: "Particle Size & Shape",
-      placeholder: "e.g. 50–100 µm",
-    },
-    { name: "viscosity", label: "Viscosity", placeholder: "e.g. 450 mPa·s" },
-    {
-      name: "densitySpecificGravity",
-      label: "Density / Specific",
-      placeholder: "e.g. 1.05 g/cm³",
-    },
-    {
-      name: "waterActivity",
-      label: "Water Activity",
-      placeholder: "e.g. 0.87 aw",
-    },
-  ],
-  Chemical: [
-    { name: "phLevel", label: "pH Level", placeholder: "e.g. 6.8" },
-    { name: "ashContent", label: "Ash Content", placeholder: "e.g. 1.2%" },
-    {
-      name: "proteinContent",
-      label: "Protein Content",
-      placeholder: "e.g. 18.5%",
-    },
-    { name: "fatContent", label: "Fat Content", placeholder: "e.g. 5.3%" },
-    {
-      name: "peroxideValue",
-      label: "Peroxide Value",
-      placeholder: "e.g. 2.1 meq/kg",
-    },
-    {
-      name: "heavyMetals",
-      label: "Heavy Metals",
-      placeholder: "e.g. Pb < 0.5 ppm",
-    },
-  ],
-  Presticide: [
-    {
-      name: "activeIngredient",
-      label: "Active Ingredient",
-      placeholder: "e.g. Chlorpyrifos",
-    },
-    {
-      name: "concentration",
-      label: "Concentration",
-      placeholder: "e.g. 500 g/L",
-    },
-    { name: "solventUsed", label: "Solvent Used", placeholder: "e.g. Xylene" },
-    {
-      name: "stabilityTest",
-      label: "Stability Test",
-      placeholder: "e.g. Stable at 54°C",
-    },
-    { name: "phOfSolution", label: "pH of Solution", placeholder: "e.g. 6.5" },
-  ],
-};
-
-const COMPANY_DATA = [
-  { name: "Aryan group 1", code: "AG01", type: "Internal" },
-  { name: "Aryan group 2", code: "AG02", type: "External" },
-  { name: "Aryan group 3", code: "AG03", type: "Internal" },
-  { name: "Aryan group 4", code: "AG04", type: "External" },
-];
-
-const LAB_DATA = [
-  { name: "Central Lab", code: "LAB-C01", type: "Internal" },
-  { name: "Micro Analysis Hub", code: "LAB-M02", type: "Internal" },
-  { name: "External Partner Lab", code: "LAB-E03", type: "External" },
-  { name: "Research Lab", code: "LAB-R04", type: "Internal" },
-];
-
-const PRODUCT_DATA = [
-  { name: "Medical Gauze", sampleCode: "MG-101" },
-  { name: "Surgical Mask", sampleCode: "SM-202" },
-  { name: "Nitrile Gloves", sampleCode: "NG-303" },
-  { name: "IV Cannula", sampleCode: "IV-404" },
-  { name: "Syringe (10ml)", sampleCode: "SY-505" },
-];
 
 const generateUniqueId = () =>
   `${Date.now()}-${Math.random().toString(36).substr(2, 8)}`;
 
-// ===================== KEY CHANGE: initFields helper =====================
-// Predefined fields se ek flat array banata hai { id, fieldName, fieldValue, placeholder }
-// Custom fields bhi same shape mein add hote hain
-const buildInitialFields = (testKey) =>
-  TESTING_FIELDS[testKey].map((f) => ({
-    id: `predefined-${f.name}`, // predefined fields ka id fixed hota hai
-    fieldName: f.label,
-    fieldValue: "",
-    placeholder: f.placeholder,
-    isPredefined: true, // UI ke liye flag (lock/unlock fieldName)
-  }));
-
-// ===================== SAMPLE DATA (updated structure) =====================
-const SAMPLE_REQUESTS = [
-  {
-    id: "1713264000000-abc12345",
-    companyName: "Aryan group 1",
-    companyCode: "AG01",
-    requestName: "Batch #24-05 Stability",
-    labName: "Central Lab",
-    labCode: "LAB-C01",
-    labType: "Internal",
-    productName: "Medical Gauze",
-    lotNo: "LOT-2409",
-    sampleCode: "MG-101",
-    selectedTests: ["Physical", "Chemical"],
-    testData: {
-      Physical: {
-        fields: buildInitialFields("Physical"),
-      },
-      Chemical: {
-        fields: buildInitialFields("Chemical"),
-      },
-    },
-    remark: "Routine stability testing at ambient conditions",
-    createdAt: new Date("2024-04-16").toISOString(),
-  },
-  {
-    id: "1713350400000-def67890",
-    companyName: "Aryan group 2",
-    companyCode: "AG02",
-    requestName: "Microbiological Analysis",
-    labName: "Micro Analysis Hub",
-    labCode: "LAB-M02",
-    labType: "Internal",
-    productName: "Surgical Mask",
-    lotNo: "LOT-2410",
-    sampleCode: "SM-202",
-    selectedTests: ["Micro"],
-    testData: {
-      Micro: {
-        fields: buildInitialFields("Micro"),
-      },
-    },
-    remark: "Bioburden testing for medical device",
-    createdAt: new Date("2024-04-15").toISOString(),
-  },
-];
-
-// ===================== MAIN COMPONENT =====================
 const TestRequestForm = () => {
+  // ========== State ==========
+  const [allTestingFilds, setAllTestingFilds] = useState({}); // object: { testName: [fields] }
+  const [companiesData, setCompaniesData] = useState([]);
+  const [allLabs, setAllLabs] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
+
+  // Form fields – Cards 1,2,3,5
   const [selectedCompanyName, setSelectedCompanyName] = useState("");
   const [companyCode, setCompanyCode] = useState("");
   const [requestName, setRequestName] = useState("");
@@ -209,121 +21,185 @@ const TestRequestForm = () => {
   const [productName, setProductName] = useState("");
   const [lotNo, setLotNo] = useState("");
   const [sampleCode, setSampleCode] = useState("");
-  const [selectedTests, setSelectedTests] = useState([]);
-  // testData shape: { [testKey]: { fields: [ { id, fieldName, fieldValue, placeholder, isPredefined } ] } }
-  const [testData, setTestData] = useState({});
   const [remark, setRemark] = useState("");
+
+  // Card 4 – Tests
+  const [selectedTests, setSelectedTests] = useState([]); // array of test_name strings
+  const [testData, setTestData] = useState({}); // { test_name: { fields: [...] } }
+
+  // Editing & Table
   const [editingId, setEditingId] = useState(null);
+  const [trfList, setTrfList] = useState([]); // array from backend (full payload)
 
-  const [requests, setRequests] = useState(() => {
-    const stored = localStorage.getItem("trf_requests");
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch (e) {
-        localStorage.setItem("trf_requests", JSON.stringify(SAMPLE_REQUESTS));
-        return SAMPLE_REQUESTS;
+  // ========== Helper: build fields for a test from predefined object ==========
+  const buildInitialFields = (testName) => {
+    const fieldsArray = allTestingFilds[testName];
+    if (!fieldsArray) return [];
+    return fieldsArray.map((f) => ({
+      id: `predefined-${f.id}-${f.name}`,
+      fieldName: f.label,
+      fieldValue: "",
+      placeholder: f.placeholder,
+      isPredefined: true,
+      dbFieldId: f.id, // store original field id
+    }));
+  };
+
+  // ========== API calls ==========
+  const handleGetAllTests = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/tests");
+      if (response.data && response.data.TESTING_FIELDS) {
+        // Expecting an object: { "Physical": [...], "Chemical": [...] }
+        setAllTestingFilds(response.data.TESTING_FIELDS);
       }
-    } else {
-      localStorage.setItem("trf_requests", JSON.stringify(SAMPLE_REQUESTS));
-      return SAMPLE_REQUESTS;
+    } catch (error) {
+      console.error("Error fetching tests:", error);
+      alert("Failed to load test definitions");
     }
-  });
+  };
+
+  const handleGetAllCompany = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/getCompanies",
+      );
+      if (response.data && response.data.allCompanies) {
+        setCompaniesData(response.data.allCompanies);
+      }
+    } catch (error) {
+      console.error("Error fetching companies:", error);
+    }
+  };
+
+  const handleGetLab = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/labs");
+      if (response.data && response.data.allLabs) {
+        setAllLabs(response.data.allLabs);
+      }
+    } catch (error) {
+      console.error("Error fetching labs:", error);
+    }
+  };
+
+  const handleGetProduct = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/products");
+      if (response.data && response.data.allProducts) {
+        setAllProducts(response.data.allProducts);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+
+  const fetchTrfList = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/trf");
+      // Backend returns array directly (as per your requirement)
+      setTrfList(response.data);
+    } catch (error) {
+      console.error("Error fetching TRF list:", error);
+      alert("Failed to load TRF list");
+    }
+  };
+
+  // ========== Auto‑fill helpers ==========
+  useEffect(() => {
+    const selected = companiesData.find(
+      (c) => c.companyName === selectedCompanyName,
+    );
+    setCompanyCode(selected ? selected.companyCode : "");
+  }, [selectedCompanyName, companiesData]);
 
   useEffect(() => {
-    localStorage.setItem("trf_requests", JSON.stringify(requests));
-  }, [requests]);
-
-  // Auto-fill helpers
-  useEffect(() => {
-    const selected = COMPANY_DATA.find((c) => c.name === selectedCompanyName);
-    setCompanyCode(selected ? selected.code : "");
-  }, [selectedCompanyName]);
-
-  useEffect(() => {
-    const selected = LAB_DATA.find((l) => l.name === selectedLabName);
+    const selected = allLabs.find((l) => l.labName === selectedLabName);
     if (selected) {
-      setLabCode(selected.code);
-      setLabType(selected.type);
+      setLabCode(selected.labCode);
+      setLabType(selected.labType);
     } else {
       setLabCode("");
       setLabType("");
     }
-  }, [selectedLabName]);
+  }, [selectedLabName, allLabs]);
 
   useEffect(() => {
-    const selectedProduct = PRODUCT_DATA.find((p) => p.name === productName);
-    setSampleCode(selectedProduct ? selectedProduct.sampleCode : "");
-  }, [productName]);
+    const selectedProduct = allProducts.find(
+      (p) => p.productName === productName,
+    );
+    setSampleCode(selectedProduct ? selectedProduct.productId : "");
+  }, [productName, allProducts]);
 
-  // Naya test select hone par flat fields array initialize karo
-  const initializeTestData = (testKey) => {
-    if (!testData[testKey]) {
+  // ========== Test selection & field initialisation ==========
+  const initializeTestData = (testName) => {
+    if (!testData[testName]) {
       setTestData((prev) => ({
         ...prev,
-        [testKey]: { fields: buildInitialFields(testKey) },
+        [testName]: { fields: buildInitialFields(testName) },
       }));
     }
   };
 
   useEffect(() => {
-    selectedTests.forEach((testKey) => {
-      if (!testData[testKey]) initializeTestData(testKey);
+    selectedTests.forEach((testName) => {
+      if (!testData[testName]) initializeTestData(testName);
     });
   }, [selectedTests]);
 
-  const toggleTest = (testKey) => {
-    if (selectedTests.includes(testKey)) {
-      setSelectedTests(selectedTests.filter((t) => t !== testKey));
+  const toggleTest = (testName) => {
+    if (selectedTests.includes(testName)) {
+      setSelectedTests(selectedTests.filter((t) => t !== testName));
     } else {
-      setSelectedTests([...selectedTests, testKey]);
-      initializeTestData(testKey);
+      setSelectedTests([...selectedTests, testName]);
+      initializeTestData(testName);
     }
   };
 
-  // Custom field add karo (same shape as predefined, isPredefined = false)
-  const addCustomField = (testKey) => {
+  // ========== Custom field management ==========
+  const addCustomField = (testName) => {
     const newField = {
       id: generateUniqueId(),
       fieldName: "",
       fieldValue: "",
       placeholder: "e.g., enter parameter name",
       isPredefined: false,
+      dbFieldId: null,
     };
     setTestData((prev) => ({
       ...prev,
-      [testKey]: {
-        ...prev[testKey],
-        fields: [...(prev[testKey]?.fields || []), newField],
+      [testName]: {
+        ...prev[testName],
+        fields: [...(prev[testName]?.fields || []), newField],
       },
     }));
   };
 
-  // Custom field ka fieldName update karo (predefined ke fieldName lock hain)
-  const updateCustomFieldName = (testKey, fieldId, value) => {
+  const updateCustomFieldName = (testName, fieldId, value) => {
     setTestData((prev) => ({
       ...prev,
-      [testKey]: {
-        ...prev[testKey],
-        fields: prev[testKey].fields.map((f) =>
+      [testName]: {
+        ...prev[testName],
+        fields: prev[testName].fields.map((f) =>
           f.id === fieldId && !f.isPredefined ? { ...f, fieldName: value } : f,
         ),
       },
     }));
   };
 
-  const removeCustomField = (testKey, fieldId) => {
+  const removeCustomField = (testName, fieldId) => {
     setTestData((prev) => ({
       ...prev,
-      [testKey]: {
-        ...prev[testKey],
-        fields: prev[testKey].fields.filter(
+      [testName]: {
+        ...prev[testName],
+        fields: prev[testName].fields.filter(
           (f) => f.id !== fieldId || f.isPredefined,
         ),
       },
     }));
   };
 
+  // ========== Form reset & load for edit ==========
   const resetForm = () => {
     setSelectedCompanyName("");
     setCompanyCode("");
@@ -340,23 +216,86 @@ const TestRequestForm = () => {
     setEditingId(null);
   };
 
-  const loadRequestForEdit = (req) => {
-    setEditingId(req.id);
-    setSelectedCompanyName(req.companyName);
-    setCompanyCode(req.companyCode);
-    setRequestName(req.requestName);
-    setSelectedLabName(req.labName);
-    setLabCode(req.labCode);
-    setLabType(req.labType);
-    setProductName(req.productName);
-    setLotNo(req.lotNo);
-    setSampleCode(req.sampleCode);
-    setSelectedTests(req.selectedTests);
-    setTestData(req.testData);
-    setRemark(req.remark);
+  // Load TRF for editing – uses the same array response (full payload)
+  const loadRequestForEdit = async (trf) => {
+    // trf comes from the list (or you can fetch by id)
+    const response = await axios.get(`http://localhost:5000/api/trf/${trf.id}`);
+    const data = response.data;
+
+    setEditingId(trf.id);
+    setSelectedCompanyName(
+      companiesData.find((c) => c.id === data.companyId)?.companyName || "",
+    );
+    setCompanyCode(
+      companiesData.find((c) => c.id === data.companyId)?.companyCode || "",
+    );
+    setRequestName(data.requestName);
+    setSelectedLabName(allLabs.find((l) => l.id === data.labId)?.labName || "");
+    setLabCode(allLabs.find((l) => l.id === data.labId)?.labCode || "");
+    setLabType(allLabs.find((l) => l.id === data.labId)?.labType || "");
+    setProductName(
+      allProducts.find((p) => p.id === data.productId)?.productName || "",
+    );
+    setSampleCode(
+      allProducts.find((p) => p.id === data.productId)?.productId || "",
+    );
+    setLotNo(data.lotNo);
+    setRemark(data.remark);
+
+    // Reconstruct testData and selectedTests using the new fields
+    const newSelectedTests = [];
+    const newTestData = {};
+
+    for (const test of data.selectedTests) {
+      // Find test name from testId using allTestingFilds
+      let testName = null;
+      for (const [name, fields] of Object.entries(allTestingFilds)) {
+        if (fields[0]?.id === test.testId) {
+          testName = name;
+          break;
+        }
+      }
+      if (!testName) testName = `Test_${test.testId}`;
+      newSelectedTests.push(testName);
+
+      const fieldsArray = test.fields.map((f, idx) => ({
+        id: f.isPredefined ? `predefined-${f.fieldId}` : generateUniqueId(),
+        fieldName: f.isPredefined
+          ? f.label || "Predefined"
+          : f.customLabel || "",
+        fieldValue: "",
+        placeholder: f.placeholder,
+        isPredefined: f.isPredefined,
+        dbFieldId: f.isPredefined ? f.fieldId : null,
+      }));
+      newTestData[testName] = { fields: fieldsArray };
+    }
+
+    setSelectedTests(newSelectedTests);
+    setTestData(newTestData);
   };
 
-  const handleSaveRequest = () => {
+  const deleteRequest = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this request?"))
+      return;
+    try {
+      const response = await axios.delete(
+        `http://localhost:5000/api/trf/${id}`,
+      );
+      if (response.data.success) {
+        alert("TRF deleted successfully");
+        fetchTrfList(); // refresh list
+        if (editingId === id) resetForm();
+      } else {
+        alert(response.data.error || "Delete failed");
+      }
+    } catch (error) {
+      console.error("Delete failed:", error);
+      alert(error.response?.data?.error || "Failed to delete TRF");
+    }
+  };
+
+  const handleSaveRequest = async () => {
     if (
       !selectedCompanyName ||
       !selectedLabName ||
@@ -369,51 +308,87 @@ const TestRequestForm = () => {
       return;
     }
 
-    const formData = {
-      id: editingId || generateUniqueId(),
-      companyName: selectedCompanyName,
-      companyCode,
+    const companyObj = companiesData.find(
+      (c) => c.companyName === selectedCompanyName,
+    );
+    const labObj = allLabs.find((l) => l.labName === selectedLabName);
+    const productObj = allProducts.find((p) => p.productName === productName);
+
+    if (!companyObj || !labObj || !productObj) {
+      alert("Invalid selection. Please reselect.");
+      return;
+    }
+
+    // Build selectedTests payload using object access
+    const selectedTestsPayload = selectedTests.map((testName) => {
+      const fieldsArrayForTest = allTestingFilds[testName];
+      if (!fieldsArrayForTest) throw new Error(`Test ${testName} not found`);
+      // Get testId from the first field's id (all fields under same test share test id)
+      const testId = fieldsArrayForTest[0]?.id;
+      if (!testId) throw new Error(`No testId found for ${testName}`);
+      const userFields = testData[testName]?.fields || [];
+      console.log("userFields", userFields);
+
+      return {
+        testId: testId,
+        fields: userFields.map((f) => ({
+          fieldId: f.isPredefined ? f.dbFieldId : null,
+          customLabel: f.fieldName,
+          placeholder: f.placeholder,
+          isPredefined: f.isPredefined,
+        })),
+      };
+    });
+
+    const payload = {
+      companyId: companyObj.id,
       requestName,
-      labName: selectedLabName,
-      labCode,
-      labType,
-      productName,
+      labId: labObj.id,
+      productId: productObj.id,
       lotNo,
-      sampleCode,
-      selectedTests: [...selectedTests],
-      testData: JSON.parse(JSON.stringify(testData)),
       remark,
-      createdAt: editingId
-        ? requests.find((r) => r.id === editingId)?.createdAt ||
-          new Date().toISOString()
-        : new Date().toISOString(),
+      createdBy: "admin@example.com",
+      selectedTests: selectedTestsPayload,
     };
 
-    if (editingId) {
-      setRequests((prev) =>
-        prev.map((req) => (req.id === editingId ? formData : req)),
-      );
-      alert("Request updated successfully!");
-    } else {
-      setRequests((prev) => [formData, ...prev]);
-      alert(`Request created with ID: ${formData.id}`);
-    }
-    resetForm();
-  };
-
-  const deleteRequest = (id) => {
-    if (window.confirm("Are you sure you want to delete this request?")) {
-      setRequests((prev) => prev.filter((req) => req.id !== id));
-      if (editingId === id) resetForm();
+    try {
+      if (editingId) {
+        await axios.put(`http://localhost:5000/api/trf/${editingId}`, payload);
+        alert("TRF updated successfully!");
+      } else {
+        const response = await axios.post(
+          "http://localhost:5000/api/trf",
+          payload,
+        );
+        if (response.data.success) {
+          alert(`TRF created: ${response.data.trfCode}`);
+        }
+      }
+      resetForm();
+      fetchTrfList();
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.error || "Failed to save TRF");
     }
   };
 
   const cancelEdit = () => resetForm();
 
+  // ========== Initial data load ==========
+  useEffect(() => {
+    handleGetAllTests();
+    handleGetAllCompany();
+    handleGetLab();
+    handleGetProduct();
+    fetchTrfList();
+  }, []);
+
+  // ========== Render ==========
   return (
     <div style={styles.container}>
       <h1 style={styles.mainTitle}>📋 Admin – Define Test Proform</h1>
 
+      {/* Card 1: Company Details */}
       <div style={styles.card}>
         <h2 style={styles.cardTitle}>🏢 1. Company Details</h2>
         <div style={styles.row}>
@@ -425,9 +400,9 @@ const TestRequestForm = () => {
               style={styles.input}
             >
               <option value="">-- Select Company --</option>
-              {COMPANY_DATA.map((comp) => (
-                <option key={comp.code} value={comp.name}>
-                  {comp.name}
+              {companiesData.map((comp) => (
+                <option key={comp.id} value={comp.companyName}>
+                  {comp.companyName}
                 </option>
               ))}
             </select>
@@ -453,6 +428,7 @@ const TestRequestForm = () => {
         </div>
       </div>
 
+      {/* Card 2: Laboratory Information */}
       <div style={styles.card}>
         <h2 style={styles.cardTitle}>🔬 2. Laboratory Information</h2>
         <div style={styles.row}>
@@ -464,9 +440,9 @@ const TestRequestForm = () => {
               style={styles.input}
             >
               <option value="">-- Select Lab --</option>
-              {LAB_DATA.map((lab) => (
-                <option key={lab.code} value={lab.name}>
-                  {lab.name}
+              {allLabs.map((lab) => (
+                <option key={lab.id} value={lab.labName}>
+                  {lab.labName}
                 </option>
               ))}
             </select>
@@ -492,6 +468,7 @@ const TestRequestForm = () => {
         </div>
       </div>
 
+      {/* Card 3: Product Details */}
       <div style={styles.card}>
         <h2 style={styles.cardTitle}>📦 3. Product Details</h2>
         <div style={styles.row}>
@@ -503,9 +480,9 @@ const TestRequestForm = () => {
               style={styles.input}
             >
               <option value="">-- Select Product --</option>
-              {PRODUCT_DATA.map((prod) => (
-                <option key={prod.sampleCode} value={prod.name}>
-                  {prod.name}
+              {allProducts.map((prod) => (
+                <option key={prod.id} value={prod.productName}>
+                  {prod.productName}
                 </option>
               ))}
             </select>
@@ -531,13 +508,13 @@ const TestRequestForm = () => {
         </div>
       </div>
 
-      {/* CARD 4 – Merged fields (predefined + custom in one array) */}
+      {/* Card 4: Define Test Proform */}
       <div style={styles.card}>
         <h2 style={styles.cardTitle}>
           🧪 4. Define Test Proform (Structure only)
         </h2>
         <div style={styles.testCheckboxGroup}>
-          {Object.keys(TESTING_FIELDS).map((testKey) => (
+          {Object.keys(allTestingFilds).map((testKey) => (
             <label key={testKey} style={styles.checkboxLabel}>
               <input
                 type="checkbox"
@@ -549,23 +526,20 @@ const TestRequestForm = () => {
           ))}
         </div>
 
-        {selectedTests.map((testKey) => (
-          <div key={testKey} style={styles.testSection}>
+        {selectedTests.map((testName) => (
+          <div key={testName} style={styles.testSection}>
             <div style={styles.testHeader}>
-              <h3>🔬 {testKey} Analysis (Fields)</h3>
+              <h3>🔬 {testName} </h3>
               <button
-                onClick={() => addCustomField(testKey)}
+                onClick={() => addCustomField(testName)}
                 style={styles.addCustomBtn}
               >
                 + Add Custom Field
               </button>
             </div>
-
-            {/* Unified fields list – predefined + custom, same shape */}
             <div style={styles.grid2Col}>
-              {testData[testKey]?.fields?.map((field) => (
+              {testData[testName]?.fields?.map((field) => (
                 <div key={field.id} style={styles.fieldGroup}>
-                  {/* fieldName: predefined ke liye read-only label, custom ke liye editable input */}
                   {field.isPredefined ? (
                     <label style={styles.label}>{field.fieldName}</label>
                   ) : (
@@ -574,7 +548,11 @@ const TestRequestForm = () => {
                       placeholder="Parameter name (e.g., Viscosity Index)"
                       value={field.fieldName}
                       onChange={(e) =>
-                        updateCustomFieldName(testKey, field.id, e.target.value)
+                        updateCustomFieldName(
+                          testName,
+                          field.id,
+                          e.target.value,
+                        )
                       }
                       style={{
                         ...styles.input,
@@ -583,7 +561,6 @@ const TestRequestForm = () => {
                       }}
                     />
                   )}
-                  {/* fieldValue: always read-only placeholder in admin view */}
                   <div
                     style={{
                       ...styles.input,
@@ -597,10 +574,9 @@ const TestRequestForm = () => {
                     <span style={{ fontSize: "0.8rem", fontStyle: "italic" }}>
                       {field.placeholder || "(Value will be filled later)"}
                     </span>
-                    {/* Custom field delete button */}
                     {!field.isPredefined && (
                       <button
-                        onClick={() => removeCustomField(testKey, field.id)}
+                        onClick={() => removeCustomField(testName, field.id)}
                         style={styles.removeIconBtn}
                         title="Remove field"
                       >
@@ -613,7 +589,6 @@ const TestRequestForm = () => {
             </div>
           </div>
         ))}
-
         {selectedTests.length === 0 && (
           <div style={styles.emptyTestsMsg}>
             ☑️ Select at least one test category.
@@ -621,6 +596,7 @@ const TestRequestForm = () => {
         )}
       </div>
 
+      {/* Card 5: Remark */}
       <div style={styles.card}>
         <h2 style={styles.cardTitle}>📝 5. Remark / Purpose</h2>
         <textarea
@@ -642,48 +618,61 @@ const TestRequestForm = () => {
         )}
       </div>
 
+      {/* List of saved TRFs */}
       <div style={styles.tableWrapper}>
         <h2 style={styles.cardTitle}>📋 Submitted Requests</h2>
-        {requests.length === 0 ? (
+        {trfList.length === 0 ? (
           <div style={styles.emptyTable}>No requests created yet.</div>
         ) : (
           <table style={styles.table}>
             <thead>
               <tr>
-                <th>ID</th>
+                <th>Id</th>
                 <th>Company</th>
                 <th>Request Name</th>
+                <th>Lab Name</th>
                 <th>Product</th>
                 <th>Tests</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {requests.map((req) => (
-                <tr key={req.id}>
-                  <td>
-                    <code>{req.id}</code>
-                  </td>
-                  <td>{req.companyName}</td>
-                  <td>{req.requestName}</td>
-                  <td>{req.productName}</td>
-                  <td>{req.selectedTests.join(", ")}</td>
-                  <td>
-                    <button
-                      onClick={() => loadRequestForEdit(req)}
-                      style={styles.editBtn}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => deleteRequest(req.id)}
-                      style={styles.delBtn}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {trfList.map((trf, idx) => {
+                const company = companiesData.find(
+                  (c) => c.id === trf.companyId,
+                );
+                const product = allProducts.find((p) => p.id === trf.productId);
+                const testNames = trf.selectedTests.map((t) => {
+                  const entry = Object.entries(allTestingFilds).find(
+                    ([, fields]) => fields[0]?.id === t.testId,
+                  );
+                  return entry ? entry[0] : `Test_${t.testId}`;
+                });
+                return (
+                  <tr key={idx}>
+                    <td>{trf.trfCode}</td>
+                    <td>{trf.companyName}</td>
+                    <td>{trf.requestName}</td>
+                    <td>{trf.labName}</td>
+                    <td>{trf.productName}</td>
+                    <td>{testNames.join(", ")}</td>
+                    <td>
+                      <button
+                        onClick={() => loadRequestForEdit(trf)}
+                        style={styles.editBtn}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteRequest(trf.id)}
+                        style={styles.delBtn}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
@@ -692,9 +681,10 @@ const TestRequestForm = () => {
   );
 };
 
+// ===================== Styles (unchanged) =====================
 const styles = {
   container: {
-    maxWidth: "1300px",
+    maxWidth: "95vw",
     margin: "0 auto",
     padding: "50px 16px",
     background: "#ffffff",

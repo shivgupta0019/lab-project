@@ -130,7 +130,9 @@ export default function OTPPage() {
       );
 
       // 🔥 TOKEN SAVE (already correct)
-      localStorage.setItem("token", res.data.token);
+      console.log("res.data", res.data);
+
+      localStorage.setItem("token", res.data.accestoken);
 
       // 🔥 ROLE DECODE
       const decoded = jwtDecode(res.data.token);
