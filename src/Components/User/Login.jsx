@@ -7,7 +7,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    username: "",
+    email: "",
     password: "",
   });
 
@@ -24,7 +24,7 @@ async function handleSubmit(e) {
    let res = await axios.post(
   "http://localhost:5000/api/login",
   {
-    email: form.username,
+    email: form.email,
     password: form.password,
   },
   {
@@ -34,7 +34,7 @@ async function handleSubmit(e) {
 
     // 🔥 CASE 1: OTP REQUIRED
     if (res.data.otpRequired) {
-      localStorage.setItem("email", form.username);
+      localStorage.setItem("email", form.email);
       navigate("/otp");
     }
 
@@ -67,10 +67,10 @@ async function handleSubmit(e) {
 
           <form onSubmit={handleSubmit}>
             <div className="input-group">
-              <label><i className="fa-solid fa-user" style={{ color: "black" }}></i>User Name</label>
+              <label><i className="fa-solid fa-user" style={{ color: "black" }}></i>Your Email</label>
               <input
                 type="text"
-                name="username"
+                name="email"
                 placeholder="Enter your Email"
                 onChange={handleChange}
               />
@@ -98,7 +98,6 @@ async function handleSubmit(e) {
             </div>
             <div className="create">
               <p className="forgot d-flex fs-6 mt-4 ms-5"><Link to="/signup" >Create Your Account?</Link></p>
-
             </div>
           </form>
         </div>

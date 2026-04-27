@@ -1,27 +1,30 @@
-// AllReports.jsx
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-// ------------------- View Modal (read-only, same as original) -------------------
-const ViewModal = ({ request, onClose, formatDate }) => {
-  if (!request) return null;
+const API_BASE = "http://localhost:5000/api";
 
-  const {
-    companyName,
-    companyCode,
-    requestName,
-    labName,
-    labCode,
-    labType,
-    productName,
-    lotNo,
-    sampleCode,
-    selectedTests = [],
-    testData = {},
-    remark,
-    createdAt,
-    id,
-  } = request;
+// Helper: format date
+const formatDate = (isoString) => {
+  if (!isoString) return "N/A";
+  return new Date(isoString).toLocaleString();
+};
 
+// ========== View Modal (read-only) ==========
+const ViewModal = ({ trf, onClose }) => {
+  const [details, setDetails] = useState(null);
+  useEffect(() => {
+    axios
+      .get(`${API_BASE}/trf/user/${trf.id}`)
+      .then((res) => setDetails(res.data))
+      .catch(console.error);
+  }, [trf.id]);
+  if (!details)
+    return (
+      <div style={styles.modalOverlay}>
+        <div style={styles.modalContent}>Loading...</div>
+      </div>
+    );
+  const { trf: trfInfo, fieldsByTest } = details;
   return (
     <div style={styles.modalOverlay} onClick={onClose}>
       <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -33,87 +36,46 @@ const ViewModal = ({ request, onClose, formatDate }) => {
         </div>
         <div style={styles.modalBody}>
           <div style={styles.modalSection}>
-            <h3 style={styles.modalSectionTitle}>🏢 Company & Request</h3>
+            <h3>🏢 Company & Request</h3>
             <div style={styles.infoGrid}>
               <div>
-                <strong>Company:</strong> {companyName} ({companyCode})
+                <strong>TRF Code:</strong> {trfInfo.trfCode}
               </div>
               <div>
-                <strong>Request Name:</strong> {requestName}
+                <strong>Company:</strong> {trfInfo.companyName}
               </div>
               <div>
-                <strong>Lab:</strong> {labName} ({labCode}) – {labType}
+                <strong>Request:</strong> {trfInfo.requestName}
               </div>
               <div>
-                <strong>Product:</strong> {productName}
+                <strong>Lab:</strong> {trfInfo.labName} ({trfInfo.labType})
               </div>
               <div>
-                <strong>Lot No.:</strong> {lotNo || "—"}
+                <strong>Product:</strong> {trfInfo.productName}
               </div>
               <div>
-                <strong>Sample Code:</strong> {sampleCode || "—"}
-              </div>
-              <div>
-                <strong>Created:</strong> {formatDate(createdAt)}
-              </div>
-              <div>
-                <strong>ID:</strong> <code>{id}</code>
+                <strong>Lot No.:</strong> {trfInfo.lotNo || "—"}
               </div>
             </div>
           </div>
-
-          {selectedTests.length > 0 ? (
-            <div style={styles.modalSection}>
-              <h3 style={styles.modalSectionTitle}>🧪 Test Results</h3>
-              {selectedTests.map((testKey) => {
-                const test = testData?.[testKey];
-                if (!test?.fields) {
-                  return (
-                    <div key={testKey} style={styles.testResultBlock}>
-                      <h4 style={styles.testResultTitle}>
-                        🔬 {testKey} Analysis
-                      </h4>
-                      <div style={{ color: "#999", padding: "10px" }}>
-                        No data available
-                      </div>
+          {fieldsByTest &&
+            Object.entries(fieldsByTest).map(([testName, fields]) => (
+              <div key={testName} style={styles.testResultBlock}>
+                <h4>🔬 {testName} Analysis</h4>
+                <div style={styles.predefinedGrid}>
+                  {fields.map((field) => (
+                    <div key={field.fieldRowId} style={styles.predefinedItem}>
+                      <span>{field.label}</span>
+                      <span>{field.currentValue || "—"}</span>
                     </div>
-                  );
-                }
-                return (
-                  <div key={testKey} style={styles.testResultBlock}>
-                    <h4 style={styles.testResultTitle}>
-                      🔬 {testKey} Analysis
-                    </h4>
-                    <div style={styles.predefinedGrid}>
-                      {test.fields.map((field) => (
-                        <div key={field.id} style={styles.predefinedItem}>
-                          <span style={{ color: "#555", fontSize: "0.85rem" }}>
-                            {field.fieldName}
-                            {!field.isPredefined && (
-                              <span style={styles.customBadge}>custom</span>
-                            )}
-                          </span>
-                          <span style={{ fontWeight: 500 }}>
-                            {field.fieldValue?.toString().trim() || (
-                              <span style={{ color: "#bbb" }}>—</span>
-                            )}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div style={styles.modalSection}>
-              <p>No tests selected.</p>
-            </div>
-          )}
-          {remark && (
+                  ))}
+                </div>
+              </div>
+            ))}
+          {trfInfo.remark && (
             <div style={styles.modalSection}>
               <h3>📝 Remark</h3>
-              <div style={styles.remarkBox}>{remark}</div>
+              <div style={styles.remarkBox}>{trfInfo.remark}</div>
             </div>
           )}
         </div>
@@ -127,31 +89,31 @@ const ViewModal = ({ request, onClose, formatDate }) => {
   );
 };
 
-// ------------------- Edit Modal with ADD CUSTOM FIELD feature -------------------
+// ========== Edit Modal with Add Custom Field (includes value input) ==========
 const EditModal = ({
-  request,
+  trf,
   testData,
   onUpdateField,
   onAddCustomField,
   onSave,
   onCancel,
 }) => {
-  if (!request) return null;
-  const { selectedTests = [] } = request;
-  const [newFieldName, setNewFieldName] = useState({}); // { testKey: "" }
-  const [newFieldValue, setNewFieldValue] = useState({}); // { testKey: "" }
+  const [newFieldName, setNewFieldName] = useState({});
+  const [newFieldValue, setNewFieldValue] = useState({});
 
-  const handleAddClick = (testKey) => {
-    const name = newFieldName[testKey]?.trim();
+  const handleAddClick = (testName) => {
+    const name = newFieldName[testName]?.trim();
     if (!name) {
       alert("Please enter a field name");
       return;
     }
-    onAddCustomField(testKey, name, newFieldValue[testKey] || "");
-    // clear inputs for that test
-    setNewFieldName((prev) => ({ ...prev, [testKey]: "" }));
-    setNewFieldValue((prev) => ({ ...prev, [testKey]: "" }));
+    const value = newFieldValue[testName] || "";
+    onAddCustomField(testName, name, value);
+    setNewFieldName((prev) => ({ ...prev, [testName]: "" }));
+    setNewFieldValue((prev) => ({ ...prev, [testName]: "" }));
   };
+
+  if (!testData) return null;
 
   return (
     <div style={styles.modalOverlay} onClick={onCancel}>
@@ -160,86 +122,76 @@ const EditModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div style={styles.modalHeader}>
-          <h2 style={styles.modalTitle}>
-            ✏️ Edit & Add Fields
-            {/* – {request.requestName} */}
-          </h2>
+          <h2 style={styles.modalTitle}>✏️ Edit Results & Add Fields</h2>
           <button style={styles.modalCloseBtn} onClick={onCancel}>
             ×
           </button>
         </div>
         <div style={styles.modalBody}>
-          {selectedTests.map((testKey) => {
-            const fields = testData[testKey]?.fields || [];
-            return (
-              <div key={testKey} style={styles.editTestSection}>
-                <h3 style={styles.editTestTitle}>🔬 {testKey} Analysis</h3>
-                <div style={styles.grid2Col}>
-                  {fields.map((field) => (
-                    <div key={field.id} style={styles.fieldGroup}>
-                      <label style={styles.label}>
-                        {field.fieldName}
-                        {!field.isPredefined && (
-                          <span style={styles.customBadge}>custom</span>
-                        )}
-                      </label>
-                      <input
-                        type="text"
-                        value={field.fieldValue || ""}
-                        onChange={(e) =>
-                          onUpdateField(testKey, field.id, e.target.value)
-                        }
-                        placeholder={field.placeholder || "Enter value..."}
-                        style={styles.input}
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                {/* --- Add Custom Field section --- */}
-                <div style={styles.addCustomSection}>
-                  <div style={styles.addCustomRow}>
+          {Object.entries(testData).map(([testName, { fields, testId }]) => (
+            <div key={testName} style={styles.editTestSection}>
+              <h3 style={styles.editTestTitle}>🔬 {testName} Analysis</h3>
+              <div style={styles.grid2Col}>
+                {fields.map((field) => (
+                  <div key={field.id} style={styles.fieldGroup}>
+                    <label style={styles.label}>
+                      {field.fieldName}
+                      {!field.isPredefined && (
+                        <span style={styles.customBadge}>custom</span>
+                      )}
+                    </label>
                     <input
                       type="text"
-                      placeholder="New field name (e.g. 'pH Level')"
-                      value={newFieldName[testKey] || ""}
+                      value={field.fieldValue || ""}
                       onChange={(e) =>
-                        setNewFieldName((prev) => ({
-                          ...prev,
-                          [testKey]: e.target.value,
-                        }))
+                        onUpdateField(testName, field.id, e.target.value)
                       }
-                      style={styles.addFieldInput}
+                      placeholder={field.placeholder || "Enter value..."}
+                      style={styles.input}
                     />
-                    <input
-                      type="text"
-                      placeholder="Value"
-                      value={newFieldValue[testKey] || ""}
-                      onChange={(e) =>
-                        setNewFieldValue((prev) => ({
-                          ...prev,
-                          [testKey]: e.target.value,
-                        }))
-                      }
-                      style={styles.addFieldInput}
-                    />
-                    <button
-                      onClick={() => handleAddClick(testKey)}
-                      style={styles.addFieldBtn}
-                    >
-                      + Add Custom Field
-                    </button>
                   </div>
-                  <small style={styles.addHint}>
-                    Custom fields are saved and can be edited later.
-                  </small>
-                </div>
+                ))}
               </div>
-            );
-          })}
-          {selectedTests.length === 0 && (
-            <p style={styles.noData}>No tests selected for this request.</p>
-          )}
+              <div style={styles.addCustomSection}>
+                <div style={styles.addCustomRow}>
+                  <input
+                    type="text"
+                    placeholder="New field name (e.g. 'pH Level')"
+                    value={newFieldName[testName] || ""}
+                    onChange={(e) =>
+                      setNewFieldName((prev) => ({
+                        ...prev,
+                        [testName]: e.target.value,
+                      }))
+                    }
+                    style={styles.addFieldInput}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Value"
+                    value={newFieldValue[testName] || ""}
+                    onChange={(e) =>
+                      setNewFieldValue((prev) => ({
+                        ...prev,
+                        [testName]: e.target.value,
+                      }))
+                    }
+                    style={styles.addFieldInput}
+                  />
+                  <button
+                    onClick={() => handleAddClick(testName)}
+                    style={styles.addFieldBtn}
+                  >
+                    + Add Custom Field
+                  </button>
+                </div>
+                <small style={styles.addHint}>
+                  Custom field name + value are saved together.
+                </small>
+              </div>
+            </div>
+          ))}
+          {Object.keys(testData).length === 0 && <p>No tests found.</p>}
         </div>
         <div style={styles.modalFooter}>
           <button onClick={onSave} style={styles.saveBtn}>
@@ -254,207 +206,209 @@ const EditModal = ({
   );
 };
 
-// ------------------- MAIN AllReports Component -------------------
+// ========== Main AllReports Component ==========
 const AllReports = () => {
-  const [allRequests, setAllRequests] = useState([]);
-  const [filledRequests, setFilledRequests] = useState([]);
+  const [trfList, setTrfList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState(null); // for view modal
-  const [editingRequest, setEditingRequest] = useState(null);
-  const [editTestData, setEditTestData] = useState({});
+  const [selectedTrf, setSelectedTrf] = useState(null);
+  const [editingTrf, setEditingTrf] = useState(null);
+  const [editTestData, setEditTestData] = useState(null);
+  const [testNameToIdMap, setTestNameToIdMap] = useState({});
 
-  // Helper: check if a request has any filled test field (same logic as original)
-  const isRequestFilled = (request) => {
-    const { testData = {}, selectedTests = [] } = request;
-    for (const testKey of selectedTests) {
-      const test = testData[testKey];
-      if (!test) continue;
-      for (const field of test.fields || []) {
-        if (field.fieldValue && field.fieldValue.toString().trim() !== "") {
-          return true;
-        }
-      }
-    }
-    return false;
-  };
+  // Fetch test name → testId mapping
+  useEffect(() => {
+    axios
+      .get(`${API_BASE}/tests`)
+      .then((res) => {
+        const mapping = {};
+        Object.entries(res.data.TESTING_FIELDS).forEach(([name, fields]) => {
+          if (fields && fields.length > 0) mapping[name] = fields[0]?.id;
+        });
+        setTestNameToIdMap(mapping);
+      })
+      .catch(console.error);
+  }, []);
 
-  const loadRequests = () => {
+  const loadTrfs = async () => {
     setLoading(true);
     try {
-      const stored = localStorage.getItem("trf_requests");
-      let requests = [];
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        requests = Array.isArray(parsed) ? parsed : [];
-      }
-      // sort by createdAt desc
-      const sorted = [...requests].sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-      );
-      setAllRequests(sorted);
-      const filledOnly = sorted.filter((req) => isRequestFilled(req));
-      setFilledRequests(filledOnly);
-    } catch (error) {
-      console.error("Failed to load requests:", error);
-      setFilledRequests([]);
+      const response = await axios.get(`${API_BASE}/trf/filled`);
+      setTrfList(response.data);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load reports");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadRequests();
-    const handleStorageChange = (e) => {
-      if (e.key === "trf_requests") loadRequests();
-    };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    loadTrfs();
   }, []);
 
-  const formatDate = (isoString) => {
-    if (!isoString) return "N/A";
-    return new Date(isoString).toLocaleString();
+  const startEdit = async (trf) => {
+    try {
+      const res = await axios.get(`${API_BASE}/trf/user/${trf.id}`);
+      const { trf: trfInfo, fieldsByTest } = res.data;
+      const testDataObj = {};
+      for (const [testName, fields] of Object.entries(fieldsByTest)) {
+        const testId = testNameToIdMap[testName];
+        if (!testId) {
+          console.warn(`No testId found for testName: ${testName}`);
+          continue;
+        }
+        testDataObj[testName] = {
+          testId,
+          fields: fields.map((f) => ({
+            id: f.fieldRowId,
+            fieldName: f.label,
+            fieldValue: f.currentValue || "",
+            placeholder: f.placeholder,
+            isPredefined: f.isPredefined,
+            dbFieldId: f.isPredefined ? f.fieldId : null,
+          })),
+        };
+      }
+      setEditingTrf(trf);
+      setEditTestData(testDataObj);
+    } catch (err) {
+      console.error(err);
+      alert("Could not load test data for editing");
+    }
   };
 
-  // Start editing a request: clone testData deeply
-  const startEdit = (request) => {
-    const clonedTestData = JSON.parse(JSON.stringify(request.testData || {}));
-    setEditingRequest(request);
-    setEditTestData(clonedTestData);
-  };
-
-  // Update existing field value
-  const updateFieldValue = (testKey, fieldId, value) => {
+  const updateFieldValue = (testName, fieldId, value) => {
     setEditTestData((prev) => ({
       ...prev,
-      [testKey]: {
-        ...prev[testKey],
-        fields: prev[testKey].fields.map((f) =>
+      [testName]: {
+        ...prev[testName],
+        fields: prev[testName].fields.map((f) =>
           f.id === fieldId ? { ...f, fieldValue: value } : f,
         ),
       },
     }));
   };
 
-  // ADD CUSTOM FIELD to a specific test
-  const addCustomField = (testKey, fieldName, initialValue = "") => {
+  const addCustomField = (testName, fieldName, initialValue = "") => {
     const newFieldId = `${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
     const newField = {
       id: newFieldId,
       fieldName: fieldName.trim(),
       fieldValue: initialValue,
-      isPredefined: false,
       placeholder: "Enter custom value",
+      isPredefined: false,
+      dbFieldId: null,
     };
-    setEditTestData((prev) => {
-      const existingTest = prev[testKey] || { fields: [] };
-      const updatedFields = [...(existingTest.fields || []), newField];
-      return {
-        ...prev,
-        [testKey]: {
-          ...existingTest,
-          fields: updatedFields,
-        },
-      };
-    });
+    setEditTestData((prev) => ({
+      ...prev,
+      [testName]: {
+        ...prev[testName],
+        fields: [...(prev[testName]?.fields || []), newField],
+      },
+    }));
   };
 
-  // Save edited results back to localStorage
-  const saveEditedResults = () => {
-    if (!editingRequest) return;
-    const updatedRequest = { ...editingRequest, testData: editTestData };
-    // update in the full list
-    const newAllRequests = allRequests.map((req) =>
-      req.id === editingRequest.id ? updatedRequest : req,
-    );
-    setAllRequests(newAllRequests);
-    localStorage.setItem("trf_requests", JSON.stringify(newAllRequests));
-    // refresh filled list
-    const newFilled = newAllRequests.filter((req) => isRequestFilled(req));
-    setFilledRequests(newFilled);
-    setEditingRequest(null);
-    setEditTestData({});
-    alert("✅ Test results & custom fields saved successfully!");
+  const saveEdit = async () => {
+    if (!editingTrf || !editTestData) return;
+    const selectedTests = [];
+    for (const [testName, { testId, fields }] of Object.entries(editTestData)) {
+      if (!testId) {
+        alert(`Test ID missing for ${testName}. Cannot save.`);
+        return;
+      }
+      selectedTests.push({
+        testId,
+        fields: fields.map((f) => ({
+          fieldId: f.isPredefined ? f.dbFieldId : null,
+          customLabel: f.isPredefined ? null : f.fieldName,
+          placeholder: f.placeholder,
+          isPredefined: f.isPredefined,
+          fieldValue: f.fieldValue || "",
+        })),
+      });
+    }
+    const payload = {
+      requestName: editingTrf.requestName,
+      lotNo: editingTrf.lotNo,
+      remark: editingTrf.remark,
+      createdBy: editingTrf.createdBy || "admin@example.com",
+      selectedTests,
+    };
+    try {
+      await axios.put(`${API_BASE}/trf/${editingTrf.id}`, payload);
+      alert("Updated successfully!");
+      setEditingTrf(null);
+      setEditTestData(null);
+      loadTrfs();
+    } catch (err) {
+      console.error(err);
+      alert("Save failed: " + (err.response?.data?.error || err.message));
+    }
   };
 
-  const cancelEdit = () => {
-    setEditingRequest(null);
-    setEditTestData({});
-  };
-
-  if (loading) {
+  if (loading)
     return (
       <div style={styles.container}>
-        <div style={styles.loadingMsg}>Loading reports...</div>
+        <div style={styles.loadingMsg}>Loading...</div>
       </div>
     );
-  }
 
   return (
     <div style={styles.container}>
-      <style>{`* { box-sizing: border-box; }`}</style>
       <div style={styles.header}>
-        <h1 style={styles.mainTitle}>📊 All Test Request Forms Reports</h1>
+        <h1 style={styles.mainTitle}>📊 Filled Test Requests Reports</h1>
         <p style={styles.subtitle}>
-          Showing only test requests that already have filled results. You can{" "}
-          <strong>edit</strong> values or <strong>add new custom fields</strong>{" "}
-          to any test.
+          You can edit values, add custom fields with values, and save.
         </p>
       </div>
-
-      {filledRequests.length === 0 ? (
+      {trfList.length === 0 ? (
         <div style={styles.emptyState}>
           <div style={styles.emptyIcon}>📭</div>
           <h3>No filled test requests yet</h3>
-          <p>
-            Once you fill test values from the main “Fill Test Request Forms”
-            page, they will appear here.
-          </p>
+          <p>Once users fill test values, they will appear here.</p>
         </div>
       ) : (
         <div style={styles.tableWrapper}>
           <div style={styles.statsBar}>
-            ✅ Total filled forms: <strong>{filledRequests.length}</strong>
+            ✅ Total filled forms: <strong>{trfList.length}</strong>
           </div>
           <div style={{ overflowX: "auto" }}>
             <table style={styles.table}>
               <thead>
                 <tr style={styles.tableHeaderRow}>
-                  <th style={styles.th}>Full ID</th>
-                  <th style={styles.th}>Company</th>
-                  <th style={styles.th}>Request Name</th>
-                  <th style={styles.th}>Product</th>
-                  <th style={styles.th}>Tests</th>
-                  <th style={styles.th}>Created</th>
-                  <th style={styles.th}>Status</th>
-                  <th style={styles.th}>Actions</th>
+                  <th>TRF Code</th>
+                  <th>Company</th>
+                  <th>Request Name</th>
+                  <th>Product</th>
+                  <th>Tests</th>
+                  <th>Created</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filledRequests.map((req) => (
-                  <tr key={req.id} style={styles.tableRow}>
-                    <td style={styles.td}>
-                      <code style={styles.fullIdCode}>{req.id}</code>
+                {trfList.map((trf) => (
+                  <tr key={trf.id}>
+                    <td>
+                      <code>{trf.trfCode}</code>
                     </td>
-                    <td style={styles.td}>{req.companyName}</td>
-                    <td style={styles.td}>{req.requestName}</td>
-                    <td style={styles.td}>{req.productName}</td>
-                    <td style={styles.td}>
-                      {(req.selectedTests || []).join(", ") || "—"}
-                    </td>
-                    <td style={styles.td}>{formatDate(req.createdAt)}</td>
-                    <td style={styles.td}>
+                    <td>{trf.companyName}</td>
+                    <td>{trf.requestName}</td>
+                    <td>{trf.productName}</td>
+                    <td>{(trf.testNames || []).join(", ")}</td>
+                    <td>{formatDate(trf.createdAt)}</td>
+                    <td>
                       <span style={styles.filledBadge}>✅ Filled</span>
                     </td>
-                    <td style={styles.td}>
+                    <td>
                       <button
-                        onClick={() => setSelectedRequest(req)}
+                        onClick={() => setSelectedTrf(trf)}
                         style={styles.viewBtn}
                       >
                         👁️ View
                       </button>
                       <button
-                        onClick={() => startEdit(req)}
+                        onClick={() => startEdit(trf)}
                         style={styles.editBtn}
                       >
                         ✏️ Edit / Add Fields
@@ -467,34 +421,24 @@ const AllReports = () => {
           </div>
         </div>
       )}
-
-      {/* View Modal */}
-      {selectedRequest && (
-        <ViewModal
-          request={selectedRequest}
-          onClose={() => setSelectedRequest(null)}
-          formatDate={formatDate}
-        />
+      {selectedTrf && (
+        <ViewModal trf={selectedTrf} onClose={() => setSelectedTrf(null)} />
       )}
-
-      {/* Edit Modal with field addition */}
-      {editingRequest && (
+      {editingTrf && editTestData && (
         <EditModal
-          request={editingRequest}
+          trf={editingTrf}
           testData={editTestData}
           onUpdateField={updateFieldValue}
           onAddCustomField={addCustomField}
-          onSave={saveEditedResults}
-          onCancel={cancelEdit}
+          onSave={saveEdit}
+          onCancel={() => {
+            setEditingTrf(null);
+            setEditTestData(null);
+          }}
         />
       )}
-
       <div style={styles.footerNote}>
-        <p>
-          💡 <strong>Note:</strong> New custom fields are saved with the request
-          and will appear in future edits and view modal.
-        </p>
-        <button onClick={loadRequests} style={styles.refreshBtn}>
+        <button onClick={loadTrfs} style={styles.refreshBtn}>
           🔄 Refresh List
         </button>
       </div>
@@ -502,7 +446,10 @@ const AllReports = () => {
   );
 };
 
-// ------------------- Styles (enhanced, consistent with original) -------------------
+// ========== Styles (same as original, omitted for brevity) ==========
+// ... (copy styles from your existing AllReports component)
+
+// // Styles (same as original, included for completeness)
 const styles = {
   container: {
     maxWidth: "1400px",
@@ -547,13 +494,6 @@ const styles = {
     padding: "14px 12px",
     borderBottom: "1px solid #f0f0f0",
     verticalAlign: "middle",
-  },
-  fullIdCode: {
-    background: "#f0f0f0",
-    padding: "4px 8px",
-    borderRadius: "12px",
-    fontSize: "0.75rem",
-    fontFamily: "monospace",
   },
   filledBadge: {
     background: "#e6f7e6",
@@ -600,9 +540,7 @@ const styles = {
     background: "#f9f9f9",
     borderRadius: "20px",
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexWrap: "wrap",
+    justifyContent: "flex-end",
   },
   refreshBtn: {
     background: "#fff",
@@ -611,11 +549,9 @@ const styles = {
     padding: "8px 20px",
     cursor: "pointer",
   },
-
-  // Modal styles (same as original, extended)
   modalOverlay: {
     position: "fixed",
-    top: 100,
+    top: 0,
     left: 0,
     right: 0,
     bottom: 0,
@@ -652,13 +588,6 @@ const styles = {
   },
   modalBody: { padding: "24px 28px", flex: 1 },
   modalSection: { marginBottom: "28px" },
-  modalSectionTitle: {
-    fontSize: "1.25rem",
-    fontWeight: "600",
-    marginBottom: "16px",
-    paddingBottom: "6px",
-    borderBottom: "2px solid #f0f0f0",
-  },
   infoGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
@@ -673,11 +602,6 @@ const styles = {
     borderRadius: "20px",
     padding: "16px 20px",
     marginBottom: "20px",
-  },
-  testResultTitle: {
-    fontSize: "1.1rem",
-    fontWeight: "600",
-    marginBottom: "14px",
   },
   predefinedGrid: {
     display: "grid",
@@ -804,7 +728,6 @@ const styles = {
     fontSize: "0.7rem",
     color: "#666",
   },
-  noData: { color: "#888", fontStyle: "italic", margin: "8px 0" },
 };
 
 export default AllReports;

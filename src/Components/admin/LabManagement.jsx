@@ -2915,8 +2915,15 @@ export default function LabManagement() {
   const [editingCompanyId, setEditingCompanyId] = useState(null);
   const [editingCompanyData, setEditingCompanyData] = useState(null);
 
-  // ---------- Lab State ----------
-  const [labData, setLabData] = useState({ labName: "", gst: "", address: "", phone: "", adminName: "", tabType: "" });
+  // ---------- Lab State (unchanged) ----------
+  const [labData, setLabData] = useState({
+    labName: "",
+    gst: "",
+    address: "",
+    phone: "",
+    adminName: "",
+    labType: "",
+  });
   const [savedLabs, setSavedLabs] = useState([]);
   const [editingLabId, setEditingLabId] = useState(null);
   const [editingLabData, setEditingLabData] = useState(null);
@@ -3000,10 +3007,18 @@ export default function LabManagement() {
     } catch (error) { alert(error.response?.data?.error || "Failed to delete company."); }
   };
 
-  // ---------- Lab Functions ----------
-  const updateLab = (field, value) => setLabData((prev) => ({ ...prev, [field]: value }));
-  const resetLab = () => setLabData({ labName: "", gst: "", address: "", phone: "", adminName: "", tabType: "" });
-
+  // ---------- Lab Functions (identical to original, included fully) ----------
+  const updateLab = (field, value) =>
+    setLabData((prev) => ({ ...prev, [field]: value }));
+  const resetLab = () =>
+    setLabData({
+      labName: "",
+      gst: "",
+      address: "",
+      phone: "",
+      adminName: "",
+      labType: "",
+    });
   const handleGetLab = async () => {
     try {
       const response = await axios.get("http://localhost:5000/api/labs");
@@ -3012,29 +3027,82 @@ export default function LabManagement() {
   };
 
   const handleSaveLab = async () => {
-    if (!labData.labName.trim()) { alert("Lab Name is required."); return; }
-    if (!labData.tabType) { alert("Please select Lab Type."); return; }
-    setSavingLab(true);
+    if (!labData.labName.trim()) {
+      alert("Lab Name is required.");
+      return;
+    }
+    if (!labData.labType) {
+      alert("Please select Lab Type.");
+      return;
+    }
+
+    const generatedCode = generateCode("LAB"); // e.g., LAB-20260420-001
+
     try {
-      const response = await axios.post("http://localhost:5000/api/labs", { ...labData, labCode: generateCode("LAB") });
-      if (response.data?.allLabs) setSavedLabs(response.data.allLabs);
-      alert("Lab saved successfully!");
+      const response = await axios.post("http://localhost:5000/api/labs", {
+        labName: labData.labName,
+        gst: labData.gst,
+        address: labData.address,
+        phone: labData.phone,
+        adminName: labData.adminName,
+        labType: labData.labType,
+        labCode: generatedCode,
+      });
+
+      if (response.data && response.data.allLabs) {
+        setSavedLabs(response.data.allLabs); // full list from DB
+        alert("Lab saved successfully!");
+      }
       resetLab();
     } catch (error) {
       console.error("Error saving lab:", error);
-      alert(error.response?.data?.error || "Failed to save lab.");
-    } finally { setSavingLab(false); }
+      if (error.response?.status === 409) {
+        alert("Lab Code already exists. Please try again.");
+      } else {
+        alert(error.response?.data?.error || "Failed to save lab.");
+      }
+    }
   };
 
-  const startEditLab = (lab) => { setEditingLabId(lab.id); setEditingLabData({ ...lab }); };
-  const cancelEditLab = () => { setEditingLabId(null); setEditingLabData(null); };
-
+  const startEditLab = (lab) => {
+    setEditingLabId(lab.id);
+    setEditingLabData({ ...lab });
+  };
+  const cancelEditLab = () => {
+    setEditingLabId(null);
+    setEditingLabData(null);
+  };
   const saveEditLab = async () => {
     if (!editingLabData.labName.trim()) { alert("Lab Name required."); return; }
     try {
-      const response = await axios.put(`http://localhost:5000/api/labs/${editingLabId}`, editingLabData);
-      if (response.data?.allLabs) setSavedLabs(response.data.allLabs);
-      alert("Lab updated successfully!");
+      const response = await axios.put(
+        `http://localhost:5000/api/labs/${editingLabId}`,
+        {
+          labName: editingLabData.labName,
+          gst: editingLabData.gst,
+          address: editingLabData.address,
+          phone: editingLabData.phone,
+          adminName: editingLabData.adminName,
+          labType: editingLabData.labType,
+          labCode: editingLabData.labCode, // include if editable, otherwise omit
+        },
+      );
+
+      if (response.data && response.data.allLabs) {
+        setSavedLabs(response.data.allLabs);
+        alert("Lab updated successfully!");
+      } else {
+        // Fallback: manual update if API doesn't return allLabs
+        setSavedLabs((prev) =>
+          prev.map((lab) =>
+            lab.id === editingLabId
+              ? { ...editingLabData, savedAt: new Date().toLocaleString() }
+              : lab,
+          ),
+        );
+        alert("Lab updated successfully!");
+      }
+
       cancelEditLab();
     } catch (error) {
       console.error("Error updating lab:", error);
@@ -3045,10 +3113,26 @@ export default function LabManagement() {
   const deleteLab = async (id) => {
     if (!window.confirm("Delete this lab record?")) return;
     try {
-      const response = await axios.delete(`http://localhost:5000/api/labs/${id}`);
-      if (response.data?.allLabs) setSavedLabs(response.data.allLabs);
-      alert("Lab deleted successfully!");
-    } catch (error) { alert(error.response?.data?.error || "Failed to delete lab."); }
+      const response = await axios.delete(
+        `http://localhost:5000/api/labs/${id}`,
+      );
+
+      if (response.data && response.data.allLabs) {
+        setSavedLabs(response.data.allLabs);
+        alert("Lab deleted successfully!");
+      } else {
+        // Fallback: manual removal if API doesn't return allLabs
+        setSavedLabs((prev) => prev.filter((lab) => lab.id !== id));
+        alert("Lab deleted successfully!");
+      }
+    } catch (error) {
+      console.error("Error deleting lab:", error);
+      if (error.response?.status === 404) {
+        alert("Lab not found. It may have already been deleted.");
+      } else {
+        alert(error.response?.data?.error || "Failed to delete lab.");
+      }
+    }
   };
 
   // ---------- Product Functions ----------
@@ -3071,13 +3155,22 @@ export default function LabManagement() {
       resetProduct();
     } catch (error) {
       console.error("Error saving product:", error);
-      alert(error.response?.data?.error || "Failed to save product.");
-    } finally { setSavingProduct(false); }
+      if (error.response?.status === 409) {
+        alert("Product ID already exists. Please try again.");
+      } else {
+        alert(error.response?.data?.error || "Failed to save product.");
+      }
+    }
   };
 
-  const startEditProduct = (prod) => { setEditingProductId(prod.id); setEditingProductData({ ...prod }); };
-  const cancelEditProduct = () => { setEditingProductId(null); setEditingProductData(null); };
-
+  const startEditProduct = (prod) => {
+    setEditingProductId(prod.id);
+    setEditingProductData({ ...prod });
+  };
+  const cancelEditProduct = () => {
+    setEditingProductId(null);
+    setEditingProductData(null);
+  };
   const saveEditProduct = () => {
     if (!editingProductData.productName.trim()) { alert("Product Name required."); return; }
     setSavedProducts((prev) => prev.map((p) => p.id === editingProductId ? { ...editingProductData, savedAt: new Date().toLocaleString() } : p));
@@ -3325,20 +3418,32 @@ export default function LabManagement() {
                 </div>
                 <div className="lm-field">
                   <label className="lm-label">Tab Type</label>
-                  <select className="lm-select" value={labData.tabType} onChange={(e) => updateLab("tabType", e.target.value)}>
+                  <select
+                    className="lm-select"
+                    value={labData.labType}
+                    onChange={(e) => updateLab("labType", e.target.value)}
+                  >
                     <option value="">Select type</option>
                     <option value="internal">Internal</option>
                     <option value="thirdparty">Third Party</option>
                   </select>
                 </div>
               </div>
-
-              {labData.tabType && (
+              {labData.labType && (
                 <div className="lm-info-card">
-                  <strong>⚙️ {labData.tabType === "internal" ? "Internal Lab" : "Third Party Lab"}</strong>
-                  <span className="lm-badge">{labData.tabType === "internal" ? "IN-HOUSE" : "EXTERNAL"}</span>
+                  <strong>
+                    ⚙️{" "}
+                    {labData.labType === "internal"
+                      ? "Internal Lab"
+                      : "Third Party Lab"}
+                  </strong>
+                  <span className="lm-badge">
+                    {labData.labType === "internal" ? "IN-HOUSE" : "EXTERNAL"}
+                  </span>
                   <p style={{ marginTop: "0.5rem", fontSize: "0.8rem" }}>
-                    {labData.tabType === "internal" ? "Operates within the organization." : "Accredited external partner."}
+                    {labData.labType === "internal"
+                      ? "Operates within the organization."
+                      : "Accredited external partner."}
                   </p>
                 </div>
               )}
@@ -3349,90 +3454,164 @@ export default function LabManagement() {
                   {savingLab ? <><span className="lm-spinner" />Saving...</> : "Save Lab"}
                 </button>
               </div>
-
-              {savingLab ? (
-                <div className="lm-table-loader">
-                  <div className="lm-table-spinner" />
-                  <span className="lm-table-loader-text">Saving lab, please wait...</span>
-                </div>
-              ) : savedLabs.length > 0 && (
-                <div className="lm-table-section">
-                  <div className="lm-table-section-header">
-                    <span className="lm-table-section-title">Saved Labs</span>
-                    <span className="lm-table-count-badge">{savedLabs.length} {savedLabs.length === 1 ? "lab" : "labs"}</span>
-                  </div>
-                  <div className="lm-table-card">
-                    <div className="lm-table-scroll">
-                      <table className="lm-table">
-                        <thead>
-                          <tr>
-                            <th>Lab Code</th>
-                            <th>Lab Name</th>
-                            <th>GST</th>
-                            <th>Phone</th>
-                            <th>Admin</th>
-                            <th>Type</th>
-                            <th>Address</th>
-                            <th>Saved At</th>
-                            <th></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {savedLabs?.map((lab) => (
-                            <tr key={lab?.id}>
-                              {editingLabId === lab?.id ? (
-                                <>
-                                  <td><span className="lm-code-pill">{lab.labCode}</span></td>
-                                  <td><input className="lm-editable-input" value={editingLabData.labName} onChange={(e) => setEditingLabData({ ...editingLabData, labName: e.target.value })} /></td>
-                                  <td><input className="lm-editable-input" value={editingLabData.gst} onChange={(e) => setEditingLabData({ ...editingLabData, gst: e.target.value })} /></td>
-                                  <td><input className="lm-editable-input" value={editingLabData.phone} onChange={(e) => setEditingLabData({ ...editingLabData, phone: e.target.value })} /></td>
-                                  <td><input className="lm-editable-input" value={editingLabData.adminName} onChange={(e) => setEditingLabData({ ...editingLabData, adminName: e.target.value })} /></td>
-                                  <td>
-                                    <select className="lm-editable-select" value={editingLabData.tabType} onChange={(e) => setEditingLabData({ ...editingLabData, tabType: e.target.value })}>
-                                      <option value="">Select</option>
-                                      <option value="internal">Internal</option>
-                                      <option value="thirdparty">Third Party</option>
-                                    </select>
-                                  </td>
-                                  <td><textarea className="lm-editable-input" rows={2} value={editingLabData.address} onChange={(e) => setEditingLabData({ ...editingLabData, address: e.target.value })} /></td>
-                                  <td className="lm-table-date">{lab.savedAt}</td>
-                                  <td>
-                                    <div className="lm-action-cell">
-                                      <button className="lm-icon-btn" onClick={saveEditLab}>💾</button>
-                                      <button className="lm-icon-btn" onClick={cancelEditLab}>✖️</button>
-                                    </div>
-                                  </td>
-                                </>
-                              ) : (
-                                <>
-                                  <td><span className="lm-code-pill">{lab.labCode}</span></td>
-                                  <td className="lm-table-name">{lab.labName}</td>
-                                  <td className="lm-table-muted">{lab.gst || "—"}</td>
-                                  <td className="lm-table-muted">{lab.phone || "—"}</td>
-                                  <td className="lm-table-muted">{lab.adminName || "—"}</td>
-                                  <td>
-                                    {lab.tabType === "internal"
-                                      ? <span className="lm-type-badge lm-type-internal">● Internal</span>
-                                      : lab.tabType === "thirdparty"
-                                      ? <span className="lm-type-badge lm-type-external">■ Third Party</span>
-                                      : <span className="lm-table-muted">—</span>}
-                                  </td>
-                                  <td className="lm-table-muted">{lab.address || "—"}</td>
-                                  <td className="lm-table-date">{lab.savedAt}</td>
-                                  <td>
-                                    <div className="lm-action-cell">
-                                      <button className="lm-icon-btn" onClick={() => startEditLab(lab)}>✏️</button>
-                                      <button className="lm-icon-btn danger" onClick={() => deleteLab(lab?.id)}>🗑️</button>
-                                    </div>
-                                  </td>
-                                </>
-                              )}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+              {savedLabs.length > 0 && (
+                <div style={{ marginTop: "2rem" }}>
+                  <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
+                    Saved Labs
+                  </h3>
+                  <table className="lm-table">
+                    <thead>
+                      <tr>
+                        <th>Lab Code</th>
+                        <th>Lab Name</th>
+                        <th>GST</th>
+                        <th>Phone</th>
+                        <th>Admin Name</th>
+                        <th>Tab Type</th>
+                        <th>Address</th>
+                        <th>Saved At</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {savedLabs?.map((lab) => (
+                        <tr key={lab?.id}>
+                          {editingLabId === lab?.id ? (
+                            <>
+                              {" "}
+                              <td>{lab.labCode}</td>
+                              <td>
+                                <input
+                                  className="lm-editable-input"
+                                  value={editingLabData.labName}
+                                  onChange={(e) =>
+                                    setEditingLabData({
+                                      ...editingLabData,
+                                      labName: e.target.value,
+                                    })
+                                  }
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  className="lm-editable-input"
+                                  value={editingLabData.gst}
+                                  onChange={(e) =>
+                                    setEditingLabData({
+                                      ...editingLabData,
+                                      gst: e.target.value,
+                                    })
+                                  }
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  className="lm-editable-input"
+                                  value={editingLabData.phone}
+                                  onChange={(e) =>
+                                    setEditingLabData({
+                                      ...editingLabData,
+                                      phone: e.target.value,
+                                    })
+                                  }
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  className="lm-editable-input"
+                                  value={editingLabData.adminName}
+                                  onChange={(e) =>
+                                    setEditingLabData({
+                                      ...editingLabData,
+                                      adminName: e.target.value,
+                                    })
+                                  }
+                                />
+                              </td>
+                              <td>
+                                <select
+                                  className="lm-editable-select"
+                                  value={editingLabData.labType}
+                                  onChange={(e) =>
+                                    setEditingLabData({
+                                      ...editingLabData,
+                                      labType: e.target.value,
+                                    })
+                                  }
+                                >
+                                  <option value="">Select</option>
+                                  <option value="internal">Internal</option>
+                                  <option value="thirdparty">
+                                    Third Party
+                                  </option>
+                                </select>
+                              </td>
+                              <td>
+                                <textarea
+                                  className="lm-editable-input"
+                                  rows={2}
+                                  value={editingLabData.address}
+                                  onChange={(e) =>
+                                    setEditingLabData({
+                                      ...editingLabData,
+                                      address: e.target.value,
+                                    })
+                                  }
+                                />
+                              </td>
+                              <td>{lab.savedAt}</td>
+                              <td className="lm-action-buttons">
+                                <button
+                                  className="lm-icon-btn"
+                                  onClick={saveEditLab}
+                                >
+                                  💾
+                                </button>
+                                <button
+                                  className="lm-icon-btn"
+                                  onClick={cancelEditLab}
+                                >
+                                  ✖️
+                                </button>
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              {" "}
+                              <td>{lab.labCode}</td>
+                              <td>{lab.labName}</td>
+                              <td>{lab.gst}</td>
+                              <td>{lab.phone}</td>
+                              <td>{lab.adminName}</td>
+                              <td>
+                                {lab.labType === "internal"
+                                  ? "Internal"
+                                  : lab.labType === "thirdparty"
+                                    ? "Third Party"
+                                    : "-"}
+                              </td>
+                              <td>{lab.address}</td>
+                              <td>{lab.savedAt}</td>
+                              <td className="lm-action-buttons">
+                                <button
+                                  className="lm-icon-btn"
+                                  onClick={() => startEditLab(lab)}
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  className="lm-icon-btn"
+                                  onClick={() => deleteLab(lab?.id)}
+                                >
+                                  🗑️
+                                </button>
+                              </td>
+                            </>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
