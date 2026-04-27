@@ -559,20 +559,19 @@ const TestRequestForm = () => {
       <div style={styles.actionBar}>
         <button
           onClick={handleSaveRequest}
-          // disabled={savingLoader}
+         
           style={{
             ...styles.primaryBtn,
-            opacity: savingLoader ? 0.8 : 1,
-            cursor: savingLoader ? "not-allowed" : "pointer",
+            opacity:  1,
+            cursor:"pointer",
             display: "flex",
             alignItems: "center",
             gap: "8px",
           }}
         >
-          {savingLoader && <Spinner color="#ffffff" size={14} />}
-          {savingLoader
-            ? (editingId ? "Updating..." : "Creating...")
-            : (editingId ? "Update Request" : "Create Request")}
+          
+          {
+             (editingId ? "Update Request" : "Create Request")}
         </button>
         {editingId && (
           <button onClick={cancelEdit} style={styles.secondaryBtn}>Cancel Edit</button>
