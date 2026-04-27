@@ -98,23 +98,9 @@ export default function OTPPage() {
     }
   }, [otp]);
 
-  //  VERIFY
-  //   async function handleVerify() {
-  //   try {
-  //     let res = await axios.post("http://localhost:5000/api/verify-otp", {
-  //       email: localStorage.getItem("email"),
-  //       otp: otp.join(""),
-  //     });
-
-  //     localStorage.setItem("token", res.data.token);
-
-  //     alert(res.data.message);
-  //     navigate("/dashboard");
-
-  //   } catch (err) {
-  //     alert(err.response?.data?.message);
-  //   }
-  // }
+ 
+  
+  
 
   async function handleVerify() {
     try {
@@ -132,7 +118,7 @@ export default function OTPPage() {
       // 🔥 TOKEN SAVE (already correct)
       console.log("res.data", res.data);
 
-      localStorage.setItem("token", res.data.accestoken);
+      localStorage.setItem("token", res.data.token);
 
       // 🔥 ROLE DECODE
       const decoded = jwtDecode(res.data.token);

@@ -447,6 +447,19 @@ const TestRequestForm = () => {
   // ========== Render ==========
   return (
     <div style={styles.container}>
+      <style>{`
+        @keyframes trf-spin { to { transform: rotate(360deg); } }
+        @keyframes trf-shimmer {
+          0%   { background-position: -600px 0; }
+          100% { background-position: 600px 0; }
+        }
+        .trf-skeleton {
+          background: linear-gradient(90deg, #ebebeb 25%, #f5f5f5 50%, #ebebeb 75%);
+          background-size: 600px 100%;
+          animation: trf-shimmer 1.4s infinite linear;
+        }
+      `}</style>
+
       <h1 style={styles.mainTitle}>📋 Admin – Define Test Proform</h1>
 
       {/* Card 1: Company Details */}
@@ -686,6 +699,7 @@ const TestRequestForm = () => {
         />
       </div>
 
+      {/* ===== ACTION BAR ===== */}
       <div style={styles.actionBar}>
         <button
           onClick={handleSaveRequest}
