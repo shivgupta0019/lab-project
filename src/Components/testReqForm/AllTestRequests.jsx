@@ -328,9 +328,11 @@ const AllTestRequests = () => {
                       </td>
                       <td style={styles.td}>
                         <div>Created: {formatDate(trf.createdAt)}</div>
-                        <div style={{ fontSize: "0.7rem", color: "#666" }}>
-                          Updated: {formatDate(trf.updatedAt)}
-                        </div>
+                        {trf.updatedAt && (
+                          <div style={{ fontSize: "0.7rem", color: "#666" }}>
+                            Updated: {formatDate(trf.updatedAt)}
+                          </div>
+                        )}
                       </td>
                       <td style={styles.td}>
                         {trf.status === "filled" ? (
@@ -402,7 +404,7 @@ const AllTestRequests = () => {
 // ========== Styles (same as before, keep as is) ==========
 const styles = {
   container: {
-    maxWidth: "1400px",
+    maxWidth: "98vw",
     margin: "0 auto",
     padding: "40px 24px",
     background: "#fff",

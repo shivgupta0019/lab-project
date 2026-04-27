@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 const globalStyles = `
   * {
@@ -13,6 +13,84 @@ const globalStyles = `
   }
 
   @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
+
+.lm-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.lm-dropdown-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+}
+
+.lm-dropdown-trigger:focus {
+  outline: 2px solid #4f46e5;
+  outline-offset: 1px;
+}
+
+.lm-dropdown-value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #374151;
+}
+
+.lm-dropdown-arrow {
+  margin-left: 8px;
+  transition: transform 0.2s;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.lm-dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.lm-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 100;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.lm-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+}
+
+.lm-dropdown-item:hover {
+  background: #f3f4f6;
+}
+
+.lm-dropdown-item input[type="checkbox"] {
+  accent-color: #4f46e5;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
 
   .lm-app {
     min-height: 100vh;
@@ -466,6 +544,61 @@ const generateCode = (prefix = "ARY") => {
   return `${prefix}-${datePart}-${random}`;
 };
 
+function MultiSelectDropdown({
+  availableTests,
+  selectedTestIds,
+  handleToggleTest,
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const selectedLabels = availableTests
+    ?.filter((t) => selectedTestIds.includes(t.id))
+    .map((t) => t.label);
+
+  return (
+    <div className="lm-dropdown" ref={ref}>
+      <button
+        type="button"
+        className="lm-dropdown-trigger"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className="lm-dropdown-value">
+          {selectedLabels.length === 0
+            ? "Select tests..."
+            : selectedLabels.length === availableTests.length
+              ? "All tests selected"
+              : selectedLabels.join(", ")}
+        </span>
+        <span className={`lm-dropdown-arrow ${open ? "open" : ""}`}>▾</span>
+      </button>
+
+      {open && (
+        <div className="lm-dropdown-menu">
+          {availableTests.map((test) => (
+            <label key={test.id} className="lm-dropdown-item">
+              <input
+                type="checkbox"
+                checked={selectedTestIds.includes(test.id)}
+                onChange={() => handleToggleTest(test.id)}
+              />
+              <span>{test.label}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 export default function LabManagement() {
   const [activeTab, setActiveTab] = useState("lab");
   const [allTestingFilds, setAllTestingFilds] = useState([]);
@@ -1165,7 +1298,7 @@ export default function LabManagement() {
     <>
       <style>{globalStyles}</style>
       <div className="lm-app">
-        <div className="lm-container" >
+        <div className="lm-container">
           <div className="lm-header">
             <h1 className="lm-title">Lab Management System</h1>
             <p className="lm-subtitle">
@@ -1782,19 +1915,26 @@ export default function LabManagement() {
             <div className="lm-panel">
               <div className="lm-field lm-full-width">
                 <label className="lm-label">Select Testing Types</label>
-                <div className="lm-check-group">
-                  {availableTests.map((test) => (
-                    <div key={test.id} className="lm-checkbox-item">
-                      <input
-                        type="checkbox"
-                        id={test.id}
-                        checked={selectedTestIds.includes(test.id)}
-                        onChange={() => handleToggleTest(test.id)}
-                      />
-                      <label htmlFor={test.id}>{test.label}</label>
-                    </div>
-                  ))}
-                </div>
+                {/* <MultiSelectDropdown
+                  availableTests={availableTests}
+                  selectedTestIds={selectedTestIds}
+                  handleToggleTest={handleToggleTest}
+                /> */}
+                {true && (
+                  <div className="lm-check-group">
+                    {availableTests.map((test) => (
+                      <div key={test.id} className="lm-checkbox-item">
+                        <input
+                          type="checkbox"
+                          id={test.id}
+                          checked={selectedTestIds.includes(test.id)}
+                          onChange={() => handleToggleTest(test.id)}
+                        />
+                        <label htmlFor={test.id}>{test.label}</label>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="lm-new-test">
                 <div className="lm-new-test-title">➕ Create New Test</div>

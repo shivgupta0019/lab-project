@@ -318,15 +318,19 @@ const AllReports = () => {
       }
       selectedTests.push({
         testId,
-        fields: fields.map((f) => ({
-          fieldId: f.isPredefined ? f.dbFieldId : null,
-          customLabel: f.isPredefined ? null : f.fieldName,
-          placeholder: f.placeholder,
-          isPredefined: f.isPredefined,
-          fieldValue: f.fieldValue || "",
-        })),
+        fields: fields.map((f) => {
+          return {
+            fieldId: f.isPredefined ? f.dbFieldId : null,
+            customLabel: f.isPredefined ? f.fieldName : f.fieldName,
+            placeholder: f.placeholder,
+            label: f.fieldName,
+            isPredefined: f.isPredefined,
+            fieldValue: f.fieldValue || "",
+          };
+        }),
       });
     }
+
     const payload = {
       requestName: editingTrf.requestName,
       lotNo: editingTrf.lotNo,
@@ -376,31 +380,38 @@ const AllReports = () => {
             <table style={styles.table}>
               <thead>
                 <tr style={styles.tableHeaderRow}>
-                  <th>TRF Code</th>
-                  <th>Company</th>
-                  <th>Request Name</th>
-                  <th>Product</th>
-                  <th>Tests</th>
-                  <th>Created</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th style={styles.th}>TRF Code</th>
+                  <th style={styles.th}>Company</th>
+                  <th style={styles.th}>Request Name</th>
+                  <th style={styles.th}>Product</th>
+                  <th style={styles.th}>Tests</th>
+                  <th style={styles.th}>Created / Updated</th>
+                  <th style={styles.th}>Status</th>
+                  <th style={styles.th}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {trfList.map((trf) => (
-                  <tr key={trf.id}>
-                    <td>
+                  <tr key={trf.id} style={styles.tableRow}>
+                    <td style={styles.td}>
                       <code>{trf.trfCode}</code>
                     </td>
-                    <td>{trf.companyName}</td>
-                    <td>{trf.requestName}</td>
-                    <td>{trf.productName}</td>
-                    <td>{(trf.testNames || []).join(", ")}</td>
-                    <td>{formatDate(trf.createdAt)}</td>
-                    <td>
+                    <td style={styles.td}>{trf.companyName}</td>
+                    <td style={styles.td}>{trf.requestName}</td>
+                    <td style={styles.td}>{trf.productName}</td>
+                    <td style={styles.td}>
+                      {(trf.testNames || []).join(", ")}
+                    </td>
+                    <td style={styles.td}>
+                      <div>Created: {formatDate(trf.createdAt)}</div>
+                      <div style={{ fontSize: "0.7rem", color: "#666" }}>
+                        Updated: {formatDate(trf.updatedAt)}
+                      </div>
+                    </td>
+                    <td style={styles.td}>
                       <span style={styles.filledBadge}>✅ Filled</span>
                     </td>
-                    <td>
+                    <td style={styles.td}>
                       <button
                         onClick={() => setSelectedTrf(trf)}
                         style={styles.viewBtn}
@@ -452,7 +463,7 @@ const AllReports = () => {
 // // Styles (same as original, included for completeness)
 const styles = {
   container: {
-    maxWidth: "1400px",
+    maxWidth: "98vw",
     margin: "0 auto",
     padding: "40px 24px",
     background: "#fff",
