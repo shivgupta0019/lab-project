@@ -1,8 +1,7 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 
-const generateUniqueId = () =>
-  `${Date.now()}-${Math.random().toString(36).substr(2, 8)}`;
+const generateUniqueId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 8)}`;
 
 const TestRequestForm = () => {
   // ========== State ==========
@@ -201,19 +200,10 @@ const TestRequestForm = () => {
 
   // ========== Form reset & load for edit ==========
   const resetForm = () => {
-    setSelectedCompanyName("");
-    setCompanyCode("");
-    setRequestName("");
-    setSelectedLabName("");
-    setLabCode("");
-    setLabType("");
-    setProductName("");
-    setLotNo("");
-    setSampleCode("");
-    setSelectedTests([]);
-    setTestData({});
-    setRemark("");
-    setEditingId(null);
+    setSelectedCompanyName(""); setCompanyCode(""); setRequestName("");
+    setSelectedLabName(""); setLabCode(""); setLabType("");
+    setProductName(""); setLotNo(""); setSampleCode("");
+    setSelectedTests([]); setTestData({}); setRemark(""); setEditingId(null);
   };
 
   // Load TRF for editing – uses the same array response (full payload)
@@ -386,6 +376,19 @@ const TestRequestForm = () => {
   // ========== Render ==========
   return (
     <div style={styles.container}>
+      <style>{`
+        @keyframes trf-spin { to { transform: rotate(360deg); } }
+        @keyframes trf-shimmer {
+          0%   { background-position: -600px 0; }
+          100% { background-position: 600px 0; }
+        }
+        .trf-skeleton {
+          background: linear-gradient(90deg, #ebebeb 25%, #f5f5f5 50%, #ebebeb 75%);
+          background-size: 600px 100%;
+          animation: trf-shimmer 1.4s infinite linear;
+        }
+      `}</style>
+
       <h1 style={styles.mainTitle}>📋 Admin – Define Test Proform</h1>
 
       {/* Card 1: Company Details */}
@@ -394,11 +397,7 @@ const TestRequestForm = () => {
         <div style={styles.row}>
           <div style={styles.fieldGroup}>
             <label>Company Name *</label>
-            <select
-              value={selectedCompanyName}
-              onChange={(e) => setSelectedCompanyName(e.target.value)}
-              style={styles.input}
-            >
+            <select value={selectedCompanyName} onChange={(e) => setSelectedCompanyName(e.target.value)} style={styles.input}>
               <option value="">-- Select Company --</option>
               {companiesData.map((comp) => (
                 <option key={comp.id} value={comp.companyName}>
@@ -409,21 +408,11 @@ const TestRequestForm = () => {
           </div>
           <div style={styles.fieldGroup}>
             <label>Code</label>
-            <input
-              type="text"
-              value={companyCode}
-              readOnly
-              style={{ ...styles.input, backgroundColor: "#f5f5f5" }}
-            />
+            <input type="text" value={companyCode} readOnly style={{ ...styles.input, backgroundColor: "#f5f5f5" }} />
           </div>
           <div style={styles.fieldGroup}>
             <label>Request Name *</label>
-            <input
-              type="text"
-              value={requestName}
-              onChange={(e) => setRequestName(e.target.value)}
-              style={styles.input}
-            />
+            <input type="text" value={requestName} onChange={(e) => setRequestName(e.target.value)} style={styles.input} />
           </div>
         </div>
       </div>
@@ -434,11 +423,7 @@ const TestRequestForm = () => {
         <div style={styles.row}>
           <div style={styles.fieldGroup}>
             <label>Lab Name *</label>
-            <select
-              value={selectedLabName}
-              onChange={(e) => setSelectedLabName(e.target.value)}
-              style={styles.input}
-            >
+            <select value={selectedLabName} onChange={(e) => setSelectedLabName(e.target.value)} style={styles.input}>
               <option value="">-- Select Lab --</option>
               {allLabs.map((lab) => (
                 <option key={lab.id} value={lab.labName}>
@@ -449,21 +434,11 @@ const TestRequestForm = () => {
           </div>
           <div style={styles.fieldGroup}>
             <label>Lab Code</label>
-            <input
-              type="text"
-              value={labCode}
-              readOnly
-              style={{ ...styles.input, backgroundColor: "#f5f5f5" }}
-            />
+            <input type="text" value={labCode} readOnly style={{ ...styles.input, backgroundColor: "#f5f5f5" }} />
           </div>
           <div style={styles.fieldGroup}>
             <label>Type</label>
-            <input
-              type="text"
-              value={labType}
-              readOnly
-              style={{ ...styles.input, backgroundColor: "#f5f5f5" }}
-            />
+            <input type="text" value={labType} readOnly style={{ ...styles.input, backgroundColor: "#f5f5f5" }} />
           </div>
         </div>
       </div>
@@ -474,11 +449,7 @@ const TestRequestForm = () => {
         <div style={styles.row}>
           <div style={styles.fieldGroup}>
             <label>Product Name *</label>
-            <select
-              value={productName}
-              onChange={(e) => setProductName(e.target.value)}
-              style={styles.input}
-            >
+            <select value={productName} onChange={(e) => setProductName(e.target.value)} style={styles.input}>
               <option value="">-- Select Product --</option>
               {allProducts.map((prod) => (
                 <option key={prod.id} value={prod.productName}>
@@ -489,38 +460,22 @@ const TestRequestForm = () => {
           </div>
           <div style={styles.fieldGroup}>
             <label>Lot No.</label>
-            <input
-              type="text"
-              value={lotNo}
-              onChange={(e) => setLotNo(e.target.value)}
-              style={styles.input}
-            />
+            <input type="text" value={lotNo} onChange={(e) => setLotNo(e.target.value)} style={styles.input} />
           </div>
           <div style={styles.fieldGroup}>
             <label>Sample Code</label>
-            <input
-              type="text"
-              value={sampleCode}
-              readOnly
-              style={{ ...styles.input, backgroundColor: "#f5f5f5" }}
-            />
+            <input type="text" value={sampleCode} readOnly style={{ ...styles.input, backgroundColor: "#f5f5f5" }} />
           </div>
         </div>
       </div>
 
       {/* Card 4: Define Test Proform */}
       <div style={styles.card}>
-        <h2 style={styles.cardTitle}>
-          🧪 4. Define Test Proform (Structure only)
-        </h2>
+        <h2 style={styles.cardTitle}>🧪 4. Define Test Proform (Structure only)</h2>
         <div style={styles.testCheckboxGroup}>
           {Object.keys(allTestingFilds).map((testKey) => (
             <label key={testKey} style={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                checked={selectedTests.includes(testKey)}
-                onChange={() => toggleTest(testKey)}
-              />
+              <input type="checkbox" checked={selectedTests.includes(testKey)} onChange={() => toggleTest(testKey)} />
               {testKey}
             </label>
           ))}
@@ -590,31 +545,36 @@ const TestRequestForm = () => {
           </div>
         ))}
         {selectedTests.length === 0 && (
-          <div style={styles.emptyTestsMsg}>
-            ☑️ Select at least one test category.
-          </div>
+          <div style={styles.emptyTestsMsg}>☑️ Select at least one test category.</div>
         )}
       </div>
 
       {/* Card 5: Remark */}
       <div style={styles.card}>
         <h2 style={styles.cardTitle}>📝 5. Remark / Purpose</h2>
-        <textarea
-          rows="3"
-          value={remark}
-          onChange={(e) => setRemark(e.target.value)}
-          style={{ ...styles.input, width: "100%" }}
-        />
+        <textarea rows="3" value={remark} onChange={(e) => setRemark(e.target.value)} style={{ ...styles.input, width: "100%" }} />
       </div>
 
+      {/* ===== ACTION BAR ===== */}
       <div style={styles.actionBar}>
-        <button onClick={handleSaveRequest} style={styles.primaryBtn}>
-          {editingId ? "Update Request" : "Create Request"}
+        <button
+          onClick={handleSaveRequest}
+         
+          style={{
+            ...styles.primaryBtn,
+            opacity:  1,
+            cursor:"pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          
+          {
+             (editingId ? "Update Request" : "Create Request")}
         </button>
         {editingId && (
-          <button onClick={cancelEdit} style={styles.secondaryBtn}>
-            Cancel Edit
-          </button>
+          <button onClick={cancelEdit} style={styles.secondaryBtn}>Cancel Edit</button>
         )}
       </div>
 
@@ -712,20 +672,9 @@ const styles = {
     paddingBottom: "8px",
     borderBottom: "2px solid #f0f0f0",
   },
-  row: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "20px",
-    alignItems: "flex-end",
-  },
+  row: { display: "flex", flexWrap: "wrap", gap: "20px", alignItems: "flex-end" },
   fieldGroup: { flex: "1 1 200px", minWidth: "180px" },
-  label: {
-    display: "block",
-    marginBottom: "6px",
-    fontWeight: "500",
-    fontSize: "0.85rem",
-    color: "#1a1a1a",
-  },
+  label: { display: "block", marginBottom: "6px", fontWeight: "500", fontSize: "0.85rem", color: "#1a1a1a" },
   input: {
     width: "100%",
     padding: "10px 12px",
@@ -787,26 +736,9 @@ const styles = {
     gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
     gap: "16px",
   },
-  removeIconBtn: {
-    background: "none",
-    border: "none",
-    fontSize: "1rem",
-    cursor: "pointer",
-    color: "#cc0000",
-    padding: "0 0 0 8px",
-  },
-  emptyTestsMsg: {
-    textAlign: "center",
-    color: "#6c6c6c",
-    padding: "28px 12px",
-    fontStyle: "italic",
-  },
-  actionBar: {
-    display: "flex",
-    gap: "18px",
-    justifyContent: "flex-end",
-    margin: "16px 0 32px 0",
-  },
+  removeIconBtn: { background: "none", border: "none", fontSize: "1rem", cursor: "pointer", color: "#cc0000", padding: "0 0 0 8px" },
+  emptyTestsMsg: { textAlign: "center", color: "#6c6c6c", padding: "28px 12px", fontStyle: "italic" },
+  actionBar: { display: "flex", gap: "18px", justifyContent: "flex-end", margin: "16px 0 32px 0" },
   primaryBtn: {
     background: "#000000",
     color: "#ffffff",
@@ -828,38 +760,114 @@ const styles = {
     cursor: "pointer",
   },
   tableWrapper: { marginTop: "20px" },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    borderRadius: "5px",
-    overflow: "hidden",
-    border: "1px solid #ececec",
+  tableHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "16px",
+  },
+  requestCount: {
+    fontSize: "0.8rem",
+    color: "#999",
+    background: "#f4f4f4",
+    padding: "4px 12px",
+    borderRadius: "40px",
+    fontWeight: "500",
+  },
+  table: { width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" },
+  th: {
+    padding: "12px 16px",
+    textAlign: "left",
+    fontSize: "0.72rem",
+    fontWeight: "600",
+    color: "#888",
+    textTransform: "uppercase",
+    letterSpacing: "0.6px",
+    background: "#f9f9f9",
+    borderBottom: "1px solid #eaeaea",
+    whiteSpace: "nowrap",
+  },
+  tr: { borderBottom: "1px solid #f0f0f0", transition: "background 0.15s" },
+  td: { padding: "14px 16px", verticalAlign: "middle", color: "#1a1a1a" },
+  testBadge: {
+    display: "inline-block",
+    padding: "2px 8px",
+    borderRadius: "20px",
+    background: "#f0f0f0",
+    color: "#444",
+    fontSize: "0.72rem",
+    fontWeight: "500",
+    border: "1px solid #e4e4e4",
   },
   editBtn: {
     background: "none",
-    border: "1px solid #000",
-    borderRadius: "30px",
-    padding: "5px 12px",
-    marginRight: "10px",
+    border: "1px solid #d0d0d0",
+    borderRadius: "8px",
+    padding: "0",
+    width: "32px",
+    height: "32px",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
     cursor: "pointer",
-    fontSize: "0.75rem",
-    fontWeight: "500",
+    color: "#555",
+    transition: "border-color 0.15s, background 0.15s",
   },
   delBtn: {
     background: "none",
-    border: "1px solid #ff4d4d",
+    border: "1px solid #ffcccc",
     color: "#cc0000",
-    borderRadius: "30px",
-    padding: "5px 12px",
+    borderRadius: "8px",
     cursor: "pointer",
     fontSize: "0.75rem",
   },
   emptyTable: {
     textAlign: "center",
-    padding: "32px",
+    padding: "48px 32px",
     background: "#fafafa",
-    borderRadius: "24px",
-    color: "#4b4b4b",
+    borderRadius: "20px",
+    color: "#888",
+    fontSize: "0.9rem",
+  },
+
+  // ===== TABLE CENTER LOADER =====
+  tableLoaderWrap: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "52px 32px",
+    background: "#fafafa",
+    borderRadius: "20px",
+    border: "1px solid #eaeaea",
+  },
+  tableLoaderInner: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "14px",
+  },
+  tableLoaderSpinner: {
+    display: "inline-block",
+    width: "36px",
+    height: "36px",
+    border: "3px solid #e8e8e8",
+    borderTopColor: "#000000",
+    borderRadius: "50%",
+    animation: "trf-spin 0.75s linear infinite",
+  },
+  tableLoaderText: {
+    fontSize: "0.85rem",
+    color: "#888",
+    fontWeight: "500",
+    letterSpacing: "0.2px",
+  },
+
+  // ===== SKELETON =====
+  skeletonBase: {
+    display: "inline-block",
+    background: "linear-gradient(90deg, #ebebeb 25%, #f5f5f5 50%, #ebebeb 75%)",
+    backgroundSize: "600px 100%",
+    animation: "trf-shimmer 1.4s infinite linear",
   },
 };
 
