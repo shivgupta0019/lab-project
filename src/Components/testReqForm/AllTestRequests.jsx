@@ -3,14 +3,45 @@ import axios from "axios";
 
 const API_BASE = "http://localhost:5000/api";
 
+// Spinner Component
+const Spinner = ({ size = 20, color = "#000000" }) => (
+  <div
+    style={{
+      display: "inline-block",
+      width: size,
+      height: size,
+      border: `2px solid ${color}20`,
+      borderTop: `2px solid ${color}`,
+      borderRadius: "50%",
+      animation: "spin 0.6s linear infinite",
+    }}
+  />
+);
+
+// Add keyframe animation once
+if (
+  typeof document !== "undefined" &&
+  !document.querySelector("#spinner-style")
+) {
+  const style = document.createElement("style");
+  style.id = "spinner-style";
+  style.textContent = `
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 // Helper: format date
 const formatDate = (isoString) => {
   if (!isoString) return "N/A";
   return new Date(isoString).toLocaleString();
 };
 
-// ========== View Modal (Read-only) ==========
-const ViewModal = ({ trf, fieldsByTest, onClose }) => {
+// ========== View Modal (Read-only) - loader inside card ==========
+const ViewModal = ({ trf, fieldsByTest, onClose, loading }) => {
   if (!trf) return null;
   return (
     <div style={styles.modalOverlay} onClick={onClose}>
@@ -22,68 +53,83 @@ const ViewModal = ({ trf, fieldsByTest, onClose }) => {
           </button>
         </div>
         <div style={styles.modalBody}>
-          <div style={styles.modalSection}>
-            <h3>🏢 Company & Request</h3>
-            <div style={styles.infoGrid}>
-              <div>
-                <strong>TRF Code:</strong> {trf.trfCode}
-              </div>
-              <div>
-                <strong>Company:</strong> {trf.companyName} ({trf.companyCode})
-              </div>
-              <div>
-                <strong>Request Name:</strong> {trf.requestName}
-              </div>
-              <div>
-                <strong>Lab:</strong> {trf.labName} ({trf.labCode}) –{" "}
-                {trf.labType}
-              </div>
-              <div>
-                <strong>Product:</strong> {trf.productName}
-              </div>
-              <div>
-                <strong>Lot No.:</strong> {trf.lotNo || "—"}
-              </div>
-              <div>
-                <strong>Sample Code:</strong> {trf.sampleCode || "—"}
-              </div>
-              <div>
-                <strong>Status:</strong>{" "}
-                {trf.status === "filled" ? "✅ Filled" : "❌ Not Filled"}
-              </div>
-              <div>
-                <strong>Created:</strong> {formatDate(trf.createdAt)}
-              </div>
-              <div>
-                <strong>Last Updated:</strong> {formatDate(trf.updatedAt)}
-              </div>
+          {loading ? (
+            <div style={styles.modalLoaderContainer}>
+              <Spinner size={40} />
+              <p>Loading details...</p>
             </div>
-          </div>
-          {fieldsByTest && Object.keys(fieldsByTest).length > 0 && (
-            <div style={styles.modalSection}>
-              <h3>🧪 Test Results</h3>
-              {Object.entries(fieldsByTest).map(([testName, fields]) => (
-                <div key={testName} style={styles.testResultBlock}>
-                  <h4 style={styles.testResultTitle}>🔬 {testName} Analysis</h4>
-                  <div style={styles.predefinedGrid}>
-                    {fields.map((field) => (
-                      <div key={field.fieldRowId} style={styles.predefinedItem}>
-                        <span>{field.label}</span>
-                        <span style={{ fontWeight: 500 }}>
-                          {field.currentValue || "—"}
-                        </span>
-                      </div>
-                    ))}
+          ) : (
+            <>
+              <div style={styles.modalSection}>
+                <h3>🏢 Company & Request</h3>
+                <div style={styles.infoGrid}>
+                  <div>
+                    <strong>TRF Code:</strong> {trf.trfCode}
+                  </div>
+                  <div>
+                    <strong>Company:</strong> {trf.companyName} (
+                    {trf.companyCode})
+                  </div>
+                  <div>
+                    <strong>Request Name:</strong> {trf.requestName}
+                  </div>
+                  <div>
+                    <strong>Lab:</strong> {trf.labName} ({trf.labCode}) –{" "}
+                    {trf.labType}
+                  </div>
+                  <div>
+                    <strong>Product:</strong> {trf.productName}
+                  </div>
+                  <div>
+                    <strong>Lot No.:</strong> {trf.lotNo || "—"}
+                  </div>
+                  <div>
+                    <strong>Sample Code:</strong> {trf.sampleCode || "—"}
+                  </div>
+                  <div>
+                    <strong>Status:</strong>{" "}
+                    {trf.status === "filled" ? "✅ Filled" : "❌ Not Filled"}
+                  </div>
+                  <div>
+                    <strong>Created:</strong> {formatDate(trf.createdAt)}
+                  </div>
+                  <div>
+                    <strong>Last Updated:</strong> {formatDate(trf.updatedAt)}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-          {trf.remark && (
-            <div style={styles.modalSection}>
-              <h3>📝 Remark</h3>
-              <div style={styles.remarkBox}>{trf.remark}</div>
-            </div>
+              </div>
+              {fieldsByTest && Object.keys(fieldsByTest).length > 0 && (
+                <div style={styles.modalSection}>
+                  <h3>🧪 Test Results</h3>
+                  {Object.entries(fieldsByTest).map(([testName, fields]) => (
+                    <div key={testName} style={styles.testResultBlock}>
+                      <h4 style={styles.testResultTitle}>
+                        🔬 {testName} Analysis
+                      </h4>
+                      <div style={styles.predefinedGrid}>
+                        {fields.map((field) => (
+                          <div
+                            key={field.fieldRowId}
+                            style={styles.predefinedItem}
+                          >
+                            <span>{field.label}</span>
+                            <span style={{ fontWeight: 500 }}>
+                              {field.currentValue || "—"}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {trf.remark && (
+                <div style={styles.modalSection}>
+                  <h3>📝 Remark</h3>
+                  <div style={styles.remarkBox}>{trf.remark}</div>
+                </div>
+              )}
+            </>
           )}
         </div>
         <div style={styles.modalFooter}>
@@ -96,10 +142,17 @@ const ViewModal = ({ trf, fieldsByTest, onClose }) => {
   );
 };
 
-// ========== Edit/Fill Modal ==========
-const EditModal = ({ trf, fieldsByTest, onSave, onCancel, onFieldChange }) => {
+// ========== Edit/Fill Modal - loader inside card ==========
+const EditModal = ({
+  trf,
+  fieldsByTest,
+  onSave,
+  onCancel,
+  onFieldChange,
+  loading,
+  saving,
+}) => {
   if (!trf) return null;
-
   return (
     <div style={styles.modalOverlay} onClick={onCancel}>
       <div
@@ -117,49 +170,74 @@ const EditModal = ({ trf, fieldsByTest, onSave, onCancel, onFieldChange }) => {
           </button>
         </div>
         <div style={styles.modalBody}>
-          <div style={styles.infoGrid} className="compact">
-            <div>
-              <strong>Request:</strong> {trf.requestName}
+          {loading ? (
+            <div style={styles.modalLoaderContainer}>
+              <Spinner size={40} />
+              <p>Loading fields...</p>
             </div>
-            <div>
-              <strong>Product:</strong> {trf.productName}
+          ) : saving ? (
+            <div style={styles.modalLoaderContainer}>
+              <Spinner size={40} />
+              <p>Saving changes...</p>
             </div>
-            <div>
-              <strong>Lot No:</strong> {trf.lotNo || "—"}
-            </div>
-          </div>
-          {Object.entries(fieldsByTest).map(([testName, fields]) => (
-            <div key={testName} style={styles.editTestSection}>
-              <h3 style={styles.editTestTitle}>🔬 {testName} Analysis</h3>
-              <div style={styles.grid2Col}>
-                {fields.map((field) => (
-                  <div key={field.fieldRowId} style={styles.fieldGroup}>
-                    <label style={styles.label}>{field.label}</label>
-                    <input
-                      type="text"
-                      value={field.currentValue || ""}
-                      onChange={(e) =>
-                        onFieldChange(
-                          testName,
-                          field.fieldRowId,
-                          e.target.value,
-                        )
-                      }
-                      placeholder={field.placeholder}
-                      style={styles.input}
-                    />
-                  </div>
-                ))}
+          ) : (
+            <>
+              <div style={styles.infoGrid} className="compact">
+                <div>
+                  <strong>Request:</strong> {trf.requestName}
+                </div>
+                <div>
+                  <strong>Product:</strong> {trf.productName}
+                </div>
+                <div>
+                  <strong>Lot No:</strong> {trf.lotNo || "—"}
+                </div>
               </div>
-            </div>
-          ))}
-          {Object.keys(fieldsByTest).length === 0 && <p>No fields to fill.</p>}
+              {Object.entries(fieldsByTest).map(([testName, fields]) => (
+                <div key={testName} style={styles.editTestSection}>
+                  <h3 style={styles.editTestTitle}>🔬 {testName} Analysis</h3>
+                  <div style={styles.grid2Col}>
+                    {fields.map((field) => (
+                      <div key={field.fieldRowId} style={styles.fieldGroup}>
+                        <label style={styles.label}>{field.label}</label>
+                        <input
+                          type="text"
+                          value={field.currentValue || ""}
+                          onChange={(e) =>
+                            onFieldChange(
+                              testName,
+                              field.fieldRowId,
+                              e.target.value,
+                            )
+                          }
+                          placeholder={field.placeholder}
+                          style={styles.input}
+                          disabled={saving}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {Object.keys(fieldsByTest).length === 0 && (
+                <p>No fields to fill.</p>
+              )}
+            </>
+          )}
         </div>
         <div style={styles.modalFooter}>
-          <button onClick={onSave} style={styles.saveBtn}>
+          <button
+            onClick={onSave}
+            style={styles.saveBtn}
+            disabled={loading || saving}
+          >
             💾 Save Changes
           </button>
-          <button onClick={onCancel} style={styles.cancelBtn}>
+          <button
+            onClick={onCancel}
+            style={styles.cancelBtn}
+            disabled={loading || saving}
+          >
             Cancel
           </button>
         </div>
@@ -171,15 +249,24 @@ const EditModal = ({ trf, fieldsByTest, onSave, onCancel, onFieldChange }) => {
 // ========== Main Component ==========
 const AllTestRequests = () => {
   const [trfList, setTrfList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedTrf, setSelectedTrf] = useState(null); // for view modal
+  const [loadingList, setLoadingList] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // View modal
+  const [selectedTrf, setSelectedTrf] = useState(null);
   const [selectedFieldsByTest, setSelectedFieldsByTest] = useState(null);
+  const [viewLoading, setViewLoading] = useState(false);
+
+  // Edit modal
   const [editingTrf, setEditingTrf] = useState(null);
   const [editFieldsByTest, setEditFieldsByTest] = useState({});
+  const [editLoading, setEditLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  // Load all TRFs from backend
-  const loadTrfList = async () => {
-    setLoading(true);
+  // Load all TRFs
+  const loadTrfList = async (showRefreshLoader = false) => {
+    if (showRefreshLoader) setRefreshing(true);
+    else setLoadingList(true);
     try {
       const response = await axios.get(`${API_BASE}/trf`);
       setTrfList(response.data);
@@ -187,7 +274,8 @@ const AllTestRequests = () => {
       console.error("Failed to load TRFs", error);
       alert("Could not load test requests");
     } finally {
-      setLoading(false);
+      setLoadingList(false);
+      setRefreshing(false);
     }
   };
 
@@ -195,29 +283,37 @@ const AllTestRequests = () => {
     loadTrfList();
   }, []);
 
-  // Open view modal
+  // View details
   const handleView = async (trf) => {
+    setViewLoading(true);
+    setSelectedTrf(trf);
     try {
       const response = await axios.get(`${API_BASE}/trf/user/${trf.id}`);
-      setSelectedTrf(response.data.trf);
       setSelectedFieldsByTest(response.data.fieldsByTest);
     } catch (error) {
       alert("Failed to load details");
+      setSelectedTrf(null);
+    } finally {
+      setViewLoading(false);
     }
   };
 
-  // Open edit/fill modal
+  // Open edit modal
   const handleEdit = async (trf) => {
+    setEditLoading(true);
+    setEditingTrf(trf);
     try {
       const response = await axios.get(`${API_BASE}/trf/user/${trf.id}`);
-      setEditingTrf(response.data.trf);
       setEditFieldsByTest(response.data.fieldsByTest);
     } catch (error) {
       alert("Failed to load fields for editing");
+      setEditingTrf(null);
+    } finally {
+      setEditLoading(false);
     }
   };
 
-  // Update a single field value in edit modal
+  // Update field in edit modal
   const handleFieldChange = (testName, fieldRowId, value) => {
     setEditFieldsByTest((prev) => ({
       ...prev,
@@ -227,10 +323,9 @@ const AllTestRequests = () => {
     }));
   };
 
-  // Save all edited values
+  // Save all edits
   const handleSaveEdit = async () => {
     if (!editingTrf) return;
-    // Flatten all fields into array of { fieldRowId, value }
     const fields = [];
     Object.values(editFieldsByTest).forEach((testFields) => {
       testFields.forEach((f) => {
@@ -238,15 +333,18 @@ const AllTestRequests = () => {
       });
     });
     const payload = { fields };
+    setSaving(true);
     try {
       await axios.patch(`${API_BASE}/trf/${editingTrf.id}/fill`, payload);
       alert("Test results saved successfully!");
       setEditingTrf(null);
       setEditFieldsByTest({});
-      loadTrfList(); // refresh list to update status
+      loadTrfList(true); // refresh list
     } catch (error) {
       console.error(error);
       alert("Failed to save results");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -255,12 +353,128 @@ const AllTestRequests = () => {
     setEditFieldsByTest({});
   };
 
-  if (loading)
+  // Helper to get test names
+  const getTestNames = (trf) => {
+    if (trf.testNames) return trf.testNames;
+    if (trf.selectedTests && trf.selectedTests[0]?.testName) {
+      return trf.selectedTests.map((t) => t.testName);
+    }
+    return [];
+  };
+
+  // Render table content (loader inside card)
+  const renderTableContent = () => {
+    if (loadingList && !refreshing) {
+      return (
+        <div style={styles.loaderContainer}>
+          <Spinner size={36} />
+          <p style={{ marginTop: 16 }}>Loading requests...</p>
+        </div>
+      );
+    }
+
+    if (trfList.length === 0) {
+      return (
+        <div style={styles.emptyState}>
+          <div style={styles.emptyIcon}>📭</div>
+          <h3>No test request forms found</h3>
+          <p>Please create a test request from the admin panel first.</p>
+        </div>
+      );
+    }
+
     return (
-      <div style={styles.container}>
-        <div style={styles.loadingMsg}>Loading...</div>
-      </div>
+      <>
+        <div style={styles.statsBar}>
+          <span>
+            📊 Total forms: <strong>{trfList.length}</strong>
+          </span>
+          <button
+            onClick={() => loadTrfList(true)}
+            style={styles.refreshIconBtn}
+            disabled={refreshing}
+          >
+            {refreshing ? <Spinner size={16} /> : "🔄 Refresh"}
+          </button>
+        </div>
+        <div style={{ overflowX: "auto" }}>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>TRF Code</th>
+                <th style={styles.th}>Company</th>
+                <th style={styles.th}>Request Name</th>
+                <th style={styles.th}>Product</th>
+                <th style={styles.th}>Tests</th>
+                <th style={styles.th}>Last Updated</th>
+                <th style={styles.th}>Status</th>
+                <th style={styles.th}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {trfList.map((trf) => {
+                const testNames = getTestNames(trf);
+                return (
+                  <tr key={trf.id} style={styles.tableRow}>
+                    <td style={styles.td}>
+                      <code style={styles.codeBadge}>{trf.trfCode}</code>
+                    </td>
+                    <td style={styles.td}>{trf.companyName}</td>
+                    <td style={styles.td}>{trf.requestName}</td>
+                    <td style={styles.td}>{trf.productName}</td>
+                    <td style={styles.td}>
+                      <div style={styles.tagsContainer}>
+                        {testNames.slice(0, 2).map((name, idx) => (
+                          <span key={idx} style={styles.testTag}>
+                            {name}
+                          </span>
+                        ))}
+                        {testNames.length > 2 && (
+                          <span style={styles.testTagMore}>
+                            +{testNames.length - 2}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td style={styles.td}>
+                      {formatDate(trf.updatedAt || trf.createdAt)}
+                    </td>
+                    <td style={styles.td}>
+                      {trf.status === "filled" ? (
+                        <span style={styles.filledBadge}>✅ Filled</span>
+                      ) : (
+                        <span style={styles.notFilledBadge}>⏳ Pending</span>
+                      )}
+                    </td>
+                    <td style={styles.td}>
+                      <button
+                        onClick={() => handleView(trf)}
+                        style={styles.viewBtn}
+                        disabled={viewLoading}
+                      >
+                        👁️ View
+                      </button>
+                      <button
+                        onClick={() => handleEdit(trf)}
+                        style={
+                          trf.status === "filled"
+                            ? styles.editBtn
+                            : styles.fillBtn
+                        }
+                        disabled={editLoading}
+                      >
+                        {trf.status === "filled" ? "✏️ Edit" : "📝 Fill"}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </>
     );
+  };
 
   return (
     <div style={styles.container}>
@@ -272,103 +486,7 @@ const AllTestRequests = () => {
         </p>
       </div>
 
-      {trfList.length === 0 ? (
-        <div style={styles.emptyState}>
-          <div style={styles.emptyIcon}>📭</div>
-          <h3>No test request forms found</h3>
-        </div>
-      ) : (
-        <div style={styles.tableWrapper}>
-          <div style={styles.statsBar}>
-            Total forms: <strong>{trfList.length}</strong>
-          </div>
-          <div style={{ overflowX: "auto" }}>
-            <table style={styles.table}>
-              <thead>
-                <tr style={styles.tableHeaderRow}>
-                  <th style={styles.th}>Full ID</th>
-                  <th style={styles.th}>Company</th>
-                  <th style={styles.th}>Request Name</th>
-                  <th style={styles.th}>Product</th>
-                  <th style={styles.th}>Tests</th>
-                  <th style={styles.th}>Created / Updated</th>
-                  <th style={styles.th}>Status</th>
-                  <th style={styles.th}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {trfList.map((trf) => {
-                  // Extract test names from selectedTests (array of { testId, fields })
-                  const testNames = trf.selectedTests
-                    ? trf.selectedTests.map((t) => {
-                        // Find test name from allTestingFilds? We don't have it here.
-                        // But the list API should include test names. I'll assume trf.selectedTests contains test names.
-                        // Actually allTrf returns selectedTests as array of { testId, fields }. To get test names we need separate mapping.
-                        // For simplicity, let's modify allTrf to include test_names array.
-                        // However, in our earlier allTrf we didn't include test names. We'll update allTrf to return testNames.
-                        // But to avoid changing backend again, I'll compute using a map fetched from tests API.
-                        // For now, I'll assume backend returns testNames directly. I'll adjust the frontend to use a separate fetch of test definitions.
-                        return t.testId; // placeholder – you should actually store test names.
-                      })
-                    : [];
-                  // Better: let's use a separate useEffect to fetch test definitions and map testId to name.
-                  // I'll show a simple version: assume trf.testNames is provided by backend (recommended).
-                  // Since you already have allTestingFilds in the admin component, you can reuse it, but this is a separate component.
-                  // I'll modify allTrf to include testNames array. See backend note below.
-                  return (
-                    <tr key={trf.id} style={styles.tableRow}>
-                      <td style={styles.td}>
-                        <code>{trf.trfCode}</code>
-                      </td>
-                      <td style={styles.td}>{trf.companyName}</td>
-                      <td style={styles.td}>{trf.requestName}</td>
-                      <td style={styles.td}>{trf.productName}</td>
-                      <td style={styles.td}>
-                        {trf.testNames ? trf.testNames.join(", ") : "—"}
-                      </td>
-                      <td style={styles.td}>
-                        <div>Created: {formatDate(trf.createdAt)}</div>
-                        <div style={{ fontSize: "0.7rem", color: "#666" }}>
-                          Updated: {formatDate(trf.updatedAt)}
-                        </div>
-                      </td>
-                      <td style={styles.td}>
-                        {trf.status === "filled" ? (
-                          <span style={styles.filledBadge}>✅ Filled</span>
-                        ) : (
-                          <span style={styles.notFilledBadge}>
-                            ❌ Not Filled
-                          </span>
-                        )}
-                      </td>
-                      <td style={styles.td}>
-                        <button
-                          onClick={() => handleView(trf)}
-                          style={styles.viewBtn}
-                        >
-                          👁️ View
-                        </button>
-                        <button
-                          onClick={() => handleEdit(trf)}
-                          style={
-                            trf.status === "filled"
-                              ? styles.editBtn
-                              : styles.fillBtn
-                          }
-                        >
-                          {trf.status === "filled"
-                            ? "✏️ Edit Results"
-                            : "✏️ Fill the Form"}
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      <div style={styles.tableWrapper}>{renderTableContent()}</div>
 
       {selectedTrf && (
         <ViewModal
@@ -378,6 +496,7 @@ const AllTestRequests = () => {
             setSelectedTrf(null);
             setSelectedFieldsByTest(null);
           }}
+          loading={viewLoading}
         />
       )}
       {editingTrf && (
@@ -387,135 +506,178 @@ const AllTestRequests = () => {
           onFieldChange={handleFieldChange}
           onSave={handleSaveEdit}
           onCancel={cancelEdit}
+          loading={editLoading}
+          saving={saving}
         />
       )}
-
-      <div style={styles.footerNote}>
-        <button onClick={loadTrfList} style={styles.refreshBtn}>
-          🔄 Refresh List
-        </button>
-      </div>
     </div>
   );
 };
 
-// ========== Styles (same as before, keep as is) ==========
+// ========== Styles (with modal loader container) ==========
 const styles = {
   container: {
-    maxWidth: "1400px",
+    maxWidth: "1280px",
     margin: "0 auto",
     padding: "40px 24px",
-    background: "#fff",
-    color: "#000",
-    fontFamily: "'Segoe UI', Roboto, sans-serif",
+    background: "#ffffff",
+    color: "#1e293b",
+    fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
   },
   header: { marginBottom: "32px" },
   mainTitle: {
     fontSize: "2rem",
     fontWeight: "700",
     marginBottom: "8px",
-    paddingLeft: "20px",
+    letterSpacing: "-0.3px",
   },
-  subtitle: {
-    fontSize: "1rem",
-    color: "#4a4a4a",
-    marginTop: "8px",
-    paddingLeft: "24px",
+  subtitle: { fontSize: "1rem", color: "#64748b" },
+  tableWrapper: {
+    background: "#ffffff",
+    borderRadius: "24px",
+    border: "1px solid #e2e8f0",
+    overflow: "hidden",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+    minHeight: "300px",
+  },
+  loaderContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "60px 20px",
+    background: "#ffffff",
   },
   statsBar: {
-    marginBottom: "16px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "16px 24px",
+    background: "#fafcff",
+    borderBottom: "1px solid #e2e8f0",
     fontSize: "0.9rem",
-    background: "#f7f7f7",
-    padding: "10px 16px",
-    borderRadius: "40px",
-    display: "inline-block",
   },
-  tableWrapper: {
-    marginTop: "20px",
-    border: "1px solid #ececec",
-    borderRadius: "24px",
-    overflow: "hidden",
-    padding: "16px",
+  refreshIconBtn: {
+    background: "transparent",
+    border: "1px solid #cbd5e1",
+    borderRadius: "30px",
+    padding: "4px 12px",
+    cursor: "pointer",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    fontSize: "0.75rem",
   },
-  table: { width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" },
-  tableHeaderRow: { background: "#f8f8f8", borderBottom: "2px solid #e2e2e2" },
-  th: { textAlign: "left", padding: "16px 12px", fontWeight: "600" },
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    fontSize: "0.85rem",
+    minWidth: "680px",
+  },
+  th: {
+    textAlign: "left",
+    padding: "16px 16px",
+    backgroundColor: "#f8fafc",
+    fontWeight: "600",
+    color: "#1e293b",
+    borderBottom: "1px solid #e2e8f0",
+  },
   td: {
-    padding: "14px 12px",
-    borderBottom: "1px solid #f0f0f0",
+    padding: "14px 16px",
+    borderBottom: "1px solid #f1f5f9",
     verticalAlign: "middle",
   },
-  filledBadge: {
-    background: "#e6f7e6",
-    color: "#2e7d32",
+  tableRow: { transition: "background 0.2s" },
+  codeBadge: {
+    background: "#f1f5f9",
+    padding: "4px 8px",
+    borderRadius: "8px",
+    fontFamily: "monospace",
+    fontSize: "0.75rem",
+  },
+  tagsContainer: { display: "flex", flexWrap: "wrap", gap: "6px" },
+  testTag: {
+    background: "#ede9fe",
+    color: "#5b21b6",
     padding: "4px 10px",
     borderRadius: "30px",
-    fontSize: "0.75rem",
+    fontSize: "0.7rem",
+    fontWeight: "500",
+    whiteSpace: "nowrap",
+  },
+  testTagMore: {
+    background: "#f1f5f9",
+    color: "#475569",
+    padding: "4px 10px",
+    borderRadius: "30px",
+    fontSize: "0.7rem",
+    fontWeight: "500",
+  },
+  filledBadge: {
+    background: "#dcfce7",
+    color: "#15803d",
+    padding: "4px 10px",
+    borderRadius: "30px",
+    fontSize: "0.7rem",
     fontWeight: "600",
+    display: "inline-block",
   },
   notFilledBadge: {
-    background: "#ffe6e6",
-    color: "#b71c1c",
+    background: "#fff3e3",
+    color: "#b45309",
     padding: "4px 10px",
     borderRadius: "30px",
-    fontSize: "0.75rem",
+    fontSize: "0.7rem",
     fontWeight: "600",
+    display: "inline-block",
   },
   viewBtn: {
-    background: "none",
-    border: "1px solid #000",
+    background: "transparent",
+    border: "1px solid #cbd5e1",
     borderRadius: "30px",
     padding: "5px 12px",
     marginRight: "8px",
     cursor: "pointer",
     fontSize: "0.7rem",
+    fontWeight: "500",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "4px",
   },
   editBtn: {
-    background: "#000",
+    background: "#0f172a",
     color: "#fff",
     border: "none",
     borderRadius: "30px",
     padding: "5px 12px",
     cursor: "pointer",
     fontSize: "0.7rem",
+    fontWeight: "500",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "4px",
   },
   fillBtn: {
-    background: "#1976d2",
+    background: "#2563eb",
     color: "#fff",
     border: "none",
     borderRadius: "30px",
     padding: "5px 12px",
     cursor: "pointer",
     fontSize: "0.7rem",
+    fontWeight: "500",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "4px",
   },
   emptyState: {
     textAlign: "center",
     padding: "64px 24px",
-    background: "#fafafa",
-    borderRadius: "32px",
+    background: "#f8fafc",
+    borderRadius: "24px",
   },
-  emptyIcon: { fontSize: "4rem", marginBottom: "16px" },
-  loadingMsg: {
-    textAlign: "center",
-    padding: "60px",
-    fontSize: "1.2rem",
-    color: "#666",
-  },
-  footerNote: {
-    marginTop: "32px",
-    padding: "16px 20px",
-    background: "#f9f9f9",
-    borderRadius: "20px",
-    display: "flex",
-    justifyContent: "flex-end",
-  },
-  refreshBtn: {
-    background: "#fff",
-    border: "1px solid #ccc",
-    borderRadius: "40px",
-    padding: "8px 20px",
-    cursor: "pointer",
-  },
+  emptyIcon: { fontSize: "4rem", marginBottom: "16px", opacity: 0.6 },
+  // Modal styles with loader container inside
   modalOverlay: {
     position: "fixed",
     top: 0,
@@ -531,109 +693,120 @@ const styles = {
   },
   modalContent: {
     background: "#fff",
-    borderRadius: "10px",
+    borderRadius: "24px",
     maxWidth: "900px",
     width: "100%",
-    maxHeight: "80vh",
+    maxHeight: "85vh",
     overflowY: "auto",
     display: "flex",
     flexDirection: "column",
+    boxShadow: "0 20px 35px -10px rgba(0,0,0,0.2)",
   },
   modalHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     padding: "20px 28px",
-    borderBottom: "1px solid #eaeaea",
+    borderBottom: "1px solid #e2e8f0",
   },
-  modalTitle: { fontSize: "1.6rem", fontWeight: "600", margin: 0 },
+  modalTitle: { fontSize: "1.5rem", fontWeight: "600", margin: 0 },
   modalCloseBtn: {
     background: "none",
     border: "none",
     fontSize: "2rem",
     cursor: "pointer",
+    lineHeight: 1,
   },
   modalBody: { padding: "24px 28px", flex: 1 },
+  modalLoaderContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "60px 20px",
+    gap: "12px",
+  },
   modalSection: { marginBottom: "28px" },
   infoGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
     gap: "12px",
-    background: "#fbfbfb",
+    background: "#f8fafc",
     padding: "16px",
     borderRadius: "20px",
   },
   testResultBlock: {
     background: "#fefefe",
-    border: "1px solid #ececec",
+    border: "1px solid #e2e8f0",
     borderRadius: "20px",
     padding: "16px 20px",
     marginBottom: "20px",
   },
   testResultTitle: {
-    fontSize: "1.1rem",
+    fontSize: "1rem",
     fontWeight: "600",
-    marginBottom: "14px",
+    marginBottom: "12px",
   },
   predefinedGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
     gap: "8px 16px",
-    marginTop: "8px",
   },
   predefinedItem: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottom: "1px dashed #eaeaea",
+    borderBottom: "1px dashed #e2e8f0",
     padding: "6px 0",
-    gap: "8px",
   },
   remarkBox: {
-    background: "#faf6e7",
+    background: "#fefce8",
     padding: "16px",
     borderRadius: "16px",
-    borderLeft: "4px solid #d4a373",
+    borderLeft: "4px solid #eab308",
     whiteSpace: "pre-wrap",
   },
   modalFooter: {
     padding: "16px 28px",
-    borderTop: "1px solid #eaeaea",
+    borderTop: "1px solid #e2e8f0",
     display: "flex",
     justifyContent: "flex-end",
     gap: "12px",
   },
   closeModalBtn: {
-    background: "#000",
+    background: "#0f172a",
     color: "#fff",
     border: "none",
-    padding: "10px 24px",
+    padding: "8px 24px",
     borderRadius: "40px",
     cursor: "pointer",
   },
   saveBtn: {
-    background: "#2e7d32",
+    background: "#15803d",
     color: "#fff",
     border: "none",
-    padding: "10px 24px",
+    padding: "8px 24px",
     borderRadius: "40px",
     cursor: "pointer",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
   },
   cancelBtn: {
-    background: "#9e9e9e",
+    background: "#94a3b8",
     color: "#fff",
     border: "none",
-    padding: "10px 24px",
+    padding: "8px 24px",
     borderRadius: "40px",
     cursor: "pointer",
   },
   editTestSection: {
     marginBottom: "32px",
-    borderBottom: "1px solid #eaeaea",
     paddingBottom: "24px",
+    borderBottom: "1px solid #e2e8f0",
   },
   editTestTitle: {
-    fontSize: "1.2rem",
+    fontSize: "1.1rem",
     fontWeight: "600",
     marginBottom: "16px",
   },
@@ -642,22 +815,27 @@ const styles = {
     gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
     gap: "16px",
   },
-  fieldGroup: { display: "flex", flexDirection: "column" },
-  label: {
-    marginBottom: "6px",
-    fontWeight: "500",
-    fontSize: "0.85rem",
-    display: "flex",
-    alignItems: "center",
-    gap: "4px",
-  },
+  fieldGroup: { display: "flex", flexDirection: "column", gap: "4px" },
+  label: { fontWeight: "500", fontSize: "0.8rem", color: "#475569" },
   input: {
     padding: "8px 12px",
-    border: "1px solid #ccc",
+    border: "1px solid #cbd5e1",
     borderRadius: "12px",
     fontSize: "0.9rem",
     outline: "none",
+    transition: "0.2s",
   },
 };
+
+// Add global hover style for table rows
+if (typeof document !== "undefined") {
+  const style = document.createElement("style");
+  style.textContent = `
+    .lm-table-row:hover {
+      background-color: #f8fafc;
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 export default AllTestRequests;

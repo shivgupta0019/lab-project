@@ -1,2307 +1,4 @@
-// import { useEffect, useState } from "react";
-// import axios from "axios";
-// const globalStyles = `
-//   * {
-//     margin: 0;
-//     padding: 0;
-//     box-sizing: border-box;
-//   }
-
-//   body {
-//     background: #ffffff;
-//     font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
-//   }
-
-//   @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
-
-//   .lm-app {
-//     min-height: 100vh;
-//     background: #ffffff;
-//   }
-
-//   .lm-container {
-//     max-width: 1280px;
-//     margin: 0 auto;
-//     padding: 2rem 2rem 3rem;
-//   }
-
-//   .lm-header {
-//     margin-bottom: 2.5rem;
-//     border-bottom: 1px solid #eaeef2;
-//     padding-bottom: 1.5rem;
-//   }
-
-//   .lm-title {
-//     font-size: 1.8rem;
-//     font-weight: 600;
-//     letter-spacing: -0.02em;
-//     color: #000000;
-//     margin-bottom: 0.25rem;
-//   }
-
-//   .lm-subtitle {
-//     font-size: 0.9rem;
-//     color: #5b677b;
-//     font-weight: 400;
-//   }
-
-//   .lm-tabs {
-//     display: flex;
-//     gap: 0.5rem;
-//     border-bottom: 1px solid #eaeef2;
-//     margin-bottom: 2rem;
-//     flex-wrap: wrap;
-//   }
-
-//   .lm-tab {
-//     background: transparent;
-//     border: none;
-//     padding: 0.75rem 1.5rem;
-//     font-size: 0.95rem;
-//     font-weight: 500;
-//     color: #5b677b;
-//     cursor: pointer;
-//     transition: all 0.2s ease;
-//     position: relative;
-//     font-family: inherit;
-//   }
-
-//   .lm-tab:hover {
-//     color: #000000;
-//   }
-
-//   .lm-tab.active {
-//     color: #000000;
-//     font-weight: 600;
-//   }
-
-//   .lm-tab.active::after {
-//     content: '';
-//     position: absolute;
-//     bottom: -1px;
-//     left: 0;
-//     right: 0;
-//     height: 2px;
-//     background: #000000;
-//     border-radius: 2px 2px 0 0;
-//   }
-
-//   .lm-panel {
-//     animation: fadeIn 0.25s ease;
-//   }
-
-//   @keyframes fadeIn {
-//     from { opacity: 0; transform: translateY(4px); }
-//     to { opacity: 1; transform: translateY(0); }
-//   }
-
-//   .lm-form-grid {
-//     display: grid;
-//     grid-template-columns: repeat(2, 1fr);
-//     gap: 1.5rem;
-//     margin-bottom: 2rem;
-//   }
-
-//   .lm-full-width {
-//     grid-column: span 2;
-//   }
-
-//   .lm-field {
-//     display: flex;
-//     flex-direction: column;
-//     gap: 0.5rem;
-//   }
-
-//   .lm-label {
-//     font-size: 0.8rem;
-//     font-weight: 600;
-//     text-transform: uppercase;
-//     letter-spacing: 0.5px;
-//     color: #2c3e4e;
-//   }
-
-//   .lm-input,
-//   .lm-select,
-//   .lm-textarea {
-//     width: 100%;
-//     padding: 0.85rem 1rem;
-//     font-size: 0.95rem;
-//     font-family: inherit;
-//     background: #ffffff;
-//     border: 1px solid #dce3e9;
-//     border-radius: 12px;
-//     transition: all 0.2s;
-//     outline: none;
-//     color: #000000;
-//   }
-
-//   .lm-textarea {
-//     resize: vertical;
-//     min-height: 100px;
-//   }
-
-//   .lm-input:focus,
-//   .lm-select:focus,
-//   .lm-textarea:focus {
-//     border-color: #000000;
-//     box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
-//   }
-
-//   .lm-input::placeholder,
-//   .lm-textarea::placeholder {
-//     color: #a0abb9;
-//   }
-
-//   .lm-check-group {
-//     display: flex;
-//     flex-direction: column;
-//     gap: 0.75rem;
-//     margin-top: 0.5rem;
-//   }
-
-//   .lm-checkbox-item {
-//     display: flex;
-//     align-items: center;
-//     gap: 0.75rem;
-//     cursor: pointer;
-//     padding: 0.5rem 0;
-//   }
-
-//   .lm-checkbox-item input[type="checkbox"] {
-//     width: 18px;
-//     height: 18px;
-//     cursor: pointer;
-//     accent-color: #000000;
-//   }
-
-//   .lm-checkbox-item label {
-//     font-size: 0.95rem;
-//     color: #000000;
-//     cursor: pointer;
-//   }
-
-//   .lm-new-test {
-//     background: #f8f9fc;
-//     border-radius: 16px;
-//     padding: 1.2rem;
-//     margin: 1.5rem 0;
-//     border: 1px solid #eef2f5;
-//   }
-
-//   .lm-new-test-title {
-//     font-size: 0.9rem;
-//     font-weight: 600;
-//     color: #000000;
-//     margin-bottom: 1rem;
-//   }
-
-//   .lm-row {
-//     display: flex;
-//     gap: 1rem;
-//     align-items: flex-end;
-//     margin-bottom: 1rem;
-//   }
-
-//   .lm-row .lm-field {
-//     flex: 1;
-//   }
-
-//   .lm-btn-small {
-//     background: #000000;
-//     border: none;
-//     padding: 0.7rem 1.2rem;
-//     border-radius: 40px;
-//     font-weight: 500;
-//     font-size: 0.8rem;
-//     color: #ffffff;
-//     cursor: pointer;
-//     transition: all 0.2s;
-//     font-family: inherit;
-//     white-space: nowrap;
-//   }
-
-//   .lm-btn-small:hover {
-//     background: #2c2c2c;
-//   }
-
-//   .lm-btn-outline {
-//     background: transparent;
-//     border: 1px solid #dce3e9;
-//     padding: 0.5rem 1rem;
-//     border-radius: 40px;
-//     font-weight: 500;
-//     font-size: 0.75rem;
-//     color: #2c3e4e;
-//     cursor: pointer;
-//     transition: all 0.2s;
-//     margin:auto;
-//   }
-
-//   .lm-btn-outline:hover {
-//     border-color: #000000;
-//     background: #fafcfc;
-//   }
-
-//   .lm-dynamic-field-row {
-//     display: flex;
-//     gap: 0.75rem;
-//     align-items: flex-end;
-//     margin-bottom: 0.75rem;
-//   }
-
-//   .lm-dynamic-field-row .lm-field {
-//     flex: 1;
-//     margin-bottom: 0;
-//   }
-
-//   .lm-test-section {
-//     margin-top: 2rem;
-//     border-top: 1px solid #eaeef2;
-//     padding-top: 1.5rem;
-//   }
-
-//   .lm-test-heading {
-//     font-size: 1.1rem;
-//     font-weight: 600;
-//     color: #000000;
-//     margin-bottom: 1rem;
-//     display: flex;
-//     align-items: center;
-//     gap: 0.5rem;
-//   }
-
-//   .lm-test-fields {
-//     background: #ffffff;
-//     border: 1px solid #eef2f5;
-//     border-radius: 16px;
-//     padding: 1.2rem;
-//     margin-bottom: 1.5rem;
-//   }
-
-//   .lm-actions {
-//     display: flex;
-//     justify-content: flex-end;
-//     gap: 1rem;
-//     margin-top: 1rem;
-//     padding-top: 1rem;
-//     border-top: 1px solid #eaeef2;
-//   }
-
-//   .lm-btn-secondary {
-//     background: transparent;
-//     border: 1px solid #dce3e9;
-//     padding: 0.7rem 1.5rem;
-//     border-radius: 40px;
-//     font-weight: 500;
-//     font-size: 0.85rem;
-//     color: #2c3e4e;
-//     cursor: pointer;
-//     transition: all 0.2s;
-//     font-family: inherit;
-//   }
-
-//   .lm-btn-secondary:hover {
-//     border-color: #000000;
-//     background: #fafcfc;
-//   }
-
-//   .lm-btn-primary {
-//     background: #000000;
-//     border: none;
-//     padding: 0.7rem 1.8rem;
-//     border-radius: 40px;
-//     font-weight: 500;
-//     font-size: 0.85rem;
-//     color: #ffffff;
-//     cursor: pointer;
-//     transition: all 0.2s;
-//     font-family: inherit;
-//     display: flex;
-//     align-items: center;
-//     gap: 0.5rem;
-//     min-width: 120px;
-//     justify-content: center;
-//   }
-
-//   .lm-btn-primary:hover {
-//     background: #2c2c2c;
-//     transform: scale(0.98);
-//   }
-
-//   .lm-btn-primary:disabled {
-//     background: #555555;
-//     cursor: not-allowed;
-//     transform: none;
-//   }
-
-//   .lm-info-card {
-//     background: #f8f9fc;
-//     border-radius: 16px;
-//     padding: 1rem 1.2rem;
-//     margin-top: 1.5rem;
-//     border: 1px solid #eef2f5;
-//     font-size: 0.85rem;
-//     color: #2c3e4e;
-//   }
-
-//   .lm-badge {
-//     display: inline-block;
-//     background: #0000000c;
-//     padding: 0.2rem 0.7rem;
-//     border-radius: 30px;
-//     font-size: 0.7rem;
-//     font-weight: 500;
-//     letter-spacing: 0.3px;
-//     color: #000000;
-//     margin-left: 0.5rem;
-//   }
-
-//   .lm-table {
-//     width: 100%;
-//     border-collapse: collapse;
-//     margin-top: 2rem;
-//     font-size: 0.85rem;
-//     overflow-x: auto;
-//     display: block;
-//   }
-
-//   .lm-table thead,
-//   .lm-table tbody {
-//     display: table;
-//     width: 100%;
-//   }
-
-//   .lm-table th,
-//   .lm-table td {
-//     border: 1px solid #eaeef2;
-//     padding: 0.75rem;
-//     text-align: left;
-//     vertical-align: top;
-//   }
-
-//   .lm-table th {
-//     background: #f8f9fc;
-//     font-weight: 600;
-//     color: #000000;
-//   }
-
-//   .lm-table td {
-//     color: #2c3e4e;
-//   }
-
-//   .lm-test-fields-preview {
-//     margin: 0;
-//     padding-left: 1rem;
-//   }
-
-//   .lm-editable-input {
-//     width: 100%;
-//     padding: 0.4rem;
-//     border: 1px solid #dce3e9;
-//     border-radius: 6px;
-//     font-family: inherit;
-//     font-size: 0.85rem;
-//   }
-
-//   .lm-editable-select {
-//     width: 100%;
-//     padding: 0.4rem;
-//     border: 1px solid #dce3e9;
-//     border-radius: 6px;
-//     font-family: inherit;
-//     font-size: 0.85rem;
-//   }
-
-//   .lm-action-buttons {
-//     display: flex;
-//     gap: 0.5rem;
-//     flex-wrap: wrap;
-//   }
-
-//   .lm-icon-btn {
-//     background: transparent;
-//     border: none;
-//     cursor: pointer;
-//     font-size: 1rem;
-//     padding: 0.2rem 0.4rem;
-//     border-radius: 4px;
-//     transition: background 0.2s;
-//   }
-
-//   .lm-icon-btn:hover {
-//     background: #f0f0f0;
-//   }
-
-//   /* ===== LOADER STYLES ===== */
-//   @keyframes lm-spin {
-//     to { transform: rotate(360deg); }
-//   }
-
-//   .lm-spinner {
-//     width: 15px;
-//     height: 15px;
-//     border: 2px solid rgba(255,255,255,0.35);
-//     border-top-color: #ffffff;
-//     border-radius: 50%;
-//     animation: lm-spin 0.7s linear infinite;
-//     flex-shrink: 0;
-//   }
-
-//   .lm-save-loader-wrap {
-//     display: flex;
-//     justify-content: flex-end;
-//     margin-top: 1rem;
-//     padding-top: 1rem;
-//     border-top: 1px solid #eaeef2;
-//   }
-
-//   .lm-table-loader {
-//     width: 100%;
-//     display: flex;
-//     flex-direction: column;
-//     align-items: center;
-//     justify-content: center;
-//     padding: 2.5rem 1rem;
-//     gap: 0.75rem;
-//     border: 1px solid #eaeef2;
-//     border-radius: 16px;
-//     margin-top: 2rem;
-//     background: #fafbfc;
-//   }
-
-//   .lm-table-spinner {
-//     width: 32px;
-//     height: 32px;
-//     border: 3px solid #eaeef2;
-//     border-top-color: #000000;
-//     border-radius: 50%;
-//     animation: lm-spin 0.8s linear infinite;
-//   }
-
-//   .lm-table-loader-text {
-//     font-size: 0.85rem;
-//     color: #5b677b;
-//     font-weight: 500;
-//   }
-
-//   @media (max-width: 720px) {
-//     .lm-container {
-//       padding: 1.5rem;
-//     }
-//     .lm-form-grid {
-//       grid-template-columns: 1fr;
-//       gap: 1rem;
-//     }
-//     .lm-full-width {
-//       grid-column: span 1;
-//     }
-//     .lm-tab {
-//       padding: 0.6rem 1rem;
-//       font-size: 0.85rem;
-//     }
-//     .lm-title {
-//       font-size: 1.4rem;
-//     }
-//     .lm-row, .lm-dynamic-field-row {
-//       flex-direction: column;
-//       align-items: stretch;
-//     }
-//     .lm-btn-small {
-//       align-self: flex-start;
-//     }
-//     .lm-table {
-//       font-size: 0.75rem;
-//     }
-//     .lm-table th,
-//     .lm-table td {
-//       padding: 0.5rem;
-//     }
-//   }
-// `;
-
-// // Helper to generate unique codes
-// const generateCode = (prefix = "ARY") => {
-//   const now = new Date();
-//   const datePart = now.toISOString().slice(0, 10).replace(/-/g, "");
-//   const random = Math.floor(Math.random() * 1000)
-//     .toString()
-//     .padStart(3, "0");
-//   return `${prefix}-${datePart}-${random}`;
-// };
-
-// // Predefined test fields (same as original)
-// const TESTING_FIELDS1 = {
-//   ETO: [
-//     {
-//       name: "etoConcentration",
-//       label: "ETO Concentration",
-//       placeholder: "e.g. 600 mg/L",
-//     },
-//     {
-//       name: "exposureTime",
-//       label: "Exposure Time",
-//       placeholder: "e.g. 4 hours",
-//     },
-//     { name: "temperature", label: "Temperature", placeholder: "e.g. 54°C" },
-//     { name: "humidity", label: "Humidity", placeholder: "e.g. 60%" },
-//     {
-//       name: "residueLevel",
-//       label: "Residue Level",
-//       placeholder: "e.g. < 10 ppm",
-//     },
-//   ],
-//   Micro: [
-//     {
-//       name: "totalPlateCount",
-//       label: "Total Plate Count",
-//       placeholder: "e.g. < 100 CFU/g",
-//     },
-//     {
-//       name: "yeastMold",
-//       label: "Yeast & Mold",
-//       placeholder: "e.g. < 10 CFU/g",
-//     },
-//     { name: "eColi", label: "E. Coli", placeholder: "e.g. Absent/25g" },
-//     { name: "salmonella", label: "Salmonella", placeholder: "e.g. Absent/25g" },
-//     {
-//       name: "coliformBacteria",
-//       label: "Coliform Bacteria",
-//       placeholder: "e.g. < 3 MPN/g",
-//     },
-//   ],
-//   Physical: [
-//     {
-//       name: "textureAnalysis",
-//       label: "Texture Analysis",
-//       placeholder: "e.g. Firm, 8.5 N",
-//     },
-//     {
-//       name: "colorMeasurement",
-//       label: "Color Measurement",
-//       placeholder: "e.g. L*=92",
-//     },
-//     {
-//       name: "moistureContent",
-//       label: "Moisture Content",
-//       placeholder: "e.g. 12.5%",
-//     },
-//     {
-//       name: "particleSizeShape",
-//       label: "Particle Size & Shape",
-//       placeholder: "e.g. 50–100 µm",
-//     },
-//     { name: "viscosity", label: "Viscosity", placeholder: "e.g. 450 mPa·s" },
-//     {
-//       name: "densitySpecificGravity",
-//       label: "Density / Specific",
-//       placeholder: "e.g. 1.05 g/cm³",
-//     },
-//     {
-//       name: "waterActivity",
-//       label: "Water Activity",
-//       placeholder: "e.g. 0.87 aw",
-//     },
-//   ],
-//   Chemical: [
-//     { name: "phLevel", label: "pH Level", placeholder: "e.g. 6.8" },
-//     { name: "ashContent", label: "Ash Content", placeholder: "e.g. 1.2%" },
-//     {
-//       name: "proteinContent",
-//       label: "Protein Content",
-//       placeholder: "e.g. 18.5%",
-//     },
-//     { name: "fatContent", label: "Fat Content", placeholder: "e.g. 5.3%" },
-//     {
-//       name: "peroxideValue",
-//       label: "Peroxide Value",
-//       placeholder: "e.g. 2.1 meq/kg",
-//     },
-//     {
-//       name: "heavyMetals",
-//       label: "Heavy Metals",
-//       placeholder: "e.g. Pb < 0.5 ppm",
-//     },
-//   ],
-//   Presticide: [
-//     {
-//       name: "activeIngredient",
-//       label: "Active Ingredient",
-//       placeholder: "e.g. Chlorpyrifos",
-//     },
-//     {
-//       name: "concentration",
-//       label: "Concentration",
-//       placeholder: "e.g. 500 g/L",
-//     },
-//     { name: "solventUsed", label: "Solvent Used", placeholder: "e.g. Xylene" },
-//     {
-//       name: "stabilityTest",
-//       label: "Stability Test",
-//       placeholder: "e.g. Stable at 54°C",
-//     },
-//     { name: "phOfSolution", label: "pH of Solution", placeholder: "e.g. 6.5" },
-//   ],
-// };
-
-// export default function LabManagement() {
-//   const [activeTab, setActiveTab] = useState("lab");
-//   const [allTestingFilds, setAllTestingFilds] = useState([]);
-
-//   // ===== LOADER STATES (sirf yahi add kiya hai) =====
-//   const [savingLab, setSavingLab] = useState(false);
-//   const [savingProduct, setSavingProduct] = useState(false);
-//   const [savingCompany, setSavingCompany] = useState(false);
-
-//   // ---------- Company State ----------
-//   const [companyData, setCompanyData] = useState({
-//     companyName: "",
-//     gst: "",
-//     address: "",
-//     phone: "",
-//     adminName: "",
-//   });
-//   const [savedCompanies, setSavedCompanies] = useState([]);
-//   const [editingCompanyId, setEditingCompanyId] = useState(null);
-//   const [editingCompanyData, setEditingCompanyData] = useState(null);
-
-//   // ---------- Lab State (unchanged) ----------
-//   const [labData, setLabData] = useState({
-//     labName: "",
-//     gst: "",
-//     address: "",
-//     phone: "",
-//     adminName: "",
-//     tabType: "",
-//   });
-//   const [savedLabs, setSavedLabs] = useState([]);
-//   const [editingLabId, setEditingLabId] = useState(null);
-//   const [editingLabData, setEditingLabData] = useState(null);
-
-//   // ---------- Product State (unchanged) ----------
-//   const [productData, setProductData] = useState({
-//     productName: "",
-//   });
-//   const [savedProducts, setSavedProducts] = useState([]);
-//   const [editingProductId, setEditingProductId] = useState(null);
-//   const [editingProductData, setEditingProductData] = useState(null);
-
-//   const defaultTests = Object.keys(allTestingFilds || {}).map((key) => ({
-//     id: key,
-//     label: key,
-//     fields: allTestingFilds[key],
-//   }));
-//   const [availableTests, setAvailableTests] = useState(defaultTests);
-
-//   useEffect(() => {
-//     setAvailableTests(defaultTests);
-//   }, [allTestingFilds]);
-//   const [selectedTestIds, setSelectedTestIds] = useState([]);
-//   const [testValues, setTestValues] = useState({});
-//   const [savedTests, setSavedTests] = useState([]);
-//   const [editingTestId, setEditingTestId] = useState(null);
-//   const [editingTestData, setEditingTestData] = useState(null);
-//   const [newTestLabel, setNewTestLabel] = useState("");
-//   const [newTestFields, setNewTestFields] = useState([
-//     { name: "", label: "", placeholder: "" },
-//   ]);
-
-//   const handleGetAllTests = async () => {
-//     try {
-//       const response = await axios.get("http://localhost:5000/api/tests");
-
-//       if (response.data && response.data.TESTING_FIELDS) {
-//         setAllTestingFilds(response.data.TESTING_FIELDS);
-//       }
-//     } catch (error) {
-//       console.error("Error saving company:", error);
-//       if (error.response && error.response.status === 409) {
-//         alert(
-//           "Company code already exists. Please try again (new code will be generated).",
-//         );
-//       } else {
-//         const errorMsg =
-//           error.response?.data?.error || "Failed to save company.";
-//         alert(errorMsg);
-//       }
-//     }
-//   };
-
-//   // ---------- Company Functions ----------
-//   const updateCompany = (field, value) =>
-//     setCompanyData((prev) => ({ ...prev, [field]: value }));
-//   const resetCompany = () =>
-//     setCompanyData({
-//       companyName: "",
-//       gst: "",
-//       address: "",
-//       phone: "",
-//       adminName: "",
-//     });
-
-//   const handleSaveCompany = async () => {
-//     if (!companyData.companyName.trim()) {
-//       alert("Company Name is required.");
-//       return;
-//     }
-
-//     const generatedCode = generateCode("ARY");
-
-//     const payload = {
-//       companyName: companyData.companyName,
-//       gst: companyData.gst,
-//       address: companyData.address,
-//       phone: companyData.phone,
-//       adminName: companyData.adminName,
-//       companyCode: generatedCode,
-//     };
-
-//     // ===== LOADER ON =====
-//     setSavingCompany(true);
-
-//     try {
-//       const response = await axios.post(
-//         "http://localhost:5000/api/companies",
-//         payload,
-//       );
-
-//       if (response.data && response.data.allCompanies) {
-//         setSavedCompanies(response.data.allCompanies);
-//         alert("Company saved successfully!");
-//       }
-
-//       resetCompany();
-//     } catch (error) {
-//       console.error("Error saving company:", error);
-//       if (error.response && error.response.status === 409) {
-//         alert(
-//           "Company code already exists. Please try again (new code will be generated).",
-//         );
-//       } else {
-//         const errorMsg =
-//           error.response?.data?.error || "Failed to save company.";
-//         alert(errorMsg);
-//       }
-//     } finally {
-//       // ===== LOADER OFF =====
-//       setSavingCompany(false);
-//     }
-//   };
-
-//   const handleGetAllCompany = async () => {
-//     try {
-//       const response = await axios.get(
-//         "http://localhost:5000/api/getCompanies",
-//       );
-
-//       if (response.data && response.data.allCompanies) {
-//         setSavedCompanies(response.data.allCompanies);
-//       }
-
-//       resetCompany();
-//     } catch (error) {
-//       console.error("Error saving company:", error);
-//       if (error.response && error.response.status === 409) {
-//         alert(
-//           "Company code already exists. Please try again (new code will be generated).",
-//         );
-//       } else {
-//         const errorMsg =
-//           error.response?.data?.error || "Failed to save company.";
-//         alert(errorMsg);
-//       }
-//     }
-//   };
-
-//   const startEditCompany = (comp) => {
-//     setEditingCompanyId(comp.id);
-//     setEditingCompanyData({ ...comp });
-//   };
-//   const cancelEditCompany = () => {
-//     setEditingCompanyId(null);
-//     setEditingCompanyData(null);
-//   };
-//   const saveEditCompany = async () => {
-//     if (!editingCompanyData.companyName.trim()) {
-//       alert("Company Name required.");
-//       return;
-//     }
-
-//     try {
-//       const response = await axios.put(
-//         `http://localhost:5000/api/companies/${editingCompanyId}`,
-//         {
-//           companyName: editingCompanyData.companyName,
-//           gst: editingCompanyData.gst,
-//           address: editingCompanyData.address,
-//           phone: editingCompanyData.phone,
-//           adminName: editingCompanyData.adminName,
-//           companyCode: editingCompanyData.companyCode,
-//         },
-//       );
-
-//       if (response.data && response.data.allCompanies) {
-//         setSavedCompanies(response.data.allCompanies);
-//         alert("Company updated successfully!");
-//       } else {
-//         setSavedCompanies((prev) =>
-//           prev.map((comp) =>
-//             comp.id === editingCompanyId
-//               ? { ...editingCompanyData, savedAt: new Date().toLocaleString() }
-//               : comp,
-//           ),
-//         );
-//         alert("Company updated successfully!");
-//       }
-
-//       cancelEditCompany();
-//     } catch (error) {
-//       console.error("Error updating company:", error);
-
-//       if (error.response) {
-//         switch (error.response.status) {
-//           case 404:
-//             alert("Company not found. It may have been deleted.");
-//             break;
-//           case 409:
-//             alert("Company Code already exists. Please change it.");
-//             break;
-//           default:
-//             alert(error.response.data?.error || "Failed to update company.");
-//         }
-//       } else {
-//         alert("Network error. Please check your connection.");
-//       }
-//     }
-//   };
-
-//   const deleteCompany = async (id) => {
-//     if (!window.confirm("Delete this company record?")) return;
-
-//     try {
-//       const response = await axios.delete(
-//         `http://localhost:5000/api/companies/${id}`,
-//       );
-
-//       if (response.data && response.data.allCompanies) {
-//         setSavedCompanies(response.data.allCompanies);
-//         alert("Company deleted successfully!");
-//       } else {
-//         setSavedCompanies((prev) => prev.filter((comp) => comp.id !== id));
-//         alert("Company deleted successfully!");
-//       }
-//     } catch (error) {
-//       console.error("Error deleting company:", error);
-//       if (error.response?.status === 404) {
-//         alert("Company not found. It may have already been deleted.");
-//       } else {
-//         alert(error.response?.data?.error || "Failed to delete company.");
-//       }
-//     }
-//   };
-
-//   // ---------- Lab Functions (identical to original, included fully) ----------
-//   const updateLab = (field, value) =>
-//     setLabData((prev) => ({ ...prev, [field]: value }));
-//   const resetLab = () =>
-//     setLabData({
-//       labName: "",
-//       gst: "",
-//       address: "",
-//       phone: "",
-//       adminName: "",
-//       tabType: "",
-//     });
-//   const handleGetLab = async () => {
-//     try {
-//       const response = await axios.get("http://localhost:5000/api/labs");
-
-//       if (response.data && response.data.allLabs) {
-//         setSavedLabs(response.data.allLabs);
-//       }
-//     } catch (error) {
-//       console.error("Error saving lab:", error);
-//       if (error.response?.status === 409) {
-//         alert("Lab Code already exists. Please try again.");
-//       } else {
-//         alert(error.response?.data?.error || "Failed to save lab.");
-//       }
-//     }
-//   };
-//   const handleSaveLab = async () => {
-//     if (!labData.labName.trim()) {
-//       alert("Lab Name is required.");
-//       return;
-//     }
-//     if (!labData.tabType) {
-//       alert("Please select Lab Type.");
-//       return;
-//     }
-
-//     const generatedCode = generateCode("LAB");
-
-//     // ===== LOADER ON =====
-//     setSavingLab(true);
-
-//     try {
-//       const response = await axios.post("http://localhost:5000/api/labs", {
-//         labName: labData.labName,
-//         gst: labData.gst,
-//         address: labData.address,
-//         phone: labData.phone,
-//         adminName: labData.adminName,
-//         tabType: labData.tabType,
-//         labCode: generatedCode,
-//       });
-
-//       if (response.data && response.data.allLabs) {
-//         setSavedLabs(response.data.allLabs);
-//         alert("Lab saved successfully!");
-//       }
-//       resetLab();
-//     } catch (error) {
-//       console.error("Error saving lab:", error);
-//       if (error.response?.status === 409) {
-//         alert("Lab Code already exists. Please try again.");
-//       } else {
-//         alert(error.response?.data?.error || "Failed to save lab.");
-//       }
-//     } finally {
-//       // ===== LOADER OFF =====
-//       setSavingLab(false);
-//     }
-//   };
-//   const handleSaveLab1 = () => {
-//     if (!labData.labName.trim()) {
-//       alert("Lab Name is required.");
-//       return;
-//     }
-//     const newLab = {
-//       ...labData,
-//       id: Date.now(),
-//       savedAt: new Date().toLocaleString(),
-//       labCode: generateCode("LAB"),
-//     };
-//     setSavedLabs((prev) => [newLab, ...prev]);
-//     resetLab();
-//   };
-//   const startEditLab = (lab) => {
-//     setEditingLabId(lab.id);
-//     setEditingLabData({ ...lab });
-//   };
-//   const cancelEditLab = () => {
-//     setEditingLabId(null);
-//     setEditingLabData(null);
-//   };
-//   const saveEditLab = async () => {
-//     if (!editingLabData.labName.trim()) {
-//       alert("Lab Name required.");
-//       return;
-//     }
-
-//     try {
-//       const response = await axios.put(
-//         `http://localhost:5000/api/labs/${editingLabId}`,
-//         {
-//           labName: editingLabData.labName,
-//           gst: editingLabData.gst,
-//           address: editingLabData.address,
-//           phone: editingLabData.phone,
-//           adminName: editingLabData.adminName,
-//           tabType: editingLabData.tabType,
-//           labCode: editingLabData.labCode,
-//         },
-//       );
-
-//       if (response.data && response.data.allLabs) {
-//         setSavedLabs(response.data.allLabs);
-//         alert("Lab updated successfully!");
-//       } else {
-//         setSavedLabs((prev) =>
-//           prev.map((lab) =>
-//             lab.id === editingLabId
-//               ? { ...editingLabData, savedAt: new Date().toLocaleString() }
-//               : lab,
-//           ),
-//         );
-//         alert("Lab updated successfully!");
-//       }
-
-//       cancelEditLab();
-//     } catch (error) {
-//       console.error("Error updating lab:", error);
-//       if (error.response?.status === 409) {
-//         alert("Lab Code already exists. Please change it.");
-//       } else if (error.response?.status === 404) {
-//         alert("Lab not found. It may have been deleted.");
-//       } else {
-//         alert(error.response?.data?.error || "Failed to update lab.");
-//       }
-//     }
-//   };
-//   const saveEditLab1 = () => {
-//     if (!editingLabData.labName.trim()) {
-//       alert("Lab Name required.");
-//       return;
-//     }
-//     setSavedLabs((prev) =>
-//       prev.map((lab) =>
-//         lab.id === editingLabId
-//           ? { ...editingLabData, savedAt: new Date().toLocaleString() }
-//           : lab,
-//       ),
-//     );
-//     cancelEditLab();
-//   };
-//   const deleteLab = async (id) => {
-//     if (!window.confirm("Delete this lab record?")) return;
-
-//     try {
-//       const response = await axios.delete(
-//         `http://localhost:5000/api/labs/${id}`,
-//       );
-
-//       if (response.data && response.data.allLabs) {
-//         setSavedLabs(response.data.allLabs);
-//         alert("Lab deleted successfully!");
-//       } else {
-//         setSavedLabs((prev) => prev.filter((lab) => lab.id !== id));
-//         alert("Lab deleted successfully!");
-//       }
-//     } catch (error) {
-//       console.error("Error deleting lab:", error);
-//       if (error.response?.status === 404) {
-//         alert("Lab not found. It may have already been deleted.");
-//       } else {
-//         alert(error.response?.data?.error || "Failed to delete lab.");
-//       }
-//     }
-//   };
-//   const deleteLab1 = (id) => {
-//     if (window.confirm("Delete this lab record?"))
-//       setSavedLabs((prev) => prev.filter((lab) => lab.id !== id));
-//   };
-
-//   // ---------- Product Functions ----------
-//   const updateProduct = (field, value) =>
-//     setProductData((prev) => ({ ...prev, [field]: value }));
-//   const resetProduct = () => setProductData({ productName: "", productId: "" });
-
-//   const handleGetProduct = async () => {
-//     try {
-//       const response = await axios.get("http://localhost:5000/api/products");
-
-//       if (response.data && response.data.allProducts) {
-//         setSavedProducts(response.data.allProducts);
-//       }
-//       resetProduct();
-//     } catch (error) {
-//       console.error("Error saving product:", error);
-//       if (error.response?.status === 409) {
-//         alert("Product ID already exists. Please try again.");
-//       } else {
-//         alert(error.response?.data?.error || "Failed to save product.");
-//       }
-//     }
-//   };
-
-//   const handleSaveProduct = async () => {
-//     if (!productData.productName.trim()) {
-//       alert("Product Name is required.");
-//       return;
-//     }
-
-//     const generatedId = generateCode("SMP");
-
-//     // ===== LOADER ON =====
-//     setSavingProduct(true);
-
-//     try {
-//       const response = await axios.post("http://localhost:5000/api/products", {
-//         productName: productData.productName,
-//         productId: generatedId,
-//       });
-
-//       if (response.data && response.data.allProducts) {
-//         setSavedProducts(response.data.allProducts);
-//       }
-//       resetProduct();
-//     } catch (error) {
-//       console.error("Error saving product:", error);
-//       if (error.response?.status === 409) {
-//         alert("Product ID already exists. Please try again.");
-//       } else {
-//         alert(error.response?.data?.error || "Failed to save product.");
-//       }
-//     } finally {
-//       // ===== LOADER OFF =====
-//       setSavingProduct(false);
-//     }
-//   };
-
-//   const handleSaveProduct1 = () => {
-//     if (!productData.productName.trim()) {
-//       alert("Product Name and Product ID are required.");
-//       return;
-//     }
-//     const newProduct = {
-//       ...productData,
-//       productId: generateCode("SMP"),
-//       id: Date.now(),
-//       savedAt: new Date().toLocaleString(),
-//     };
-//     setSavedProducts((prev) => [newProduct, ...prev]);
-//     resetProduct();
-//   };
-//   const startEditProduct = (prod) => {
-//     setEditingProductId(prod.id);
-//     setEditingProductData({ ...prod });
-//   };
-//   const cancelEditProduct = () => {
-//     setEditingProductId(null);
-//     setEditingProductData(null);
-//   };
-//   const saveEditProduct = () => {
-//     if (
-//       !editingProductData.productName.trim() ||
-//       !editingProductData.productId.trim()
-//     ) {
-//       alert("Product Name and ID required.");
-//       return;
-//     }
-//     setSavedProducts((prev) =>
-//       prev.map((p) =>
-//         p.id === editingProductId
-//           ? { ...editingProductData, savedAt: new Date().toLocaleString() }
-//           : p,
-//       ),
-//     );
-//     cancelEditProduct();
-//   };
-
-//   const deleteProduct = async (id) => {
-//     if (!window.confirm("Delete this product?")) return;
-//     try {
-//       const response = await axios.delete(
-//         `http://localhost:5000/api/products/${id}`,
-//       );
-//       if (response.data && response.data.allProducts) {
-//         setSavedProducts(response.data.allProducts);
-//         alert("Product deleted successfully!");
-//       }
-//     } catch (error) {
-//       console.error("Error deleting product:", error);
-//       if (error.response?.status === 404) {
-//         alert("Product not found.");
-//       } else {
-//         alert("Failed to delete product.");
-//       }
-//     }
-//   };
-
-//   const deleteProduct1 = (id) => {
-//     if (window.confirm("Delete this product?"))
-//       setSavedProducts((prev) => prev.filter((p) => p.id !== id));
-//   };
-//   useEffect(() => {
-//     handleGetAllCompany();
-//     handleGetLab();
-//     handleGetProduct();
-//     handleGetAllTests();
-//   }, []);
-//   // ---------- Testing Functions (unchanged from original, included fully) ----------
-//   const handleToggleTest = (testId) => {
-//     setSelectedTestIds((prev) =>
-//       prev.includes(testId)
-//         ? prev.filter((id) => id !== testId)
-//         : [...prev, testId],
-//     );
-//     if (!selectedTestIds.includes(testId)) {
-//       const test = availableTests.find((t) => t.id === testId);
-//       if (test) {
-//         const initialValues = {};
-//         test?.fields?.forEach((field) => {
-//           initialValues[field?.name] = "";
-//         });
-//         setTestValues((prev) => ({ ...prev, [testId]: initialValues }));
-//       }
-//     }
-//   };
-//   const handleTestFieldChange = (testId, fieldName, value) => {
-//     setTestValues((prev) => ({
-//       ...prev,
-//       [testId]: { ...(prev[testId] || {}), [fieldName]: value },
-//     }));
-//   };
-//   const addCustomField = () =>
-//     setNewTestFields([
-//       ...newTestFields,
-//       { name: "", label: "", placeholder: "" },
-//     ]);
-//   const removeCustomField = (index) => {
-//     const updated = [...newTestFields];
-//     updated.splice(index, 1);
-//     setNewTestFields(updated);
-//   };
-//   const updateCustomField = (index, key, value) => {
-//     const updated = [...newTestFields];
-//     updated[index][key] = value;
-//     setNewTestFields(updated);
-//   };
-//   const handleAddNewTest = async () => {
-//     if (!newTestLabel.trim()) return;
-
-//     const invalid = newTestFields.some(
-//       (f) => !f.name.trim() || !f.label.trim(),
-//     );
-
-//     if (invalid) {
-//       alert("Please fill in both Name and Label for each field.");
-//       return;
-//     }
-
-//     const payload = {
-//       test_name: newTestLabel.trim(),
-//       fields: newTestFields.map((f) => ({
-//         name: f.name.trim(),
-//         label: f.label.trim(),
-//         placeholder: f.placeholder || "",
-//       })),
-//     };
-
-//     try {
-//       const res = await fetch("http://localhost:5000/api/create-test", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify(payload),
-//       });
-
-//       const data = await res.json();
-//       handleGetAllTests();
-//       if (!res.ok) {
-//         alert(data.error || "Failed to create test");
-//         return;
-//       }
-
-//       fetchAllTests();
-
-//       setNewTestLabel("");
-//       setNewTestFields([{ name: "", label: "", placeholder: "" }]);
-//     } catch (err) {
-//       console.error(err);
-//       alert("Error creating test");
-//     }
-//   };
-//   const handleAddNewTest1 = () => {
-//     if (!newTestLabel.trim()) return;
-//     const invalid = newTestFields.some(
-//       (f) => !f.name.trim() || !f.label.trim(),
-//     );
-//     if (invalid) {
-//       alert("Please fill in both Name and Label for each field.");
-//       return;
-//     }
-//     const newId = `custom_${Date.now()}`;
-//     const newTest = {
-//       id: newId,
-//       label: newTestLabel.trim(),
-//       fields: newTestFields.map((f) => ({
-//         name: f.name.trim(),
-//         label: f.label.trim(),
-//         placeholder: f.placeholder || "",
-//       })),
-//     };
-//     setAvailableTests((prev) => [...prev, newTest]);
-//     setSelectedTestIds((prev) => [...prev, newId]);
-//     const initialValues = {};
-//     newTest.fields.forEach((field) => {
-//       initialValues[field.name] = "";
-//     });
-//     setTestValues((prev) => ({ ...prev, [newId]: initialValues }));
-//     setNewTestLabel("");
-//     setNewTestFields([{ name: "", label: "", placeholder: "" }]);
-//   };
-//   const resetTesting = () => {
-//     setSelectedTestIds([]);
-//     setTestValues({});
-//     setAvailableTests(defaultTests);
-//     setNewTestLabel("");
-//     setNewTestFields([{ name: "", label: "", placeholder: "" }]);
-//   };
-//   const handleSaveTesting = () => {
-//     const selectedTestsData = selectedTestIds.map((id) => {
-//       const test = availableTests.find((t) => t.id === id);
-//       return {
-//         testId: id,
-//         testLabel: test.label,
-//         fields: test.fields.map((f) => ({
-//           label: f.label,
-//           value: testValues[id]?.[f.name] || "",
-//         })),
-//       };
-//     });
-//     const newEntry = {
-//       id: Date.now(),
-//       savedAt: new Date().toLocaleString(),
-//       tests: selectedTestsData,
-//     };
-//     setSavedTests((prev) => [newEntry, ...prev]);
-//     alert(`Saved ${selectedTestsData.length} test(s).`);
-//     setSelectedTestIds([]);
-//   };
-//   const startEditTest = (entry) => {
-//     setEditingTestId(entry.id);
-//     setEditingTestData(JSON.parse(JSON.stringify(entry)));
-//   };
-//   const cancelEditTest = () => {
-//     setEditingTestId(null);
-//     setEditingTestData(null);
-//   };
-//   const saveEditTest = () => {
-//     setSavedTests((prev) =>
-//       prev.map((t) =>
-//         t.id === editingTestId
-//           ? { ...editingTestData, savedAt: new Date().toLocaleString() }
-//           : t,
-//       ),
-//     );
-//     cancelEditTest();
-//   };
-//   const deleteTest = (id) => {
-//     if (window.confirm("Delete this test configuration?"))
-//       setSavedTests((prev) => prev.filter((t) => t.id !== id));
-//   };
-//   const updateEditingTestField = (testIndex, fieldIndex, newValue) => {
-//     const updated = { ...editingTestData };
-//     updated.tests[testIndex].fields[fieldIndex].value = newValue;
-//     setEditingTestData(updated);
-//   };
-
-//   // ---------- Render ----------
-//   return (
-//     <>
-//       <style>{globalStyles}</style>
-//       <div className="lm-app">
-//         <div className="lm-container" >
-//           <div className="lm-header">
-//             <h1 className="lm-title">Lab Management System</h1>
-//             <p className="lm-subtitle">
-//               Manage companies, labs, products, and test configurations
-//             </p>
-//           </div>
-
-//           <div className="lm-tabs">
-//             <button
-//               className={`lm-tab ${activeTab === "lab" ? "active" : ""}`}
-//               onClick={() => setActiveTab("lab")}
-//             >
-//               Lab
-//             </button>
-//             <button
-//               className={`lm-tab ${activeTab === "product" ? "active" : ""}`}
-//               onClick={() => setActiveTab("product")}
-//             >
-//               Product
-//             </button>
-//             <button
-//               className={`lm-tab ${activeTab === "testing" ? "active" : ""}`}
-//               onClick={() => setActiveTab("testing")}
-//             >
-//               Testing
-//             </button>
-//             <button
-//               className={`lm-tab ${activeTab === "company" ? "active" : ""}`}
-//               onClick={() => setActiveTab("company")}
-//             >
-//               Company
-//             </button>
-//           </div>
-
-//           {/* ========== COMPANY TAB ========== */}
-//           {activeTab === "company" && (
-//             <div className="lm-panel">
-//               <div className="lm-form-grid">
-//                 <div className="lm-field">
-//                   <label className="lm-label">Company Name</label>
-//                   <input
-//                     className="lm-input"
-//                     value={companyData.companyName}
-//                     onChange={(e) =>
-//                       updateCompany("companyName", e.target.value)
-//                     }
-//                   />
-//                 </div>
-//                 <div className="lm-field">
-//                   <label className="lm-label">GST Number</label>
-//                   <input
-//                     className="lm-input"
-//                     value={companyData.gst}
-//                     onChange={(e) => updateCompany("gst", e.target.value)}
-//                   />
-//                 </div>
-//                 <div className="lm-field lm-full-width">
-//                   <label className="lm-label">Address</label>
-//                   <textarea
-//                     className="lm-textarea"
-//                     value={companyData.address}
-//                     onChange={(e) => updateCompany("address", e.target.value)}
-//                   />
-//                 </div>
-//                 <div className="lm-field">
-//                   <label className="lm-label">Phone Number</label>
-//                   <input
-//                     className="lm-input"
-//                     value={companyData.phone}
-//                     onChange={(e) => updateCompany("phone", e.target.value)}
-//                   />
-//                 </div>
-//                 <div className="lm-field">
-//                   <label className="lm-label">Admin Name</label>
-//                   <input
-//                     className="lm-input"
-//                     value={companyData.adminName}
-//                     onChange={(e) => updateCompany("adminName", e.target.value)}
-//                   />
-//                 </div>
-//               </div>
-//               {(companyData.companyName || companyData.gst) && (
-//                 <div className="lm-info-card">
-//                   <strong>🏢 Company Profile</strong>
-//                   <p>
-//                     {companyData.companyName || "—"} ·{" "}
-//                     {companyData.adminName
-//                       ? `Head: ${companyData.adminName}`
-//                       : ""}
-//                   </p>
-//                 </div>
-//               )}
-//               <div className="lm-actions">
-//                 <button className="lm-btn-secondary" onClick={resetCompany}>
-//                   Clear
-//                 </button>
-//                 {/* ===== COMPANY SAVE BUTTON WITH LOADER ===== */}
-//                 <button
-//                   className="lm-btn-primary"
-//                   onClick={handleSaveCompany}
-//                   disabled={savingCompany}
-//                 >
-//                   {savingCompany ? (
-//                     <>
-//                       <span className="lm-spinner" />
-//                       Saving...
-//                     </>
-//                   ) : (
-//                     "Save Company"
-//                   )}
-//                 </button>
-//               </div>
-
-//               {/* ===== TABLE LOADER FOR COMPANY ===== */}
-//               {savingCompany ? (
-//                 <div className="lm-table-loader">
-//                   <div className="lm-table-spinner" />
-//                   <span className="lm-table-loader-text">Saving company, please wait...</span>
-//                 </div>
-//               ) : savedCompanies.length > 0 && (
-//                 <div style={{ marginTop: "2rem" }}>
-//                   <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
-//                     Saved Companies
-//                   </h3>
-//                   <table className="lm-table">
-//                     <thead>
-//                       <tr>
-//                         <th>Company Code</th>
-//                         <th>Company Name</th>
-//                         <th>GST</th>
-//                         <th>Phone</th>
-//                         <th>Admin Name</th>
-//                         <th>Address</th>
-//                         <th>Saved At</th>
-//                         <th>Actions</th>
-//                       </tr>
-//                     </thead>
-//                     <tbody>
-//                       {savedCompanies.map((comp) => (
-//                         <tr key={comp.id}>
-//                           {editingCompanyId === comp.id ? (
-//                             <>
-//                               <td>{comp.companyCode}</td>
-//                               <td>
-//                                 <input
-//                                   className="lm-editable-input"
-//                                   value={editingCompanyData.companyName}
-//                                   onChange={(e) =>
-//                                     setEditingCompanyData({
-//                                       ...editingCompanyData,
-//                                       companyName: e.target.value,
-//                                     })
-//                                   }
-//                                 />
-//                               </td>
-//                               <td>
-//                                 <input
-//                                   className="lm-editable-input"
-//                                   value={editingCompanyData.gst}
-//                                   onChange={(e) =>
-//                                     setEditingCompanyData({
-//                                       ...editingCompanyData,
-//                                       gst: e.target.value,
-//                                     })
-//                                   }
-//                                 />
-//                               </td>
-//                               <td>
-//                                 <input
-//                                   className="lm-editable-input"
-//                                   value={editingCompanyData.phone}
-//                                   onChange={(e) =>
-//                                     setEditingCompanyData({
-//                                       ...editingCompanyData,
-//                                       phone: e.target.value,
-//                                     })
-//                                   }
-//                                 />
-//                               </td>
-//                               <td>
-//                                 <input
-//                                   className="lm-editable-input"
-//                                   value={editingCompanyData.adminName}
-//                                   onChange={(e) =>
-//                                     setEditingCompanyData({
-//                                       ...editingCompanyData,
-//                                       adminName: e.target.value,
-//                                     })
-//                                   }
-//                                 />
-//                               </td>
-//                               <td>
-//                                 <textarea
-//                                   className="lm-editable-input"
-//                                   rows={2}
-//                                   value={editingCompanyData.address}
-//                                   onChange={(e) =>
-//                                     setEditingCompanyData({
-//                                       ...editingCompanyData,
-//                                       address: e.target.value,
-//                                     })
-//                                   }
-//                                 />
-//                               </td>
-//                               <td>{comp.savedAt}</td>
-//                               <td className="lm-action-buttons">
-//                                 <button
-//                                   className="lm-icon-btn"
-//                                   onClick={saveEditCompany}
-//                                 >
-//                                   💾
-//                                 </button>
-//                                 <button
-//                                   className="lm-icon-btn"
-//                                   onClick={cancelEditCompany}
-//                                 >
-//                                   ✖️
-//                                 </button>
-//                               </td>
-//                             </>
-//                           ) : (
-//                             <>
-//                               <td>{comp.companyCode}</td>
-//                               <td>{comp.companyName}</td>
-//                               <td>{comp.gst}</td>
-//                               <td>{comp.phone}</td>
-//                               <td>{comp.adminName}</td>
-//                               <td>{comp.address}</td>
-//                               <td>{comp.savedAt}</td>
-//                               <td className="lm-action-buttons">
-//                                 <button
-//                                   className="lm-icon-btn"
-//                                   onClick={() => startEditCompany(comp)}
-//                                 >
-//                                   ✏️
-//                                 </button>
-//                                 <button
-//                                   className="lm-icon-btn"
-//                                   onClick={() => deleteCompany(comp.id)}
-//                                 >
-//                                   🗑️
-//                                 </button>
-//                               </td>
-//                             </>
-//                           )}
-//                         </tr>
-//                       ))}
-//                     </tbody>
-//                   </table>
-//                 </div>
-//               )}
-//             </div>
-//           )}
-
-//           {/* ========== LAB TAB (original, fully included) ========== */}
-//           {activeTab === "lab" && (
-//             <div className="lm-panel">
-//               <div className="lm-form-grid">
-//                 <div className="lm-field">
-//                   <label className="lm-label">Lab Name</label>
-//                   <input
-//                     className="lm-input"
-//                     value={labData.labName}
-//                     onChange={(e) => updateLab("labName", e.target.value)}
-//                   />
-//                 </div>
-//                 <div className="lm-field">
-//                   <label className="lm-label">GST Number</label>
-//                   <input
-//                     className="lm-input"
-//                     value={labData.gst}
-//                     onChange={(e) => updateLab("gst", e.target.value)}
-//                   />
-//                 </div>
-//                 <div className="lm-field lm-full-width">
-//                   <label className="lm-label">Address</label>
-//                   <textarea
-//                     className="lm-textarea"
-//                     value={labData.address}
-//                     onChange={(e) => updateLab("address", e.target.value)}
-//                   />
-//                 </div>
-//                 <div className="lm-field">
-//                   <label className="lm-label">Phone Number</label>
-//                   <input
-//                     className="lm-input"
-//                     value={labData.phone}
-//                     onChange={(e) => updateLab("phone", e.target.value)}
-//                   />
-//                 </div>
-//                 <div className="lm-field">
-//                   <label className="lm-label">Admin Name</label>
-//                   <input
-//                     className="lm-input"
-//                     value={labData.adminName}
-//                     onChange={(e) => updateLab("adminName", e.target.value)}
-//                   />
-//                 </div>
-//                 <div className="lm-field">
-//                   <label className="lm-label">Tab Type</label>
-//                   <select
-//                     className="lm-select"
-//                     value={labData.tabType}
-//                     onChange={(e) => updateLab("tabType", e.target.value)}
-//                   >
-//                     <option value="">Select type</option>
-//                     <option value="internal">Internal</option>
-//                     <option value="thirdparty">Third Party</option>
-//                   </select>
-//                 </div>
-//               </div>
-//               {labData.tabType && (
-//                 <div className="lm-info-card">
-//                   <strong>
-//                     ⚙️{" "}
-//                     {labData.tabType === "internal"
-//                       ? "Internal Lab"
-//                       : "Third Party Lab"}
-//                   </strong>
-//                   <span className="lm-badge">
-//                     {labData.tabType === "internal" ? "IN-HOUSE" : "EXTERNAL"}
-//                   </span>
-//                   <p style={{ marginTop: "0.5rem", fontSize: "0.8rem" }}>
-//                     {labData.tabType === "internal"
-//                       ? "Operates within the organization."
-//                       : "Accredited external partner."}
-//                   </p>
-//                 </div>
-//               )}
-//               <div className="lm-actions">
-//                 <button className="lm-btn-secondary" onClick={resetLab}>
-//                   Clear
-//                 </button>
-//                 {/* ===== LAB SAVE BUTTON WITH LOADER ===== */}
-//                 <button
-//                   className="lm-btn-primary"
-//                   onClick={handleSaveLab}
-//                   disabled={savingLab}
-//                 >
-//                   {savingLab ? (
-//                     <>
-//                       <span className="lm-spinner" />
-//                       Saving...
-//                     </>
-//                   ) : (
-//                     "Save Lab"
-//                   )}
-//                 </button>
-//               </div>
-
-//               {/* ===== TABLE LOADER FOR LAB ===== */}
-//               {savingLab ? (
-//                 <div className="lm-table-loader">
-//                   <div className="lm-table-spinner" />
-//                   <span className="lm-table-loader-text">Saving lab, please wait...</span>
-//                 </div>
-//               ) : savedLabs.length > 0 && (
-//                 <div style={{ marginTop: "2rem" }}>
-//                   <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
-//                     Saved Labs
-//                   </h3>
-//                   <table className="lm-table">
-//                     <thead>
-//                       <tr>
-//                         <th>Lab Code</th>
-//                         <th>Lab Name</th>
-//                         <th>GST</th>
-//                         <th>Phone</th>
-//                         <th>Admin Name</th>
-//                         <th>Tab Type</th>
-//                         <th>Address</th>
-//                         <th>Saved At</th>
-//                         <th>Actions</th>
-//                       </tr>
-//                     </thead>
-//                     <tbody>
-//                       {savedLabs?.map((lab) => (
-//                         <tr key={lab?.id}>
-//                           {editingLabId === lab?.id ? (
-//                             <>
-//                               {" "}
-//                               <td>{lab.labCode}</td>
-//                               <td>
-//                                 <input
-//                                   className="lm-editable-input"
-//                                   value={editingLabData.labName}
-//                                   onChange={(e) =>
-//                                     setEditingLabData({
-//                                       ...editingLabData,
-//                                       labName: e.target.value,
-//                                     })
-//                                   }
-//                                 />
-//                               </td>
-//                               <td>
-//                                 <input
-//                                   className="lm-editable-input"
-//                                   value={editingLabData.gst}
-//                                   onChange={(e) =>
-//                                     setEditingLabData({
-//                                       ...editingLabData,
-//                                       gst: e.target.value,
-//                                     })
-//                                   }
-//                                 />
-//                               </td>
-//                               <td>
-//                                 <input
-//                                   className="lm-editable-input"
-//                                   value={editingLabData.phone}
-//                                   onChange={(e) =>
-//                                     setEditingLabData({
-//                                       ...editingLabData,
-//                                       phone: e.target.value,
-//                                     })
-//                                   }
-//                                 />
-//                               </td>
-//                               <td>
-//                                 <input
-//                                   className="lm-editable-input"
-//                                   value={editingLabData.adminName}
-//                                   onChange={(e) =>
-//                                     setEditingLabData({
-//                                       ...editingLabData,
-//                                       adminName: e.target.value,
-//                                     })
-//                                   }
-//                                 />
-//                               </td>
-//                               <td>
-//                                 <select
-//                                   className="lm-editable-select"
-//                                   value={editingLabData.tabType}
-//                                   onChange={(e) =>
-//                                     setEditingLabData({
-//                                       ...editingLabData,
-//                                       tabType: e.target.value,
-//                                     })
-//                                   }
-//                                 >
-//                                   <option value="">Select</option>
-//                                   <option value="internal">Internal</option>
-//                                   <option value="thirdparty">
-//                                     Third Party
-//                                   </option>
-//                                 </select>
-//                               </td>
-//                               <td>
-//                                 <textarea
-//                                   className="lm-editable-input"
-//                                   rows={2}
-//                                   value={editingLabData.address}
-//                                   onChange={(e) =>
-//                                     setEditingLabData({
-//                                       ...editingLabData,
-//                                       address: e.target.value,
-//                                     })
-//                                   }
-//                                 />
-//                               </td>
-//                               <td>{lab.savedAt}</td>
-//                               <td className="lm-action-buttons">
-//                                 <button
-//                                   className="lm-icon-btn"
-//                                   onClick={saveEditLab}
-//                                 >
-//                                   💾
-//                                 </button>
-//                                 <button
-//                                   className="lm-icon-btn"
-//                                   onClick={cancelEditLab}
-//                                 >
-//                                   ✖️
-//                                 </button>
-//                               </td>
-//                             </>
-//                           ) : (
-//                             <>
-//                               {" "}
-//                               <td>{lab.labCode}</td>
-//                               <td>{lab.labName}</td>
-//                               <td>{lab.gst}</td>
-//                               <td>{lab.phone}</td>
-//                               <td>{lab.adminName}</td>
-//                               <td>
-//                                 {lab.tabType === "internal"
-//                                   ? "Internal"
-//                                   : lab.tabType === "thirdparty"
-//                                     ? "Third Party"
-//                                     : "-"}
-//                               </td>
-//                               <td>{lab.address}</td>
-//                               <td>{lab.savedAt}</td>
-//                               <td className="lm-action-buttons">
-//                                 <button
-//                                   className="lm-icon-btn"
-//                                   onClick={() => startEditLab(lab)}
-//                                 >
-//                                   ✏️
-//                                 </button>
-//                                 <button
-//                                   className="lm-icon-btn"
-//                                   onClick={() => deleteLab(lab?.id)}
-//                                 >
-//                                   🗑️
-//                                 </button>
-//                               </td>
-//                             </>
-//                           )}
-//                         </tr>
-//                       ))}
-//                     </tbody>
-//                   </table>
-//                 </div>
-//               )}
-//             </div>
-//           )}
-
-//           {/* ========== PRODUCT TAB (original) ========== */}
-//           {activeTab === "product" && (
-//             <div className="lm-panel">
-//               <div className="lm-form-grid">
-//                 <div className="lm-field">
-//                   <label className="lm-label">Product Name</label>
-//                   <input
-//                     className="lm-input"
-//                     value={productData?.productName}
-//                     onChange={(e) =>
-//                       updateProduct("productName", e.target.value)
-//                     }
-//                   />
-//                 </div>
-//               </div>
-//               {productData.productName && productData.productId && (
-//                 <div className="lm-info-card">
-//                   <strong>📦 Registered Product</strong>
-//                   <p>
-//                     <strong>{productData.productName}</strong> · ID{" "}
-//                     <code>{productData.productId}</code>
-//                   </p>
-//                 </div>
-//               )}
-//               <div className="lm-actions">
-//                 <button className="lm-btn-secondary" onClick={resetProduct}>
-//                   Clear
-//                 </button>
-//                 {/* ===== PRODUCT SAVE BUTTON WITH LOADER ===== */}
-//                 <button
-//                   className="lm-btn-primary"
-//                   onClick={handleSaveProduct}
-//                   disabled={savingProduct}
-//                 >
-//                   {savingProduct ? (
-//                     <>
-//                       <span className="lm-spinner" />
-//                       Saving...
-//                     </>
-//                   ) : (
-//                     "Save Product"
-//                   )}
-//                 </button>
-//               </div>
-
-//               {/* ===== TABLE LOADER FOR PRODUCT ===== */}
-//               {savingProduct ? (
-//                 <div className="lm-table-loader">
-//                   <div className="lm-table-spinner" />
-//                   <span className="lm-table-loader-text">Saving product, please wait...</span>
-//                 </div>
-//               ) : savedProducts.length > 0 && (
-//                 <div style={{ marginTop: "2rem" }}>
-//                   <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
-//                     Saved Products
-//                   </h3>
-//                   <table className="lm-table">
-//                     <thead>
-//                       <tr>
-//                         <th>Product Name</th>
-//                         <th>Product ID</th>
-//                         <th>Saved At</th>
-//                         <th>Actions</th>
-//                       </tr>
-//                     </thead>
-//                     <tbody>
-//                       {savedProducts.map((prod) => (
-//                         <tr key={prod.id}>
-//                           {editingProductId === prod.id ? (
-//                             <>
-//                               <td>
-//                                 <input
-//                                   className="lm-editable-input"
-//                                   value={editingProductData.productName}
-//                                   onChange={(e) =>
-//                                     setEditingProductData({
-//                                       ...editingProductData,
-//                                       productName: e.target.value,
-//                                     })
-//                                   }
-//                                 />
-//                               </td>
-//                               <td>
-//                                 <input
-//                                   className="lm-editable-input"
-//                                   value={editingProductData.productId}
-//                                   onChange={(e) =>
-//                                     setEditingProductData({
-//                                       ...editingProductData,
-//                                       productId: e.target.value,
-//                                     })
-//                                   }
-//                                 />
-//                               </td>
-//                               <td>{prod.savedAt}</td>
-//                               <td className="lm-action-buttons">
-//                                 <button
-//                                   className="lm-icon-btn"
-//                                   onClick={saveEditProduct}
-//                                 >
-//                                   💾
-//                                 </button>
-//                                 <button
-//                                   className="lm-icon-btn"
-//                                   onClick={cancelEditProduct}
-//                                 >
-//                                   ✖️
-//                                 </button>
-//                               </td>
-//                             </>
-//                           ) : (
-//                             <>
-//                               <td>{prod.productName}</td>
-//                               <td>{prod.productId}</td>
-//                               <td>{prod.savedAt}</td>
-//                               <td className="lm-action-buttons">
-//                                 <button
-//                                   className="lm-icon-btn"
-//                                   onClick={() => deleteProduct(prod.id)}
-//                                 >
-//                                   🗑️
-//                                 </button>
-//                               </td>
-//                             </>
-//                           )}
-//                         </tr>
-//                       ))}
-//                     </tbody>
-//                   </table>
-//                 </div>
-//               )}
-//             </div>
-//           )}
-
-//           {/* ========== TESTING TAB (original) ========== */}
-//           {activeTab === "testing" && (
-//             <div className="lm-panel">
-//               <div className="lm-field lm-full-width">
-//                 <label className="lm-label">Select Testing Types</label>
-//                 <div className="lm-check-group">
-//                   {availableTests.map((test) => (
-//                     <div key={test.id} className="lm-checkbox-item">
-//                       <input
-//                         type="checkbox"
-//                         id={test.id}
-//                         checked={selectedTestIds.includes(test.id)}
-//                         onChange={() => handleToggleTest(test.id)}
-//                       />
-//                       <label htmlFor={test.id}>{test.label}</label>
-//                     </div>
-//                   ))}
-//                 </div>
-//               </div>
-//               <div className="lm-new-test">
-//                 <div className="lm-new-test-title">➕ Create New Test</div>
-//                 <div className="lm-row">
-//                   <div className="lm-field">
-//                     <label className="lm-label">Test Name</label>
-//                     <input
-//                       className="lm-input"
-//                       value={newTestLabel}
-//                       onChange={(e) => setNewTestLabel(e.target.value)}
-//                     />
-//                   </div>
-//                 </div>
-//                 <div style={{ marginBottom: "1rem" }}>
-//                   <label className="lm-label">
-//                     Test Fields (Name, Label, Placeholder)
-//                   </label>
-//                   {newTestFields.map((field, idx) => (
-//                     <div key={idx} className="lm-dynamic-field-row">
-//                       <div className="lm-field">
-//                         <input
-//                           className="lm-input"
-//                           placeholder="Field name"
-//                           value={field.name}
-//                           onChange={(e) =>
-//                             updateCustomField(idx, "name", e.target.value)
-//                           }
-//                         />
-//                       </div>
-//                       <div className="lm-field">
-//                         <input
-//                           className="lm-input"
-//                           placeholder="Label"
-//                           value={field.label}
-//                           onChange={(e) =>
-//                             updateCustomField(idx, "label", e.target.value)
-//                           }
-//                         />
-//                       </div>
-//                       <div className="lm-field">
-//                         <input
-//                           className="lm-input"
-//                           placeholder="Placeholder"
-//                           value={field.placeholder}
-//                           onChange={(e) =>
-//                             updateCustomField(
-//                               idx,
-//                               "placeholder",
-//                               e.target.value,
-//                             )
-//                           }
-//                         />
-//                       </div>
-//                       <button
-//                         className="lm-btn-outline"
-//                         onClick={() => removeCustomField(idx)}
-//                         disabled={newTestFields.length === 1}
-//                       >
-//                         ✕
-//                       </button>
-//                     </div>
-//                   ))}
-//                   <button
-//                     className="lm-btn-outline"
-//                     onClick={addCustomField}
-//                     style={{ marginTop: "0.5rem" }}
-//                   >
-//                     + Add Field
-//                   </button>
-//                 </div>
-//                 <button
-//                   className="lm-btn-small"
-//                   onClick={handleAddNewTest}
-//                   disabled={!newTestLabel.trim()}
-//                 >
-//                   Create Test
-//                 </button>
-//               </div>
-//               {selectedTestIds.length > 0 && (
-//                 <div className="lm-test-section">
-//                   <div className="lm-test-heading">📋 Test Parameters</div>
-//                   {selectedTestIds.map((testId) => {
-//                     const test = availableTests.find((t) => t.id === testId);
-
-//                     if (!test) return null;
-//                     const values = testValues[testId] || {};
-//                     return (
-//                       <div key={testId} className="lm-test-fields">
-//                         <h3
-//                           style={{
-//                             marginBottom: "1rem",
-//                             fontSize: "1rem",
-//                             fontWeight: 600,
-//                           }}
-//                         >
-//                           {test.label}
-//                         </h3>
-//                         <div className="lm-form-grid">
-//                           {test?.fields?.map((field) => (
-//                             <div key={field?.name} className="lm-field">
-//                               <label className="lm-label">{field?.label}</label>
-//                               <input
-//                                 className="lm-input"
-//                                 placeholder={field?.placeholder}
-//                                 value={values[field?.name] || ""}
-//                                 onChange={(e) =>
-//                                   handleTestFieldChange(
-//                                     testId,
-//                                     field?.name,
-//                                     e.target.value,
-//                                   )
-//                                 }
-//                               />
-//                             </div>
-//                           ))}
-//                         </div>
-//                       </div>
-//                     );
-//                   })}
-//                 </div>
-//               )}
-//               <div className="lm-actions">
-//                 <button className="lm-btn-secondary" onClick={resetTesting}>
-//                   Clear All
-//                 </button>
-//                 <button className="lm-btn-primary" onClick={handleSaveTesting}>
-//                   Apply Testing
-//                 </button>
-//               </div>
-//               {savedTests.length > 0 && (
-//                 <div style={{ marginTop: "2rem" }}>
-//                   <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
-//                     Saved Test Configurations
-//                   </h3>
-//                   <table className="lm-table">
-//                     <thead>
-//                       <tr>
-//                         <th>Saved At</th>
-//                         <th>Test(s) & Values</th>
-//                         <th>Actions</th>
-//                       </tr>
-//                     </thead>
-//                     <tbody>
-//                       {savedTests.map((entry) => (
-//                         <tr key={entry.id}>
-//                           <td style={{ whiteSpace: "nowrap" }}>
-//                             {entry.savedAt}
-//                           </td>
-//                           <td>
-//                             {editingTestId === entry.id
-//                               ? editingTestData.tests.map((test, ti) => (
-//                                   <div
-//                                     key={ti}
-//                                     style={{ marginBottom: "1rem" }}
-//                                   >
-//                                     <strong>{test.testLabel}</strong>
-//                                     <ul className="lm-test-fields-preview">
-//                                       {test.fields.map((field, fi) => (
-//                                         <li key={fi}>
-//                                           {field.label}:{" "}
-//                                           <input
-//                                             className="lm-editable-input"
-//                                             style={{
-//                                               width: "auto",
-//                                               display: "inline-block",
-//                                               marginLeft: "0.5rem",
-//                                             }}
-//                                             value={field.value}
-//                                             onChange={(e) =>
-//                                               updateEditingTestField(
-//                                                 ti,
-//                                                 fi,
-//                                                 e.target.value,
-//                                               )
-//                                             }
-//                                           />
-//                                         </li>
-//                                       ))}
-//                                     </ul>
-//                                   </div>
-//                                 ))
-//                               : entry.tests.map((test, idx) => (
-//                                   <div
-//                                     key={idx}
-//                                     style={{ marginBottom: "0.75rem" }}
-//                                   >
-//                                     <strong>{test.testLabel}</strong>
-//                                     <ul className="lm-test-fields-preview">
-//                                       {test.fields.map((field, fidx) => (
-//                                         <li key={fidx}>
-//                                           {field.label}: {field.value || "—"}
-//                                         </li>
-//                                       ))}
-//                                     </ul>
-//                                   </div>
-//                                 ))}
-//                           </td>
-//                           <td className="lm-action-buttons">
-//                             {editingTestId === entry.id ? (
-//                               <>
-//                                 <button
-//                                   className="lm-icon-btn"
-//                                   onClick={saveEditTest}
-//                                 >
-//                                   💾
-//                                 </button>
-//                                 <button
-//                                   className="lm-icon-btn"
-//                                   onClick={cancelEditTest}
-//                                 >
-//                                   ✖️
-//                                 </button>
-//                               </>
-//                             ) : (
-//                               <>
-//                                 <button
-//                                   className="lm-icon-btn"
-//                                   onClick={() => startEditTest(entry)}
-//                                 >
-//                                   ✏️
-//                                 </button>
-//                                 <button
-//                                   className="lm-icon-btn"
-//                                   onClick={() => deleteTest(entry.id)}
-//                                 >
-//                                   🗑️
-//                                 </button>
-//                               </>
-//                             )}
-//                           </td>
-//                         </tr>
-//                       ))}
-//                     </tbody>
-//                   </table>
-//                 </div>
-//               )}
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </>
-//   );
-// }
-
-
-
-import { useEffect, useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 
 const globalStyles = `
@@ -2318,6 +15,118 @@ const globalStyles = `
 
   @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
 
+  /* Loader Styles */
+  .lm-loader-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+  }
+
+  .lm-loader {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #e2e8f0;
+    border-top: 3px solid #000000;
+    border-radius: 50%;
+    animation: lm-spin 0.8s linear infinite;
+  }
+
+  .lm-loader-sm {
+    width: 14px;
+    height: 14px;
+    border-width: 2px;
+  }
+
+  .lm-loader-inline {
+    display: inline-block;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  @keyframes lm-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .lm-dropdown {
+    position: relative;
+    width: 100%;
+  }
+
+  .lm-dropdown-trigger {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: left;
+  }
+
+  .lm-dropdown-trigger:focus {
+    outline: 2px solid #4f46e5;
+    outline-offset: 1px;
+  }
+
+  .lm-dropdown-value {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #1e293b;
+  }
+
+  .lm-dropdown-arrow {
+    margin-left: 8px;
+    transition: transform 0.2s;
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  .lm-dropdown-arrow.open {
+    transform: rotate(180deg);
+  }
+
+  .lm-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    z-index: 100;
+    max-height: 240px;
+    overflow-y: auto;
+  }
+
+  .lm-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #1e293b;
+  }
+
+  .lm-dropdown-item:hover {
+    background: #f8fafc;
+  }
+
+  .lm-dropdown-item input[type="checkbox"] {
+    accent-color: #000000;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+  }
+
   .lm-app {
     min-height: 100vh;
     background: #ffffff;
@@ -2331,7 +140,7 @@ const globalStyles = `
 
   .lm-header {
     margin-bottom: 2.5rem;
-    border-bottom: 1px solid #eaeef2;
+    border-bottom: 1px solid #f1f5f9;
     padding-bottom: 1.5rem;
   }
 
@@ -2339,20 +148,20 @@ const globalStyles = `
     font-size: 1.8rem;
     font-weight: 600;
     letter-spacing: -0.02em;
-    color: #000000;
+    color: #0f172a;
     margin-bottom: 0.25rem;
   }
 
   .lm-subtitle {
     font-size: 0.9rem;
-    color: #5b677b;
+    color: #64748b;
     font-weight: 400;
   }
 
   .lm-tabs {
     display: flex;
     gap: 0.5rem;
-    border-bottom: 1px solid #eaeef2;
+    border-bottom: 1px solid #f1f5f9;
     margin-bottom: 2rem;
     flex-wrap: wrap;
   }
@@ -2363,17 +172,19 @@ const globalStyles = `
     padding: 0.75rem 1.5rem;
     font-size: 0.95rem;
     font-weight: 500;
-    color: #5b677b;
+    color: #64748b;
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
     font-family: inherit;
   }
 
-  .lm-tab:hover { color: #000000; }
+  .lm-tab:hover {
+    color: #0f172a;
+  }
 
   .lm-tab.active {
-    color: #000000;
+    color: #0f172a;
     font-weight: 600;
   }
 
@@ -2404,7 +215,9 @@ const globalStyles = `
     margin-bottom: 2rem;
   }
 
-  .lm-full-width { grid-column: span 2; }
+  .lm-full-width {
+    grid-column: span 2;
+  }
 
   .lm-field {
     display: flex;
@@ -2413,11 +226,11 @@ const globalStyles = `
   }
 
   .lm-label {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #2c3e4e;
+    color: #475569;
   }
 
   .lm-input,
@@ -2428,11 +241,11 @@ const globalStyles = `
     font-size: 0.95rem;
     font-family: inherit;
     background: #ffffff;
-    border: 1px solid #dce3e9;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
     transition: all 0.2s;
     outline: none;
-    color: #000000;
+    color: #0f172a;
   }
 
   .lm-textarea {
@@ -2444,11 +257,13 @@ const globalStyles = `
   .lm-select:focus,
   .lm-textarea:focus {
     border-color: #000000;
-    box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
   }
 
   .lm-input::placeholder,
-  .lm-textarea::placeholder { color: #a0abb9; }
+  .lm-textarea::placeholder {
+    color: #94a3b8;
+  }
 
   .lm-check-group {
     display: flex;
@@ -2474,22 +289,22 @@ const globalStyles = `
 
   .lm-checkbox-item label {
     font-size: 0.95rem;
-    color: #000000;
+    color: #0f172a;
     cursor: pointer;
   }
 
   .lm-new-test {
-    background: #f8f9fc;
-    border-radius: 16px;
-    padding: 1.2rem;
+    background: #f8fafc;
+    border-radius: 20px;
+    padding: 1.5rem;
     margin: 1.5rem 0;
-    border: 1px solid #eef2f5;
+    border: 1px solid #f1f5f9;
   }
 
   .lm-new-test-title {
     font-size: 0.9rem;
     font-weight: 600;
-    color: #000000;
+    color: #0f172a;
     margin-bottom: 1rem;
   }
 
@@ -2500,7 +315,9 @@ const globalStyles = `
     margin-bottom: 1rem;
   }
 
-  .lm-row .lm-field { flex: 1; }
+  .lm-row .lm-field {
+    flex: 1;
+  }
 
   .lm-btn-small {
     background: #000000;
@@ -2514,26 +331,40 @@ const globalStyles = `
     transition: all 0.2s;
     font-family: inherit;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
   }
 
-  .lm-btn-small:hover { background: #2c2c2c; }
+  .lm-btn-small:hover:not(:disabled) {
+    background: #1e293b;
+  }
+
+  .lm-btn-small:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 
   .lm-btn-outline {
     background: transparent;
-    border: 1px solid #dce3e9;
+    border: 1px solid #e2e8f0;
     padding: 0.5rem 1rem;
     border-radius: 40px;
     font-weight: 500;
     font-size: 0.75rem;
-    color: #2c3e4e;
+    color: #475569;
     cursor: pointer;
     transition: all 0.2s;
-    margin: auto;
   }
 
-  .lm-btn-outline:hover {
+  .lm-btn-outline:hover:not(:disabled) {
     border-color: #000000;
-    background: #fafcfc;
+    background: #f8fafc;
+  }
+
+  .lm-btn-outline:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .lm-dynamic-field-row {
@@ -2550,14 +381,14 @@ const globalStyles = `
 
   .lm-test-section {
     margin-top: 2rem;
-    border-top: 1px solid #eaeef2;
+    border-top: 1px solid #f1f5f9;
     padding-top: 1.5rem;
   }
 
   .lm-test-heading {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #000000;
+    color: #0f172a;
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
@@ -2566,8 +397,8 @@ const globalStyles = `
 
   .lm-test-fields {
     background: #ffffff;
-    border: 1px solid #eef2f5;
-    border-radius: 16px;
+    border: 1px solid #f1f5f9;
+    border-radius: 20px;
     padding: 1.2rem;
     margin-bottom: 1.5rem;
   }
@@ -2578,25 +409,30 @@ const globalStyles = `
     gap: 1rem;
     margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid #eaeef2;
+    border-top: 1px solid #f1f5f9;
   }
 
   .lm-btn-secondary {
     background: transparent;
-    border: 1px solid #dce3e9;
+    border: 1px solid #e2e8f0;
     padding: 0.7rem 1.5rem;
     border-radius: 40px;
     font-weight: 500;
     font-size: 0.85rem;
-    color: #2c3e4e;
+    color: #475569;
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
   }
 
-  .lm-btn-secondary:hover {
+  .lm-btn-secondary:hover:not(:disabled) {
     border-color: #000000;
-    background: #fafcfc;
+    background: #f8fafc;
+  }
+
+  .lm-btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .lm-btn-primary {
@@ -2610,32 +446,29 @@ const globalStyles = `
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    min-width: 120px;
-    justify-content: center;
+    gap: 8px;
   }
 
-  .lm-btn-primary:hover {
-    background: #2c2c2c;
+  .lm-btn-primary:hover:not(:disabled) {
+    background: #1e293b;
     transform: scale(0.98);
   }
 
   .lm-btn-primary:disabled {
-    background: #555555;
+    opacity: 0.6;
     cursor: not-allowed;
-    transform: none;
   }
 
   .lm-info-card {
-    background: #f8f9fc;
+    background: #f8fafc;
     border-radius: 16px;
     padding: 1rem 1.2rem;
     margin-top: 1.5rem;
-    border: 1px solid #eef2f5;
+    border: 1px solid #f1f5f9;
     font-size: 0.85rem;
-    color: #2c3e4e;
+    color: #475569;
   }
 
   .lm-badge {
@@ -2650,179 +483,44 @@ const globalStyles = `
     margin-left: 0.5rem;
   }
 
-  /* ===== IMPROVED TABLE STYLES ===== */
-  .lm-table-section {
-    margin-top: 2rem;
-  }
-
-  .lm-table-section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-  }
-
-  .lm-table-section-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #000000;
-  }
-
-  .lm-table-count-badge {
-    font-size: 0.7rem;
-    font-weight: 500;
-    background: #f0efeb;
-    color: #666;
-    padding: 3px 10px;
-    border-radius: 20px;
-    border: 1px solid #eaeef2;
-  }
-
-  .lm-table-card {
-    background: #ffffff;
-    border-radius: 14px;
-    border: 1px solid #eaeef2;
-    overflow: hidden;
-  }
-
-  .lm-table-scroll {
+  /* Improved Table UI */
+  .lm-table-wrapper {
     overflow-x: auto;
-    width: 100%;
+    border-radius: 16px;
+    border: 1px solid #f1f5f9;
+    background: #ffffff;
+    margin-top: 1.5rem;
   }
 
   .lm-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.8rem;
-    display: table;
+    font-size: 0.85rem;
+    min-width: 600px;
   }
 
-  .lm-table thead th {
-    background: #f8f9fc;
-    color: #5b677b;
-    font-weight: 600;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 10px 14px;
+  .lm-table th {
     text-align: left;
-    border-bottom: 1px solid #eaeef2;
-    white-space: nowrap;
+    padding: 1rem;
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: #0f172a;
+    border-bottom: 1px solid #e2e8f0;
   }
 
-  .lm-table tbody tr {
-    border-bottom: 1px solid #f0f2f5;
-    transition: background 0.15s;
+  .lm-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: top;
   }
 
-  .lm-table tbody tr:last-child {
+  .lm-table tr:last-child td {
     border-bottom: none;
   }
 
   .lm-table tbody tr:hover {
-    background: #fafbfd;
-  }
-
-  .lm-table td {
-    padding: 11px 14px;
-    color: #2c3e4e;
-    vertical-align: middle;
-  }
-
-  .lm-code-pill {
-    font-family: monospace;
-    font-size: 0.7rem;
-    background: #f0efeb;
-    padding: 2px 8px;
-    border-radius: 6px;
-    color: #555;
-    letter-spacing: 0.3px;
-    white-space: nowrap;
-  }
-
-  .lm-table-name {
-    font-weight: 600;
-    color: #000;
-  }
-
-  .lm-table-muted {
-    color: #5b677b;
-    font-size: 0.78rem;
-  }
-
-  .lm-table-date {
-    color: #8a96a3;
-    font-size: 0.75rem;
-    white-space: nowrap;
-  }
-
-  .lm-type-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 3px 9px;
-    border-radius: 20px;
-    white-space: nowrap;
-  }
-
-  .lm-type-internal {
-    background: #EAF3DE;
-    color: #3B6D11;
-  }
-
-  .lm-type-external {
-    background: #E6F1FB;
-    color: #185FA5;
-  }
-
-  .lm-action-cell {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-  }
-
-  .lm-icon-btn {
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 0.8rem;
-    transition: all 0.15s;
-  }
-
-  .lm-icon-btn:hover {
-    background: #f0efeb;
-    border-color: #eaeef2;
-  }
-
-  .lm-icon-btn.danger:hover {
-    background: #FCEBEB;
-    border-color: #F7C1C1;
-  }
-
-  .lm-editable-input {
-    width: 100%;
-    padding: 0.4rem;
-    border: 1px solid #dce3e9;
-    border-radius: 6px;
-    font-family: inherit;
-    font-size: 0.8rem;
-  }
-
-  .lm-editable-select {
-    width: 100%;
-    padding: 0.4rem;
-    border: 1px solid #dce3e9;
-    border-radius: 6px;
-    font-family: inherit;
-    font-size: 0.8rem;
+    background-color: #fafcff;
   }
 
   .lm-test-fields-preview {
@@ -2830,92 +528,143 @@ const globalStyles = `
     padding-left: 1rem;
   }
 
-  /* ===== LOADER STYLES ===== */
-  @keyframes lm-spin {
-    to { transform: rotate(360deg); }
-  }
-
-  .lm-spinner {
-    width: 15px;
-    height: 15px;
-    border: 2px solid rgba(255,255,255,0.35);
-    border-top-color: #ffffff;
-    border-radius: 50%;
-    animation: lm-spin 0.7s linear infinite;
-    flex-shrink: 0;
-  }
-
-  .lm-table-loader {
+  .lm-editable-input {
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2.5rem 1rem;
-    gap: 0.75rem;
-    border: 1px solid #eaeef2;
-    border-radius: 16px;
-    margin-top: 2rem;
-    background: #fafbfc;
-  }
-
-  .lm-table-spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid #eaeef2;
-    border-top-color: #000000;
-    border-radius: 50%;
-    animation: lm-spin 0.8s linear infinite;
-  }
-
-  .lm-table-loader-text {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-family: inherit;
     font-size: 0.85rem;
-    color: #5b677b;
-    font-weight: 500;
+  }
+
+  .lm-editable-select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.85rem;
+  }
+
+  .lm-action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .lm-icon-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .lm-icon-btn:hover:not(:disabled) {
+    background: #f1f5f9;
+  }
+
+  .lm-icon-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 
   @media (max-width: 720px) {
-    .lm-container { padding: 1.5rem; }
+    .lm-container {
+      padding: 1.5rem;
+    }
     .lm-form-grid {
       grid-template-columns: 1fr;
       gap: 1rem;
     }
-    .lm-full-width { grid-column: span 1; }
+    .lm-full-width {
+      grid-column: span 1;
+    }
     .lm-tab {
       padding: 0.6rem 1rem;
       font-size: 0.85rem;
     }
-    .lm-title { font-size: 1.4rem; }
+    .lm-title {
+      font-size: 1.4rem;
+    }
     .lm-row, .lm-dynamic-field-row {
       flex-direction: column;
       align-items: stretch;
     }
-    .lm-btn-small { align-self: flex-start; }
+    .lm-btn-small {
+      align-self: flex-start;
+    }
+    .lm-table th,
+    .lm-table td {
+      padding: 0.75rem;
+    }
   }
 `;
 
+// Helper to generate unique codes
 const generateCode = (prefix = "ARY") => {
   const now = new Date();
   const datePart = now.toISOString().slice(0, 10).replace(/-/g, "");
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, "0");
+  const random = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, "0");
   return `${prefix}-${datePart}-${random}`;
 };
 
-export default function LabManagement() {
-  const [activeTab, setActiveTab] = useState("lab");
-  const [allTestingFilds, setAllTestingFilds] = useState([]);
+function convertToIST(utcDateString) {
+  if (!utcDateString) return "";
+  const date = new Date(utcDateString);
+  const options = {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  };
+  const formatter = new Intl.DateTimeFormat("en-IN", options);
+  const parts = formatter.formatToParts(date);
+  const get = (type) => parts.find((p) => p.type === type)?.value || "";
+  return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")} ${get("dayPeriod")}`;
+}
 
-  const [savingLab, setSavingLab] = useState(false);
-  const [savingProduct, setSavingProduct] = useState(false);
-  const [savingCompany, setSavingCompany] = useState(false);
+// Loader component
+const CircularLoader = ({ size = "md", inline = false }) => {
+  const sizeClass = size === "sm" ? "lm-loader-sm" : "";
+  return (
+    <div
+      className={`lm-loader ${sizeClass} ${inline ? "lm-loader-inline" : ""}`}
+    />
+  );
+};
+
+export default function LabManagement() {
+  const [activeTab, setActiveTab] = useState("company");
+  const [allTestingFilds, setAllTestingFilds] = useState({});
 
   // ---------- Company State ----------
-  const [companyData, setCompanyData] = useState({ companyName: "", gst: "", address: "", phone: "", adminName: "" });
+  const [companyData, setCompanyData] = useState({
+    companyName: "",
+    gst: "",
+    address: "",
+    phone: "",
+    adminName: "",
+  });
   const [savedCompanies, setSavedCompanies] = useState([]);
   const [editingCompanyId, setEditingCompanyId] = useState(null);
   const [editingCompanyData, setEditingCompanyData] = useState(null);
+  const [companyFetchLoading, setCompanyFetchLoading] = useState(false);
+  const [companySaveLoading, setCompanySaveLoading] = useState(false);
+  const [companyDeleteLoading, setCompanyDeleteLoading] = useState(null); // store id being deleted
+  const [companyEditSaveLoading, setCompanyEditSaveLoading] = useState(false);
 
-  // ---------- Lab State (unchanged) ----------
+  // ---------- Lab State ----------
   const [labData, setLabData] = useState({
     labName: "",
     gst: "",
@@ -2927,103 +676,184 @@ export default function LabManagement() {
   const [savedLabs, setSavedLabs] = useState([]);
   const [editingLabId, setEditingLabId] = useState(null);
   const [editingLabData, setEditingLabData] = useState(null);
+  const [labFetchLoading, setLabFetchLoading] = useState(false);
+  const [labSaveLoading, setLabSaveLoading] = useState(false);
+  const [labDeleteLoading, setLabDeleteLoading] = useState(null);
+  const [labEditSaveLoading, setLabEditSaveLoading] = useState(false);
 
   // ---------- Product State ----------
   const [productData, setProductData] = useState({ productName: "" });
   const [savedProducts, setSavedProducts] = useState([]);
-  const [editingProductId, setEditingProductId] = useState(null);
-  const [editingProductData, setEditingProductData] = useState(null);
+  const [productFetchLoading, setProductFetchLoading] = useState(false);
+  const [productSaveLoading, setProductSaveLoading] = useState(false);
+  const [productDeleteLoading, setProductDeleteLoading] = useState(null);
 
-  const defaultTests = Object.keys(allTestingFilds || {}).map((key) => ({ id: key, label: key, fields: allTestingFilds[key] }));
-  const [availableTests, setAvailableTests] = useState(defaultTests);
-
-  useEffect(() => { setAvailableTests(defaultTests); }, [allTestingFilds]);
-
+  // ---------- Testing State ----------
+  const [availableTests, setAvailableTests] = useState([]);
   const [selectedTestIds, setSelectedTestIds] = useState([]);
   const [testValues, setTestValues] = useState({});
   const [savedTests, setSavedTests] = useState([]);
   const [editingTestId, setEditingTestId] = useState(null);
   const [editingTestData, setEditingTestData] = useState(null);
   const [newTestLabel, setNewTestLabel] = useState("");
-  const [newTestFields, setNewTestFields] = useState([{ name: "", label: "", placeholder: "" }]);
+  const [newTestFields, setNewTestFields] = useState([
+    { name: "", label: "", placeholder: "" },
+  ]);
+  const [testFetchLoading, setTestFetchLoading] = useState(false);
+  const [testCreateLoading, setTestCreateLoading] = useState(false);
 
-  const handleGetAllTests = async () => {
+  // Helper to refresh tests from API
+  const fetchAllTests = async () => {
+    setTestFetchLoading(true);
     try {
       const response = await axios.get("http://localhost:5000/api/tests");
-      if (response.data && response.data.TESTING_FIELDS) setAllTestingFilds(response.data.TESTING_FIELDS);
+      if (response.data && response.data.TESTING_FIELDS) {
+        setAllTestingFilds(response.data.TESTING_FIELDS);
+      }
     } catch (error) {
       console.error("Error fetching tests:", error);
+      alert("Failed to load tests.");
+    } finally {
+      setTestFetchLoading(false);
     }
   };
 
-  // ---------- Company Functions ----------
-  const updateCompany = (field, value) => setCompanyData((prev) => ({ ...prev, [field]: value }));
-  const resetCompany = () => setCompanyData({ companyName: "", gst: "", address: "", phone: "", adminName: "" });
+  useEffect(() => {
+    if (Object.keys(allTestingFilds).length > 0) {
+      const tests = Object.keys(allTestingFilds).map((key) => ({
+        id: key,
+        label: key,
+        fields: allTestingFilds[key],
+      }));
+      setAvailableTests(tests);
+    } else {
+      setAvailableTests([]);
+    }
+  }, [allTestingFilds]);
+
+  // ---------- Company API Calls with individual loaders ----------
+  const handleGetAllCompany = async () => {
+    setCompanyFetchLoading(true);
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/getCompanies",
+      );
+      if (response.data && response.data.allCompanies) {
+        setSavedCompanies(response.data.allCompanies);
+      }
+    } catch (error) {
+      console.error("Error fetching companies:", error);
+      alert("Failed to load companies.");
+    } finally {
+      setCompanyFetchLoading(false);
+    }
+  };
 
   const handleSaveCompany = async () => {
-    if (!companyData.companyName.trim()) { alert("Company Name is required."); return; }
-    const payload = { ...companyData, companyCode: generateCode("ARY") };
-    setSavingCompany(true);
+    if (!companyData.companyName.trim()) {
+      alert("Company Name is required.");
+      return;
+    }
+    setCompanySaveLoading(true);
     try {
-      const response = await axios.post("http://localhost:5000/api/companies", payload);
-      if (response.data?.allCompanies) setSavedCompanies(response.data.allCompanies);
-      alert("Company saved successfully!");
-      resetCompany();
+      const generatedCode = generateCode("ARY");
+      const payload = {
+        companyName: companyData.companyName,
+        gst: companyData.gst,
+        address: companyData.address,
+        phone: companyData.phone,
+        adminName: companyData.adminName,
+        companyCode: generatedCode,
+      };
+      const response = await axios.post(
+        "http://localhost:5000/api/companies",
+        payload,
+      );
+      if (response.data && response.data.allCompanies) {
+        setSavedCompanies(response.data.allCompanies);
+        alert("Company saved successfully!");
+      }
+      setCompanyData({
+        companyName: "",
+        gst: "",
+        address: "",
+        phone: "",
+        adminName: "",
+      });
     } catch (error) {
       console.error("Error saving company:", error);
-      alert(error.response?.status === 409 ? "Company code already exists." : error.response?.data?.error || "Failed to save company.");
-    } finally { setSavingCompany(false); }
+      const errorMsg = error.response?.data?.error || "Failed to save company.";
+      alert(errorMsg);
+    } finally {
+      setCompanySaveLoading(false);
+    }
   };
-
-  const handleGetAllCompany = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/api/getCompanies");
-      if (response.data?.allCompanies) setSavedCompanies(response.data.allCompanies);
-    } catch (error) { console.error("Error fetching companies:", error); }
-  };
-
-  const startEditCompany = (comp) => { setEditingCompanyId(comp.id); setEditingCompanyData({ ...comp }); };
-  const cancelEditCompany = () => { setEditingCompanyId(null); setEditingCompanyData(null); };
 
   const saveEditCompany = async () => {
-    if (!editingCompanyData.companyName.trim()) { alert("Company Name required."); return; }
+    if (!editingCompanyData.companyName.trim()) {
+      alert("Company Name required.");
+      return;
+    }
+    setCompanyEditSaveLoading(true);
     try {
-      const response = await axios.put(`http://localhost:5000/api/companies/${editingCompanyId}`, editingCompanyData);
-      if (response.data?.allCompanies) setSavedCompanies(response.data.allCompanies);
-      alert("Company updated successfully!");
-      cancelEditCompany();
+      const response = await axios.put(
+        `http://localhost:5000/api/companies/${editingCompanyId}`,
+        {
+          companyName: editingCompanyData.companyName,
+          gst: editingCompanyData.gst,
+          address: editingCompanyData.address,
+          phone: editingCompanyData.phone,
+          adminName: editingCompanyData.adminName,
+          companyCode: editingCompanyData.companyCode,
+        },
+      );
+      if (response.data && response.data.allCompanies) {
+        setSavedCompanies(response.data.allCompanies);
+        alert("Company updated successfully!");
+      }
+      setEditingCompanyId(null);
+      setEditingCompanyData(null);
     } catch (error) {
       console.error("Error updating company:", error);
       alert(error.response?.data?.error || "Failed to update company.");
+    } finally {
+      setCompanyEditSaveLoading(false);
     }
   };
 
   const deleteCompany = async (id) => {
     if (!window.confirm("Delete this company record?")) return;
+    setCompanyDeleteLoading(id);
     try {
-      const response = await axios.delete(`http://localhost:5000/api/companies/${id}`);
-      if (response.data?.allCompanies) setSavedCompanies(response.data.allCompanies);
-      alert("Company deleted successfully!");
-    } catch (error) { alert(error.response?.data?.error || "Failed to delete company."); }
+      const response = await axios.delete(
+        `http://localhost:5000/api/companies/${id}`,
+      );
+      if (response.data && response.data.allCompanies) {
+        setSavedCompanies(response.data.allCompanies);
+        alert("Company deleted successfully!");
+      }
+    } catch (error) {
+      console.error("Error deleting company:", error);
+      alert(error.response?.data?.error || "Failed to delete company.");
+    } finally {
+      setCompanyDeleteLoading(null);
+    }
   };
 
-  // ---------- Lab Functions (identical to original, included fully) ----------
-  const updateLab = (field, value) =>
-    setLabData((prev) => ({ ...prev, [field]: value }));
-  const resetLab = () =>
-    setLabData({
-      labName: "",
-      gst: "",
-      address: "",
-      phone: "",
-      adminName: "",
-      labType: "",
-    });
+  // ---------- Lab API Calls with individual loaders ----------
   const handleGetLab = async () => {
+    setLabFetchLoading(true);
     try {
       const response = await axios.get("http://localhost:5000/api/labs");
-      if (response.data?.allLabs) setSavedLabs(response.data.allLabs);
-    } catch (error) { console.error("Error fetching labs:", error); }
+      if (response.data && response.data.allLabs) {
+        setSavedLabs(response.data.allLabs);
+      }
+    } catch (error) {
+      console.error("Error fetching labs:", error);
+      alert("Failed to load labs.");
+    } finally {
+      setLabFetchLoading(false);
+    }
   };
 
   const handleSaveLab = async () => {
@@ -3035,10 +865,9 @@ export default function LabManagement() {
       alert("Please select Lab Type.");
       return;
     }
-
-    const generatedCode = generateCode("LAB"); // e.g., LAB-20260420-001
-
+    setLabSaveLoading(true);
     try {
+      const generatedCode = generateCode("LAB");
       const response = await axios.post("http://localhost:5000/api/labs", {
         labName: labData.labName,
         gst: labData.gst,
@@ -3048,32 +877,32 @@ export default function LabManagement() {
         labType: labData.labType,
         labCode: generatedCode,
       });
-
       if (response.data && response.data.allLabs) {
-        setSavedLabs(response.data.allLabs); // full list from DB
+        setSavedLabs(response.data.allLabs);
         alert("Lab saved successfully!");
       }
-      resetLab();
+      setLabData({
+        labName: "",
+        gst: "",
+        address: "",
+        phone: "",
+        adminName: "",
+        labType: "",
+      });
     } catch (error) {
       console.error("Error saving lab:", error);
-      if (error.response?.status === 409) {
-        alert("Lab Code already exists. Please try again.");
-      } else {
-        alert(error.response?.data?.error || "Failed to save lab.");
-      }
+      alert(error.response?.data?.error || "Failed to save lab.");
+    } finally {
+      setLabSaveLoading(false);
     }
   };
 
-  const startEditLab = (lab) => {
-    setEditingLabId(lab.id);
-    setEditingLabData({ ...lab });
-  };
-  const cancelEditLab = () => {
-    setEditingLabId(null);
-    setEditingLabData(null);
-  };
   const saveEditLab = async () => {
-    if (!editingLabData.labName.trim()) { alert("Lab Name required."); return; }
+    if (!editingLabData.labName.trim()) {
+      alert("Lab Name required.");
+      return;
+    }
+    setLabEditSaveLoading(true);
     try {
       const response = await axios.put(
         `http://localhost:5000/api/labs/${editingLabId}`,
@@ -3084,183 +913,271 @@ export default function LabManagement() {
           phone: editingLabData.phone,
           adminName: editingLabData.adminName,
           labType: editingLabData.labType,
-          labCode: editingLabData.labCode, // include if editable, otherwise omit
+          labCode: editingLabData.labCode,
         },
       );
-
       if (response.data && response.data.allLabs) {
         setSavedLabs(response.data.allLabs);
         alert("Lab updated successfully!");
-      } else {
-        // Fallback: manual update if API doesn't return allLabs
-        setSavedLabs((prev) =>
-          prev.map((lab) =>
-            lab.id === editingLabId
-              ? { ...editingLabData, savedAt: new Date().toLocaleString() }
-              : lab,
-          ),
-        );
-        alert("Lab updated successfully!");
       }
-
-      cancelEditLab();
+      setEditingLabId(null);
+      setEditingLabData(null);
     } catch (error) {
       console.error("Error updating lab:", error);
       alert(error.response?.data?.error || "Failed to update lab.");
+    } finally {
+      setLabEditSaveLoading(false);
     }
   };
 
   const deleteLab = async (id) => {
     if (!window.confirm("Delete this lab record?")) return;
+    setLabDeleteLoading(id);
     try {
       const response = await axios.delete(
         `http://localhost:5000/api/labs/${id}`,
       );
-
       if (response.data && response.data.allLabs) {
         setSavedLabs(response.data.allLabs);
-        alert("Lab deleted successfully!");
-      } else {
-        // Fallback: manual removal if API doesn't return allLabs
-        setSavedLabs((prev) => prev.filter((lab) => lab.id !== id));
         alert("Lab deleted successfully!");
       }
     } catch (error) {
       console.error("Error deleting lab:", error);
-      if (error.response?.status === 404) {
-        alert("Lab not found. It may have already been deleted.");
-      } else {
-        alert(error.response?.data?.error || "Failed to delete lab.");
-      }
+      alert(error.response?.data?.error || "Failed to delete lab.");
+    } finally {
+      setLabDeleteLoading(null);
     }
   };
 
-  // ---------- Product Functions ----------
-  const updateProduct = (field, value) => setProductData((prev) => ({ ...prev, [field]: value }));
-  const resetProduct = () => setProductData({ productName: "" });
-
+  // ---------- Product API Calls with individual loaders ----------
   const handleGetProduct = async () => {
+    setProductFetchLoading(true);
     try {
       const response = await axios.get("http://localhost:5000/api/products");
-      if (response.data?.allProducts) setSavedProducts(response.data.allProducts);
-    } catch (error) { console.error("Error fetching products:", error); }
+      if (response.data && response.data.allProducts) {
+        setSavedProducts(response.data.allProducts);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      alert("Failed to load products.");
+    } finally {
+      setProductFetchLoading(false);
+    }
   };
 
   const handleSaveProduct = async () => {
-    if (!productData.productName.trim()) { alert("Product Name is required."); return; }
-    setSavingProduct(true);
+    if (!productData.productName.trim()) {
+      alert("Product Name is required.");
+      return;
+    }
+    setProductSaveLoading(true);
     try {
-      const response = await axios.post("http://localhost:5000/api/products", { ...productData, productId: generateCode("SMP") });
-      if (response.data?.allProducts) setSavedProducts(response.data.allProducts);
-      resetProduct();
+      const generatedId = generateCode("SMP");
+      const response = await axios.post("http://localhost:5000/api/products", {
+        productName: productData.productName,
+        productId: generatedId,
+      });
+      if (response.data && response.data.allProducts) {
+        setSavedProducts(response.data.allProducts);
+        alert("Product saved successfully!");
+      }
+      setProductData({ productName: "" });
     } catch (error) {
       console.error("Error saving product:", error);
-      if (error.response?.status === 409) {
-        alert("Product ID already exists. Please try again.");
-      } else {
-        alert(error.response?.data?.error || "Failed to save product.");
-      }
+      alert(error.response?.data?.error || "Failed to save product.");
+    } finally {
+      setProductSaveLoading(false);
     }
-  };
-
-  const startEditProduct = (prod) => {
-    setEditingProductId(prod.id);
-    setEditingProductData({ ...prod });
-  };
-  const cancelEditProduct = () => {
-    setEditingProductId(null);
-    setEditingProductData(null);
-  };
-  const saveEditProduct = () => {
-    if (!editingProductData.productName.trim()) { alert("Product Name required."); return; }
-    setSavedProducts((prev) => prev.map((p) => p.id === editingProductId ? { ...editingProductData, savedAt: new Date().toLocaleString() } : p));
-    cancelEditProduct();
   };
 
   const deleteProduct = async (id) => {
     if (!window.confirm("Delete this product?")) return;
+    setProductDeleteLoading(id);
     try {
-      const response = await axios.delete(`http://localhost:5000/api/products/${id}`);
-      if (response.data?.allProducts) setSavedProducts(response.data.allProducts);
-      alert("Product deleted successfully!");
-    } catch (error) { alert("Failed to delete product."); }
+      const response = await axios.delete(
+        `http://localhost:5000/api/products/${id}`,
+      );
+      if (response.data && response.data.allProducts) {
+        setSavedProducts(response.data.allProducts);
+        alert("Product deleted successfully!");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert("Failed to delete product.");
+    } finally {
+      setProductDeleteLoading(null);
+    }
   };
 
-  useEffect(() => {
-    handleGetAllCompany();
-    handleGetLab();
-    handleGetProduct();
-    handleGetAllTests();
-  }, []);
-
-  // ---------- Testing Functions ----------
+  // ---------- Testing Functions with individual loaders ----------
   const handleToggleTest = (testId) => {
-    setSelectedTestIds((prev) => prev.includes(testId) ? prev.filter((id) => id !== testId) : [...prev, testId]);
+    setSelectedTestIds((prev) =>
+      prev.includes(testId)
+        ? prev.filter((id) => id !== testId)
+        : [...prev, testId],
+    );
     if (!selectedTestIds.includes(testId)) {
       const test = availableTests.find((t) => t.id === testId);
       if (test) {
         const initialValues = {};
-        test?.fields?.forEach((field) => { initialValues[field?.name] = ""; });
+        test?.fields?.forEach((field) => {
+          initialValues[field?.name] = "";
+        });
         setTestValues((prev) => ({ ...prev, [testId]: initialValues }));
       }
     }
   };
 
   const handleTestFieldChange = (testId, fieldName, value) => {
-    setTestValues((prev) => ({ ...prev, [testId]: { ...(prev[testId] || {}), [fieldName]: value } }));
+    setTestValues((prev) => ({
+      ...prev,
+      [testId]: { ...(prev[testId] || {}), [fieldName]: value },
+    }));
   };
 
-  const addCustomField = () => setNewTestFields([...newTestFields, { name: "", label: "", placeholder: "" }]);
-  const removeCustomField = (index) => { const updated = [...newTestFields]; updated.splice(index, 1); setNewTestFields(updated); };
-  const updateCustomField = (index, key, value) => { const updated = [...newTestFields]; updated[index][key] = value; setNewTestFields(updated); };
+  const addCustomField = () =>
+    setNewTestFields([
+      ...newTestFields,
+      { name: "", label: "", placeholder: "" },
+    ]);
+
+  const removeCustomField = (index) => {
+    const updated = [...newTestFields];
+    updated.splice(index, 1);
+    setNewTestFields(updated);
+  };
+
+  const updateCustomField = (index, key, value) => {
+    const updated = [...newTestFields];
+    updated[index][key] = value;
+    setNewTestFields(updated);
+  };
 
   const handleAddNewTest = async () => {
     if (!newTestLabel.trim()) return;
-    const invalid = newTestFields.some((f) => !f.name.trim() || !f.label.trim());
-    if (invalid) { alert("Please fill in both Name and Label for each field."); return; }
-    const payload = { test_name: newTestLabel.trim(), fields: newTestFields.map((f) => ({ name: f.name.trim(), label: f.label.trim(), placeholder: f.placeholder || "" })) };
+    const invalid = newTestFields.some(
+      (f) => !f.name.trim() || !f.label.trim(),
+    );
+    if (invalid) {
+      alert("Please fill in both Name and Label for each field.");
+      return;
+    }
+    setTestCreateLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/create-test", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const payload = {
+        test_name: newTestLabel.trim(),
+        fields: newTestFields.map((f) => ({
+          name: f.name.trim(),
+          label: f.label.trim(),
+          placeholder: f.placeholder || "",
+        })),
+      };
+      const res = await fetch("http://localhost:5000/api/create-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
       const data = await res.json();
-      if (!res.ok) { alert(data.error || "Failed to create test"); return; }
-      handleGetAllTests();
+      if (!res.ok) {
+        alert(data.error || "Failed to create test");
+        return;
+      }
+      await fetchAllTests();
       setNewTestLabel("");
       setNewTestFields([{ name: "", label: "", placeholder: "" }]);
-    } catch (err) { console.error(err); alert("Error creating test"); }
+      alert("Test created successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Error creating test");
+    } finally {
+      setTestCreateLoading(false);
+    }
   };
 
   const resetTesting = () => {
     setSelectedTestIds([]);
     setTestValues({});
-    setAvailableTests(defaultTests);
     setNewTestLabel("");
     setNewTestFields([{ name: "", label: "", placeholder: "" }]);
   };
 
   const handleSaveTesting = () => {
+    if (selectedTestIds.length === 0) {
+      alert("Please select at least one test.");
+      return;
+    }
     const selectedTestsData = selectedTestIds.map((id) => {
       const test = availableTests.find((t) => t.id === id);
-      return { testId: id, testLabel: test.label, fields: test.fields.map((f) => ({ label: f.label, value: testValues[id]?.[f.name] || "" })) };
+      return {
+        testId: id,
+        testLabel: test?.label,
+        fields:
+          test?.fields.map((f) => ({
+            label: f.label,
+            value: testValues[id]?.[f.name] || "",
+          })) || [],
+      };
     });
-    setSavedTests((prev) => [{ id: Date.now(), savedAt: new Date().toLocaleString(), tests: selectedTestsData }, ...prev]);
+    const newEntry = {
+      id: Date.now(),
+      savedAt: new Date().toLocaleString(),
+      tests: selectedTestsData,
+    };
+    setSavedTests((prev) => [newEntry, ...prev]);
     alert(`Saved ${selectedTestsData.length} test(s).`);
     setSelectedTestIds([]);
+    setTestValues({});
   };
 
-  const startEditTest = (entry) => { setEditingTestId(entry.id); setEditingTestData(JSON.parse(JSON.stringify(entry))); };
-  const cancelEditTest = () => { setEditingTestId(null); setEditingTestData(null); };
+  const startEditTest = (entry) => {
+    setEditingTestId(entry.id);
+    setEditingTestData(JSON.parse(JSON.stringify(entry)));
+  };
+
+  const cancelEditTest = () => {
+    setEditingTestId(null);
+    setEditingTestData(null);
+  };
+
   const saveEditTest = () => {
-    setSavedTests((prev) => prev.map((t) => t.id === editingTestId ? { ...editingTestData, savedAt: new Date().toLocaleString() } : t));
+    setSavedTests((prev) =>
+      prev.map((t) =>
+        t.id === editingTestId
+          ? { ...editingTestData, savedAt: new Date().toLocaleString() }
+          : t,
+      ),
+    );
     cancelEditTest();
   };
-  const deleteTest = (id) => { if (window.confirm("Delete this test configuration?")) setSavedTests((prev) => prev.filter((t) => t.id !== id)); };
+
+  const deleteTest = (id) => {
+    if (window.confirm("Delete this test configuration?"))
+      setSavedTests((prev) => prev.filter((t) => t.id !== id));
+  };
+
   const updateEditingTestField = (testIndex, fieldIndex, newValue) => {
     const updated = { ...editingTestData };
     updated.tests[testIndex].fields[fieldIndex].value = newValue;
     setEditingTestData(updated);
   };
 
-  // ---------- Render ----------
+  // Initial data load
+  useEffect(() => {
+    handleGetAllCompany();
+    handleGetLab();
+    handleGetProduct();
+    fetchAllTests();
+  }, []);
+
+  // Helper to render centered loader in table body
+  const renderTableLoader = () => (
+    <tr>
+      <td colSpan={10} className="lm-loader-container">
+        <CircularLoader />
+      </td>
+    </tr>
+  );
+
   return (
     <>
       <style>{globalStyles}</style>
@@ -3268,160 +1185,360 @@ export default function LabManagement() {
         <div className="lm-container">
           <div className="lm-header">
             <h1 className="lm-title">Lab Management System</h1>
-            <p className="lm-subtitle">Manage companies, labs, products, and test configurations</p>
+            <p className="lm-subtitle">
+              Manage companies, labs, products, and test configurations
+            </p>
           </div>
 
           <div className="lm-tabs">
-            {["lab", "product", "testing", "company"].map((tab) => (
-              <button key={tab} className={`lm-tab ${activeTab === tab ? "active" : ""}`} onClick={() => setActiveTab(tab)}>
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
+            <button
+              className={`lm-tab ${activeTab === "company" ? "active" : ""}`}
+              onClick={() => setActiveTab("company")}
+            >
+              Company
+            </button>
+            <button
+              className={`lm-tab ${activeTab === "lab" ? "active" : ""}`}
+              onClick={() => setActiveTab("lab")}
+            >
+              Lab
+            </button>
+            <button
+              className={`lm-tab ${activeTab === "product" ? "active" : ""}`}
+              onClick={() => setActiveTab("product")}
+            >
+              Product
+            </button>
+            <button
+              className={`lm-tab ${activeTab === "testing" ? "active" : ""}`}
+              onClick={() => setActiveTab("testing")}
+            >
+              Testing
+            </button>
           </div>
 
-          {/* ========== COMPANY TAB ========== */}
+          {/* COMPANY TAB */}
           {activeTab === "company" && (
             <div className="lm-panel">
               <div className="lm-form-grid">
                 <div className="lm-field">
                   <label className="lm-label">Company Name</label>
-                  <input className="lm-input" value={companyData.companyName} onChange={(e) => updateCompany("companyName", e.target.value)} />
+                  <input
+                    className="lm-input"
+                    value={companyData.companyName}
+                    onChange={(e) =>
+                      setCompanyData((prev) => ({
+                        ...prev,
+                        companyName: e.target.value,
+                      }))
+                    }
+                  />
                 </div>
                 <div className="lm-field">
                   <label className="lm-label">GST Number</label>
-                  <input className="lm-input" value={companyData.gst} onChange={(e) => updateCompany("gst", e.target.value)} />
+                  <input
+                    className="lm-input"
+                    value={companyData.gst}
+                    onChange={(e) =>
+                      setCompanyData((prev) => ({
+                        ...prev,
+                        gst: e.target.value,
+                      }))
+                    }
+                  />
                 </div>
                 <div className="lm-field lm-full-width">
                   <label className="lm-label">Address</label>
-                  <textarea className="lm-textarea" value={companyData.address} onChange={(e) => updateCompany("address", e.target.value)} />
+                  <textarea
+                    className="lm-textarea"
+                    value={companyData.address}
+                    onChange={(e) =>
+                      setCompanyData((prev) => ({
+                        ...prev,
+                        address: e.target.value,
+                      }))
+                    }
+                  />
                 </div>
                 <div className="lm-field">
                   <label className="lm-label">Phone Number</label>
-                  <input className="lm-input" value={companyData.phone} onChange={(e) => updateCompany("phone", e.target.value)} />
+                  <input
+                    className="lm-input"
+                    value={companyData.phone}
+                    onChange={(e) =>
+                      setCompanyData((prev) => ({
+                        ...prev,
+                        phone: e.target.value,
+                      }))
+                    }
+                  />
                 </div>
                 <div className="lm-field">
                   <label className="lm-label">Admin Name</label>
-                  <input className="lm-input" value={companyData.adminName} onChange={(e) => updateCompany("adminName", e.target.value)} />
+                  <input
+                    className="lm-input"
+                    value={companyData.adminName}
+                    onChange={(e) =>
+                      setCompanyData((prev) => ({
+                        ...prev,
+                        adminName: e.target.value,
+                      }))
+                    }
+                  />
                 </div>
               </div>
-
-              {(companyData.companyName || companyData.gst) && (
-                <div className="lm-info-card">
-                  <strong>🏢 Company Profile</strong>
-                  <p>{companyData.companyName || "—"} · {companyData.adminName ? `Head: ${companyData.adminName}` : ""}</p>
-                </div>
-              )}
-
               <div className="lm-actions">
-                <button className="lm-btn-secondary" onClick={resetCompany}>Clear</button>
-                <button className="lm-btn-primary" onClick={handleSaveCompany} disabled={savingCompany}>
-                  {savingCompany ? <><span className="lm-spinner" />Saving...</> : "Save Company"}
+                <button
+                  className="lm-btn-secondary"
+                  onClick={() =>
+                    setCompanyData({
+                      companyName: "",
+                      gst: "",
+                      address: "",
+                      phone: "",
+                      adminName: "",
+                    })
+                  }
+                  disabled={companySaveLoading}
+                >
+                  Clear
+                </button>
+                <button
+                  className="lm-btn-primary"
+                  onClick={handleSaveCompany}
+                  disabled={companySaveLoading}
+                >
+                  {companySaveLoading && <CircularLoader size="sm" inline />}
+                  Save Company
                 </button>
               </div>
-
-              {savingCompany ? (
-                <div className="lm-table-loader">
-                  <div className="lm-table-spinner" />
-                  <span className="lm-table-loader-text">Saving company, please wait...</span>
-                </div>
-              ) : savedCompanies.length > 0 && (
-                <div className="lm-table-section">
-                  <div className="lm-table-section-header">
-                    <span className="lm-table-section-title">Saved Companies</span>
-                    <span className="lm-table-count-badge">{savedCompanies.length} {savedCompanies.length === 1 ? "company" : "companies"}</span>
-                  </div>
-                  <div className="lm-table-card">
-                    <div className="lm-table-scroll">
-                      <table className="lm-table">
-                        <thead>
-                          <tr>
-                            <th>Company Code</th>
-                            <th>Company Name</th>
-                            <th>GST</th>
-                            <th>Phone</th>
-                            <th>Admin Name</th>
-                            <th>Address</th>
-                            <th>Saved At</th>
-                            <th></th>
+              <div className="lm-table-wrapper">
+                <table className="lm-table">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Name</th>
+                      <th>GST</th>
+                      <th>Phone</th>
+                      <th>Admin</th>
+                      <th>Address</th>
+                      <th>Saved At</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {companyFetchLoading
+                      ? renderTableLoader()
+                      : savedCompanies.map((comp) => (
+                          <tr key={comp.id}>
+                            {editingCompanyId === comp.id ? (
+                              <>
+                                <td>{comp.companyCode}</td>
+                                <td>
+                                  <input
+                                    className="lm-editable-input"
+                                    value={editingCompanyData.companyName}
+                                    onChange={(e) =>
+                                      setEditingCompanyData({
+                                        ...editingCompanyData,
+                                        companyName: e.target.value,
+                                      })
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <input
+                                    className="lm-editable-input"
+                                    value={editingCompanyData.gst}
+                                    onChange={(e) =>
+                                      setEditingCompanyData({
+                                        ...editingCompanyData,
+                                        gst: e.target.value,
+                                      })
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <input
+                                    className="lm-editable-input"
+                                    value={editingCompanyData.phone}
+                                    onChange={(e) =>
+                                      setEditingCompanyData({
+                                        ...editingCompanyData,
+                                        phone: e.target.value,
+                                      })
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <input
+                                    className="lm-editable-input"
+                                    value={editingCompanyData.adminName}
+                                    onChange={(e) =>
+                                      setEditingCompanyData({
+                                        ...editingCompanyData,
+                                        adminName: e.target.value,
+                                      })
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <textarea
+                                    className="lm-editable-input"
+                                    rows={2}
+                                    value={editingCompanyData.address}
+                                    onChange={(e) =>
+                                      setEditingCompanyData({
+                                        ...editingCompanyData,
+                                        address: e.target.value,
+                                      })
+                                    }
+                                  />
+                                </td>
+                                <td>{comp.savedAt}</td>
+                                <td className="lm-action-buttons">
+                                  <button
+                                    className="lm-icon-btn"
+                                    onClick={saveEditCompany}
+                                    disabled={companyEditSaveLoading}
+                                  >
+                                    {companyEditSaveLoading ? (
+                                      <CircularLoader size="sm" inline />
+                                    ) : (
+                                      "💾"
+                                    )}
+                                  </button>
+                                  <button
+                                    className="lm-icon-btn"
+                                    onClick={() => {
+                                      setEditingCompanyId(null);
+                                      setEditingCompanyData(null);
+                                    }}
+                                    disabled={companyEditSaveLoading}
+                                  >
+                                    ✖️
+                                  </button>
+                                </td>
+                              </>
+                            ) : (
+                              <>
+                                <td>{comp.companyCode}</td>
+                                <td>{comp.companyName}</td>
+                                <td>{comp.gst}</td>
+                                <td>{comp.phone}</td>
+                                <td>{comp.adminName}</td>
+                                <td>{comp.address}</td>
+                                <td>{convertToIST(comp.savedAt)}</td>
+                                <td className="lm-action-buttons">
+                                  <button
+                                    className="lm-icon-btn"
+                                    onClick={() => {
+                                      setEditingCompanyId(comp.id);
+                                      setEditingCompanyData({ ...comp });
+                                    }}
+                                    disabled={
+                                      companyDeleteLoading === comp.id ||
+                                      companyEditSaveLoading
+                                    }
+                                  >
+                                    ✏️
+                                  </button>
+                                  <button
+                                    className="lm-icon-btn"
+                                    onClick={() => deleteCompany(comp.id)}
+                                    disabled={companyDeleteLoading === comp.id}
+                                  >
+                                    {companyDeleteLoading === comp.id ? (
+                                      <CircularLoader size="sm" inline />
+                                    ) : (
+                                      "🗑️"
+                                    )}
+                                  </button>
+                                </td>
+                              </>
+                            )}
                           </tr>
-                        </thead>
-                        <tbody>
-                          {savedCompanies.map((comp) => (
-                            <tr key={comp.id}>
-                              {editingCompanyId === comp.id ? (
-                                <>
-                                  <td><span className="lm-code-pill">{comp.companyCode}</span></td>
-                                  <td><input className="lm-editable-input" value={editingCompanyData.companyName} onChange={(e) => setEditingCompanyData({ ...editingCompanyData, companyName: e.target.value })} /></td>
-                                  <td><input className="lm-editable-input" value={editingCompanyData.gst} onChange={(e) => setEditingCompanyData({ ...editingCompanyData, gst: e.target.value })} /></td>
-                                  <td><input className="lm-editable-input" value={editingCompanyData.phone} onChange={(e) => setEditingCompanyData({ ...editingCompanyData, phone: e.target.value })} /></td>
-                                  <td><input className="lm-editable-input" value={editingCompanyData.adminName} onChange={(e) => setEditingCompanyData({ ...editingCompanyData, adminName: e.target.value })} /></td>
-                                  <td><textarea className="lm-editable-input" rows={2} value={editingCompanyData.address} onChange={(e) => setEditingCompanyData({ ...editingCompanyData, address: e.target.value })} /></td>
-                                  <td className="lm-table-date">{comp.savedAt}</td>
-                                  <td>
-                                    <div className="lm-action-cell">
-                                      <button className="lm-icon-btn" onClick={saveEditCompany}>💾</button>
-                                      <button className="lm-icon-btn" onClick={cancelEditCompany}>✖️</button>
-                                    </div>
-                                  </td>
-                                </>
-                              ) : (
-                                <>
-                                  <td><span className="lm-code-pill">{comp.companyCode}</span></td>
-                                  <td className="lm-table-name">{comp.companyName}</td>
-                                  <td className="lm-table-muted">{comp.gst || "—"}</td>
-                                  <td className="lm-table-muted">{comp.phone || "—"}</td>
-                                  <td className="lm-table-muted">{comp.adminName || "—"}</td>
-                                  <td className="lm-table-muted">{comp.address || "—"}</td>
-                                  <td className="lm-table-date">{comp.savedAt}</td>
-                                  <td>
-                                    <div className="lm-action-cell">
-                                      <button className="lm-icon-btn" onClick={() => startEditCompany(comp)}>✏️</button>
-                                      <button className="lm-icon-btn danger" onClick={() => deleteCompany(comp.id)}>🗑️</button>
-                                    </div>
-                                  </td>
-                                </>
-                              )}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              )}
+                        ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
-          {/* ========== LAB TAB ========== */}
+          {/* LAB TAB */}
           {activeTab === "lab" && (
             <div className="lm-panel">
               <div className="lm-form-grid">
                 <div className="lm-field">
                   <label className="lm-label">Lab Name</label>
-                  <input className="lm-input" value={labData.labName} onChange={(e) => updateLab("labName", e.target.value)} />
+                  <input
+                    className="lm-input"
+                    value={labData.labName}
+                    onChange={(e) =>
+                      setLabData((prev) => ({
+                        ...prev,
+                        labName: e.target.value,
+                      }))
+                    }
+                  />
                 </div>
                 <div className="lm-field">
                   <label className="lm-label">GST Number</label>
-                  <input className="lm-input" value={labData.gst} onChange={(e) => updateLab("gst", e.target.value)} />
+                  <input
+                    className="lm-input"
+                    value={labData.gst}
+                    onChange={(e) =>
+                      setLabData((prev) => ({ ...prev, gst: e.target.value }))
+                    }
+                  />
                 </div>
                 <div className="lm-field lm-full-width">
                   <label className="lm-label">Address</label>
-                  <textarea className="lm-textarea" value={labData.address} onChange={(e) => updateLab("address", e.target.value)} />
+                  <textarea
+                    className="lm-textarea"
+                    value={labData.address}
+                    onChange={(e) =>
+                      setLabData((prev) => ({
+                        ...prev,
+                        address: e.target.value,
+                      }))
+                    }
+                  />
                 </div>
                 <div className="lm-field">
-                  <label className="lm-label">Phone Number</label>
-                  <input className="lm-input" value={labData.phone} onChange={(e) => updateLab("phone", e.target.value)} />
+                  <label className="lm-label">Phone</label>
+                  <input
+                    className="lm-input"
+                    value={labData.phone}
+                    onChange={(e) =>
+                      setLabData((prev) => ({ ...prev, phone: e.target.value }))
+                    }
+                  />
                 </div>
                 <div className="lm-field">
                   <label className="lm-label">Admin Name</label>
-                  <input className="lm-input" value={labData.adminName} onChange={(e) => updateLab("adminName", e.target.value)} />
+                  <input
+                    className="lm-input"
+                    value={labData.adminName}
+                    onChange={(e) =>
+                      setLabData((prev) => ({
+                        ...prev,
+                        adminName: e.target.value,
+                      }))
+                    }
+                  />
                 </div>
                 <div className="lm-field">
-                  <label className="lm-label">Tab Type</label>
+                  <label className="lm-label">Lab Type</label>
                   <select
                     className="lm-select"
                     value={labData.labType}
-                    onChange={(e) => updateLab("labType", e.target.value)}
+                    onChange={(e) =>
+                      setLabData((prev) => ({
+                        ...prev,
+                        labType: e.target.value,
+                      }))
+                    }
                   >
                     <option value="">Select type</option>
                     <option value="internal">Internal</option>
@@ -3429,284 +1546,303 @@ export default function LabManagement() {
                   </select>
                 </div>
               </div>
-              {labData.labType && (
-                <div className="lm-info-card">
-                  <strong>
-                    ⚙️{" "}
-                    {labData.labType === "internal"
-                      ? "Internal Lab"
-                      : "Third Party Lab"}
-                  </strong>
-                  <span className="lm-badge">
-                    {labData.labType === "internal" ? "IN-HOUSE" : "EXTERNAL"}
-                  </span>
-                  <p style={{ marginTop: "0.5rem", fontSize: "0.8rem" }}>
-                    {labData.labType === "internal"
-                      ? "Operates within the organization."
-                      : "Accredited external partner."}
-                  </p>
-                </div>
-              )}
-
               <div className="lm-actions">
-                <button className="lm-btn-secondary" onClick={resetLab}>Clear</button>
-                <button className="lm-btn-primary" onClick={handleSaveLab} disabled={savingLab}>
-                  {savingLab ? <><span className="lm-spinner" />Saving...</> : "Save Lab"}
+                <button
+                  className="lm-btn-secondary"
+                  onClick={() =>
+                    setLabData({
+                      labName: "",
+                      gst: "",
+                      address: "",
+                      phone: "",
+                      adminName: "",
+                      labType: "",
+                    })
+                  }
+                  disabled={labSaveLoading}
+                >
+                  Clear
+                </button>
+                <button
+                  className="lm-btn-primary"
+                  onClick={handleSaveLab}
+                  disabled={labSaveLoading}
+                >
+                  {labSaveLoading && <CircularLoader size="sm" inline />}
+                  Save Lab
                 </button>
               </div>
-              {savedLabs.length > 0 && (
-                <div style={{ marginTop: "2rem" }}>
-                  <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
-                    Saved Labs
-                  </h3>
-                  <table className="lm-table">
-                    <thead>
-                      <tr>
-                        <th>Lab Code</th>
-                        <th>Lab Name</th>
-                        <th>GST</th>
-                        <th>Phone</th>
-                        <th>Admin Name</th>
-                        <th>Tab Type</th>
-                        <th>Address</th>
-                        <th>Saved At</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {savedLabs?.map((lab) => (
-                        <tr key={lab?.id}>
-                          {editingLabId === lab?.id ? (
-                            <>
-                              {" "}
-                              <td>{lab.labCode}</td>
-                              <td>
-                                <input
-                                  className="lm-editable-input"
-                                  value={editingLabData.labName}
-                                  onChange={(e) =>
-                                    setEditingLabData({
-                                      ...editingLabData,
-                                      labName: e.target.value,
-                                    })
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  className="lm-editable-input"
-                                  value={editingLabData.gst}
-                                  onChange={(e) =>
-                                    setEditingLabData({
-                                      ...editingLabData,
-                                      gst: e.target.value,
-                                    })
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  className="lm-editable-input"
-                                  value={editingLabData.phone}
-                                  onChange={(e) =>
-                                    setEditingLabData({
-                                      ...editingLabData,
-                                      phone: e.target.value,
-                                    })
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  className="lm-editable-input"
-                                  value={editingLabData.adminName}
-                                  onChange={(e) =>
-                                    setEditingLabData({
-                                      ...editingLabData,
-                                      adminName: e.target.value,
-                                    })
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <select
-                                  className="lm-editable-select"
-                                  value={editingLabData.labType}
-                                  onChange={(e) =>
-                                    setEditingLabData({
-                                      ...editingLabData,
-                                      labType: e.target.value,
-                                    })
-                                  }
-                                >
-                                  <option value="">Select</option>
-                                  <option value="internal">Internal</option>
-                                  <option value="thirdparty">
-                                    Third Party
-                                  </option>
-                                </select>
-                              </td>
-                              <td>
-                                <textarea
-                                  className="lm-editable-input"
-                                  rows={2}
-                                  value={editingLabData.address}
-                                  onChange={(e) =>
-                                    setEditingLabData({
-                                      ...editingLabData,
-                                      address: e.target.value,
-                                    })
-                                  }
-                                />
-                              </td>
-                              <td>{lab.savedAt}</td>
-                              <td className="lm-action-buttons">
-                                <button
-                                  className="lm-icon-btn"
-                                  onClick={saveEditLab}
-                                >
-                                  💾
-                                </button>
-                                <button
-                                  className="lm-icon-btn"
-                                  onClick={cancelEditLab}
-                                >
-                                  ✖️
-                                </button>
-                              </td>
-                            </>
-                          ) : (
-                            <>
-                              {" "}
-                              <td>{lab.labCode}</td>
-                              <td>{lab.labName}</td>
-                              <td>{lab.gst}</td>
-                              <td>{lab.phone}</td>
-                              <td>{lab.adminName}</td>
-                              <td>
-                                {lab.labType === "internal"
-                                  ? "Internal"
-                                  : lab.labType === "thirdparty"
-                                    ? "Third Party"
-                                    : "-"}
-                              </td>
-                              <td>{lab.address}</td>
-                              <td>{lab.savedAt}</td>
-                              <td className="lm-action-buttons">
-                                <button
-                                  className="lm-icon-btn"
-                                  onClick={() => startEditLab(lab)}
-                                >
-                                  ✏️
-                                </button>
-                                <button
-                                  className="lm-icon-btn"
-                                  onClick={() => deleteLab(lab?.id)}
-                                >
-                                  🗑️
-                                </button>
-                              </td>
-                            </>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+              <div className="lm-table-wrapper">
+                <table className="lm-table">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Name</th>
+                      <th>GST</th>
+                      <th>Phone</th>
+                      <th>Admin</th>
+                      <th>Type</th>
+                      <th>Address</th>
+                      <th>Saved At</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {labFetchLoading
+                      ? renderTableLoader()
+                      : savedLabs.map((lab) => (
+                          <tr key={lab.id}>
+                            {editingLabId === lab.id ? (
+                              <>
+                                <td>{lab.labCode}</td>
+                                <td>
+                                  <input
+                                    className="lm-editable-input"
+                                    value={editingLabData.labName}
+                                    onChange={(e) =>
+                                      setEditingLabData({
+                                        ...editingLabData,
+                                        labName: e.target.value,
+                                      })
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <input
+                                    className="lm-editable-input"
+                                    value={editingLabData.gst}
+                                    onChange={(e) =>
+                                      setEditingLabData({
+                                        ...editingLabData,
+                                        gst: e.target.value,
+                                      })
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <input
+                                    className="lm-editable-input"
+                                    value={editingLabData.phone}
+                                    onChange={(e) =>
+                                      setEditingLabData({
+                                        ...editingLabData,
+                                        phone: e.target.value,
+                                      })
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <input
+                                    className="lm-editable-input"
+                                    value={editingLabData.adminName}
+                                    onChange={(e) =>
+                                      setEditingLabData({
+                                        ...editingLabData,
+                                        adminName: e.target.value,
+                                      })
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <select
+                                    className="lm-editable-select"
+                                    value={editingLabData.labType}
+                                    onChange={(e) =>
+                                      setEditingLabData({
+                                        ...editingLabData,
+                                        labType: e.target.value,
+                                      })
+                                    }
+                                  >
+                                    <option value="">Select</option>
+                                    <option value="internal">Internal</option>
+                                    <option value="thirdparty">
+                                      Third Party
+                                    </option>
+                                  </select>
+                                </td>
+                                <td>
+                                  <textarea
+                                    className="lm-editable-input"
+                                    rows={2}
+                                    value={editingLabData.address}
+                                    onChange={(e) =>
+                                      setEditingLabData({
+                                        ...editingLabData,
+                                        address: e.target.value,
+                                      })
+                                    }
+                                  />
+                                </td>
+                                <td>{lab.savedAt}</td>
+                                <td className="lm-action-buttons">
+                                  <button
+                                    className="lm-icon-btn"
+                                    onClick={saveEditLab}
+                                    disabled={labEditSaveLoading}
+                                  >
+                                    {labEditSaveLoading ? (
+                                      <CircularLoader size="sm" inline />
+                                    ) : (
+                                      "💾"
+                                    )}
+                                  </button>
+                                  <button
+                                    className="lm-icon-btn"
+                                    onClick={() => {
+                                      setEditingLabId(null);
+                                      setEditingLabData(null);
+                                    }}
+                                    disabled={labEditSaveLoading}
+                                  >
+                                    ✖️
+                                  </button>
+                                </td>
+                              </>
+                            ) : (
+                              <>
+                                <td>{lab.labCode}</td>
+                                <td>{lab.labName}</td>
+                                <td>{lab.gst}</td>
+                                <td>{lab.phone}</td>
+                                <td>{lab.adminName}</td>
+                                <td>
+                                  {lab.labType === "internal"
+                                    ? "Internal"
+                                    : "Third Party"}
+                                </td>
+                                <td>{lab.address}</td>
+                                <td>{convertToIST(lab.savedAt)}</td>
+                                <td className="lm-action-buttons">
+                                  <button
+                                    className="lm-icon-btn"
+                                    onClick={() => {
+                                      setEditingLabId(lab.id);
+                                      setEditingLabData({ ...lab });
+                                    }}
+                                    disabled={
+                                      labDeleteLoading === lab.id ||
+                                      labEditSaveLoading
+                                    }
+                                  >
+                                    ✏️
+                                  </button>
+                                  <button
+                                    className="lm-icon-btn"
+                                    onClick={() => deleteLab(lab.id)}
+                                    disabled={labDeleteLoading === lab.id}
+                                  >
+                                    {labDeleteLoading === lab.id ? (
+                                      <CircularLoader size="sm" inline />
+                                    ) : (
+                                      "🗑️"
+                                    )}
+                                  </button>
+                                </td>
+                              </>
+                            )}
+                          </tr>
+                        ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
-          {/* ========== PRODUCT TAB ========== */}
+          {/* PRODUCT TAB */}
           {activeTab === "product" && (
             <div className="lm-panel">
               <div className="lm-form-grid">
                 <div className="lm-field">
                   <label className="lm-label">Product Name</label>
-                  <input className="lm-input" value={productData?.productName} onChange={(e) => updateProduct("productName", e.target.value)} />
+                  <input
+                    className="lm-input"
+                    value={productData.productName}
+                    onChange={(e) =>
+                      setProductData({ productName: e.target.value })
+                    }
+                  />
                 </div>
               </div>
-
               <div className="lm-actions">
-                <button className="lm-btn-secondary" onClick={resetProduct}>Clear</button>
-                <button className="lm-btn-primary" onClick={handleSaveProduct} disabled={savingProduct}>
-                  {savingProduct ? <><span className="lm-spinner" />Saving...</> : "Save Product"}
+                <button
+                  className="lm-btn-secondary"
+                  onClick={() => setProductData({ productName: "" })}
+                  disabled={productSaveLoading}
+                >
+                  Clear
+                </button>
+                <button
+                  className="lm-btn-primary"
+                  onClick={handleSaveProduct}
+                  disabled={productSaveLoading}
+                >
+                  {productSaveLoading && <CircularLoader size="sm" inline />}
+                  Save Product
                 </button>
               </div>
-
-              {savingProduct ? (
-                <div className="lm-table-loader">
-                  <div className="lm-table-spinner" />
-                  <span className="lm-table-loader-text">Saving product, please wait...</span>
-                </div>
-              ) : savedProducts.length > 0 && (
-                <div className="lm-table-section">
-                  <div className="lm-table-section-header">
-                    <span className="lm-table-section-title">Saved Products</span>
-                    <span className="lm-table-count-badge">{savedProducts.length} {savedProducts.length === 1 ? "product" : "products"}</span>
-                  </div>
-                  <div className="lm-table-card">
-                    <div className="lm-table-scroll">
-                      <table className="lm-table">
-                        <thead>
-                          <tr>
-                            <th>Product Name</th>
-                            <th>Product ID</th>
-                            <th>Saved At</th>
-                            <th></th>
+              <div className="lm-table-wrapper">
+                <table className="lm-table">
+                  <thead>
+                    <tr>
+                      <th>Product Name</th>
+                      <th>Product ID</th>
+                      <th>Saved At</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {productFetchLoading
+                      ? renderTableLoader()
+                      : savedProducts.map((prod) => (
+                          <tr key={prod.id}>
+                            <td>{prod.productName}</td>
+                            <td>{prod.productId}</td>
+                            <td>{convertToIST(prod.savedAt)}</td>
+                            <td className="lm-action-buttons">
+                              <button
+                                className="lm-icon-btn"
+                                onClick={() => deleteProduct(prod.id)}
+                                disabled={productDeleteLoading === prod.id}
+                              >
+                                {productDeleteLoading === prod.id ? (
+                                  <CircularLoader size="sm" inline />
+                                ) : (
+                                  "🗑️"
+                                )}
+                              </button>
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {savedProducts.map((prod) => (
-                            <tr key={prod.id}>
-                              {editingProductId === prod.id ? (
-                                <>
-                                  <td><input className="lm-editable-input" value={editingProductData.productName} onChange={(e) => setEditingProductData({ ...editingProductData, productName: e.target.value })} /></td>
-                                  <td><input className="lm-editable-input" value={editingProductData.productId} onChange={(e) => setEditingProductData({ ...editingProductData, productId: e.target.value })} /></td>
-                                  <td className="lm-table-date">{prod.savedAt}</td>
-                                  <td>
-                                    <div className="lm-action-cell">
-                                      <button className="lm-icon-btn" onClick={saveEditProduct}>💾</button>
-                                      <button className="lm-icon-btn" onClick={cancelEditProduct}>✖️</button>
-                                    </div>
-                                  </td>
-                                </>
-                              ) : (
-                                <>
-                                  <td className="lm-table-name">{prod.productName}</td>
-                                  <td><span className="lm-code-pill">{prod.productId}</span></td>
-                                  <td className="lm-table-date">{prod.savedAt}</td>
-                                  <td>
-                                    <div className="lm-action-cell">
-                                      <button className="lm-icon-btn" onClick={() => startEditProduct(prod)}>✏️</button>
-                                      <button className="lm-icon-btn danger" onClick={() => deleteProduct(prod.id)}>🗑️</button>
-                                    </div>
-                                  </td>
-                                </>
-                              )}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              )}
+                        ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
-          {/* ========== TESTING TAB ========== */}
+          {/* TESTING TAB */}
           {activeTab === "testing" && (
             <div className="lm-panel">
               <div className="lm-field lm-full-width">
                 <label className="lm-label">Select Testing Types</label>
                 <div className="lm-check-group">
-                  {availableTests.map((test) => (
-                    <div key={test.id} className="lm-checkbox-item">
-                      <input type="checkbox" id={test.id} checked={selectedTestIds.includes(test.id)} onChange={() => handleToggleTest(test.id)} />
-                      <label htmlFor={test.id}>{test.label}</label>
+                  {testFetchLoading ? (
+                    <div className="lm-loader-container">
+                      <CircularLoader />
                     </div>
-                  ))}
+                  ) : (
+                    availableTests.map((test) => (
+                      <div key={test.id} className="lm-checkbox-item">
+                        <input
+                          type="checkbox"
+                          id={test.id}
+                          checked={selectedTestIds.includes(test.id)}
+                          onChange={() => handleToggleTest(test.id)}
+                        />
+                        <label htmlFor={test.id}>{test.label}</label>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -3715,28 +1851,81 @@ export default function LabManagement() {
                 <div className="lm-row">
                   <div className="lm-field">
                     <label className="lm-label">Test Name</label>
-                    <input className="lm-input" value={newTestLabel} onChange={(e) => setNewTestLabel(e.target.value)} />
+                    <input
+                      className="lm-input"
+                      value={newTestLabel}
+                      onChange={(e) => setNewTestLabel(e.target.value)}
+                    />
                   </div>
                 </div>
                 <div style={{ marginBottom: "1rem" }}>
-                  <label className="lm-label">Test Fields (Name, Label, Placeholder)</label>
+                  <label className="lm-label">
+                    Test Fields (Name, Label, Placeholder)
+                  </label>
                   {newTestFields.map((field, idx) => (
                     <div key={idx} className="lm-dynamic-field-row">
                       <div className="lm-field">
-                        <input className="lm-input" placeholder="Field name" value={field.name} onChange={(e) => updateCustomField(idx, "name", e.target.value)} />
+                        <input
+                          className="lm-input"
+                          placeholder="Field name"
+                          value={field.name}
+                          onChange={(e) =>
+                            updateCustomField(idx, "name", e.target.value)
+                          }
+                        />
                       </div>
                       <div className="lm-field">
-                        <input className="lm-input" placeholder="Label" value={field.label} onChange={(e) => updateCustomField(idx, "label", e.target.value)} />
+                        <input
+                          className="lm-input"
+                          placeholder="Label"
+                          value={field.label}
+                          onChange={(e) =>
+                            updateCustomField(idx, "label", e.target.value)
+                          }
+                        />
                       </div>
                       <div className="lm-field">
-                        <input className="lm-input" placeholder="Placeholder" value={field.placeholder} onChange={(e) => updateCustomField(idx, "placeholder", e.target.value)} />
+                        <input
+                          className="lm-input"
+                          placeholder="Placeholder"
+                          value={field.placeholder}
+                          onChange={(e) =>
+                            updateCustomField(
+                              idx,
+                              "placeholder",
+                              e.target.value,
+                            )
+                          }
+                        />
                       </div>
-                      <button className="lm-btn-outline" onClick={() => removeCustomField(idx)} disabled={newTestFields.length === 1}>✕</button>
+                      <button
+                        className="lm-btn-outline"
+                        onClick={() => removeCustomField(idx)}
+                        disabled={
+                          newTestFields.length === 1 || testCreateLoading
+                        }
+                      >
+                        ✕
+                      </button>
                     </div>
                   ))}
-                  <button className="lm-btn-outline" onClick={addCustomField} style={{ marginTop: "0.5rem" }}>+ Add Field</button>
+                  <button
+                    className="lm-btn-outline"
+                    onClick={addCustomField}
+                    style={{ marginTop: "0.5rem" }}
+                    disabled={testCreateLoading}
+                  >
+                    + Add Field
+                  </button>
                 </div>
-                <button className="lm-btn-small" onClick={handleAddNewTest} disabled={!newTestLabel.trim()}>Create Test</button>
+                <button
+                  className="lm-btn-small"
+                  onClick={handleAddNewTest}
+                  disabled={!newTestLabel.trim() || testCreateLoading}
+                >
+                  {testCreateLoading && <CircularLoader size="sm" inline />}
+                  Create Test
+                </button>
               </div>
 
               {selectedTestIds.length > 0 && (
@@ -3748,12 +1937,31 @@ export default function LabManagement() {
                     const values = testValues[testId] || {};
                     return (
                       <div key={testId} className="lm-test-fields">
-                        <h3 style={{ marginBottom: "1rem", fontSize: "1rem", fontWeight: 600 }}>{test.label}</h3>
+                        <h3
+                          style={{
+                            marginBottom: "1rem",
+                            fontSize: "1rem",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {test.label}
+                        </h3>
                         <div className="lm-form-grid">
-                          {test?.fields?.map((field) => (
-                            <div key={field?.name} className="lm-field">
-                              <label className="lm-label">{field?.label}</label>
-                              <input className="lm-input" placeholder={field?.placeholder} value={values[field?.name] || ""} onChange={(e) => handleTestFieldChange(testId, field?.name, e.target.value)} />
+                          {test.fields.map((field) => (
+                            <div key={field.name} className="lm-field">
+                              <label className="lm-label">{field.label}</label>
+                              <input
+                                className="lm-input"
+                                placeholder={field.placeholder}
+                                value={values[field.name] || ""}
+                                onChange={(e) =>
+                                  handleTestFieldChange(
+                                    testId,
+                                    field.name,
+                                    e.target.value,
+                                  )
+                                }
+                              />
                             </div>
                           ))}
                         </div>
@@ -3762,79 +1970,121 @@ export default function LabManagement() {
                   })}
                 </div>
               )}
-
               <div className="lm-actions">
-                <button className="lm-btn-secondary" onClick={resetTesting}>Clear All</button>
-                <button className="lm-btn-primary" onClick={handleSaveTesting}>Apply Testing</button>
+                <button className="lm-btn-secondary" onClick={resetTesting}>
+                  Clear All
+                </button>
+                <button
+                  className="lm-btn-primary"
+                  onClick={handleSaveTesting}
+                  disabled={selectedTestIds.length === 0}
+                >
+                  Apply Testing
+                </button>
               </div>
 
               {savedTests.length > 0 && (
-                <div className="lm-table-section">
-                  <div className="lm-table-section-header">
-                    <span className="lm-table-section-title">Saved Test Configurations</span>
-                    <span className="lm-table-count-badge">{savedTests.length} {savedTests.length === 1 ? "entry" : "entries"}</span>
-                  </div>
-                  <div className="lm-table-card">
-                    <div className="lm-table-scroll">
-                      <table className="lm-table">
-                        <thead>
-                          <tr>
-                            <th>Saved At</th>
-                            <th>Test(s) &amp; Values</th>
-                            <th></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {savedTests.map((entry) => (
-                            <tr key={entry.id}>
-                              <td className="lm-table-date" style={{ whiteSpace: "nowrap" }}>{entry.savedAt}</td>
-                              <td>
-                                {editingTestId === entry.id
-                                  ? editingTestData.tests.map((test, ti) => (
-                                      <div key={ti} style={{ marginBottom: "1rem" }}>
-                                        <strong>{test.testLabel}</strong>
-                                        <ul className="lm-test-fields-preview">
-                                          {test.fields.map((field, fi) => (
-                                            <li key={fi}>
-                                              {field.label}:{" "}
-                                              <input className="lm-editable-input" style={{ width: "auto", display: "inline-block", marginLeft: "0.5rem" }} value={field.value} onChange={(e) => updateEditingTestField(ti, fi, e.target.value)} />
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    ))
-                                  : entry.tests.map((test, idx) => (
-                                      <div key={idx} style={{ marginBottom: "0.75rem" }}>
-                                        <strong style={{ fontSize: "0.82rem" }}>{test.testLabel}</strong>
-                                        <ul className="lm-test-fields-preview">
-                                          {test.fields.map((field, fidx) => (
-                                            <li key={fidx} className="lm-table-muted">{field.label}: {field.value || "—"}</li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    ))}
-                              </td>
-                              <td>
-                                <div className="lm-action-cell">
-                                  {editingTestId === entry.id ? (
-                                    <>
-                                      <button className="lm-icon-btn" onClick={saveEditTest}>💾</button>
-                                      <button className="lm-icon-btn" onClick={cancelEditTest}>✖️</button>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <button className="lm-icon-btn" onClick={() => startEditTest(entry)}>✏️</button>
-                                      <button className="lm-icon-btn danger" onClick={() => deleteTest(entry.id)}>🗑️</button>
-                                    </>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                <div className="lm-table-wrapper">
+                  <table className="lm-table">
+                    <thead>
+                      <tr>
+                        <th>Saved At</th>
+                        <th>Test(s) & Values</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {savedTests.map((entry) => (
+                        <tr key={entry.id}>
+                          <td style={{ whiteSpace: "nowrap" }}>
+                            {entry.savedAt}
+                          </td>
+                          <td>
+                            {editingTestId === entry.id
+                              ? editingTestData.tests.map((test, ti) => (
+                                  <div
+                                    key={ti}
+                                    style={{ marginBottom: "1rem" }}
+                                  >
+                                    <strong>{test.testLabel}</strong>
+                                    <ul className="lm-test-fields-preview">
+                                      {test.fields.map((field, fi) => (
+                                        <li key={fi}>
+                                          {field.label}:{" "}
+                                          <input
+                                            className="lm-editable-input"
+                                            style={{
+                                              width: "auto",
+                                              display: "inline-block",
+                                              marginLeft: "0.5rem",
+                                            }}
+                                            value={field.value}
+                                            onChange={(e) =>
+                                              updateEditingTestField(
+                                                ti,
+                                                fi,
+                                                e.target.value,
+                                              )
+                                            }
+                                          />
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ))
+                              : entry.tests.map((test, idx) => (
+                                  <div
+                                    key={idx}
+                                    style={{ marginBottom: "0.75rem" }}
+                                  >
+                                    <strong>{test.testLabel}</strong>
+                                    <ul className="lm-test-fields-preview">
+                                      {test.fields.map((field, fidx) => (
+                                        <li key={fidx}>
+                                          {field.label}: {field.value || "—"}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ))}
+                          </td>
+                          <td className="lm-action-buttons">
+                            {editingTestId === entry.id ? (
+                              <>
+                                <button
+                                  className="lm-icon-btn"
+                                  onClick={saveEditTest}
+                                >
+                                  💾
+                                </button>
+                                <button
+                                  className="lm-icon-btn"
+                                  onClick={cancelEditTest}
+                                >
+                                  ✖️
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  className="lm-icon-btn"
+                                  onClick={() => startEditTest(entry)}
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  className="lm-icon-btn"
+                                  onClick={() => deleteTest(entry.id)}
+                                >
+                                  🗑️
+                                </button>
+                              </>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
