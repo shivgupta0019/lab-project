@@ -113,7 +113,7 @@ export default function Dashboard() {
 
   // ✅ LINKS
   const allLinks = [
-    ...(role === "admin"
+    ...(role === "admin" || role === "super_admin"
       ? [
           { to: "/admin", icon: FaUserShield, label: "Admin" },
           { to: "/users", icon: FaUserShield, label: "Users" },

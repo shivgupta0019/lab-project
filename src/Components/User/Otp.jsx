@@ -98,10 +98,7 @@ export default function OTPPage() {
     }
   }, [otp]);
 
- 
   
-  
-
   async function handleVerify() {
     try {
       let res = await axios.post(
@@ -115,28 +112,28 @@ export default function OTPPage() {
         },
       );
 
-      // 🔥 TOKEN SAVE (already correct)
+      //  TOKEN SAVE (already correct)
       console.log("res.data", res.data);
 
       localStorage.setItem("token", res.data.token);
 
-      // 🔥 ROLE DECODE
+      //  ROLE DECODE
       const decoded = jwtDecode(res.data.token);
 
       alert(res.data.message);
 
-      // 🔥 ROLE BASED REDIRECT
-      if (decoded.role === "admin") {
+      //  ROLE BASED REDIRECT
+      if (decoded.role === "admin" || decoded.role === "super_admin") {
         navigate("/admin");
       } else {
-        navigate("/centrallab"); // ya /lab
+        navigate("/centrallab"); 
       }
     } catch (err) {
       alert(err.response?.data?.message);
     }
   }
 
-  // 🔁 RESEND OTP (MAIN LOGIC)
+  //  RESEND OTP (MAIN LOGIC)
   async function handleResend() {
     if (!resendActive) return;
 
