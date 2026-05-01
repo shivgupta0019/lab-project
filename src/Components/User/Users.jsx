@@ -1,12 +1,28 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axiosConfig";
+import { jwtDecode } from "jwt-decode";
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState({});
 
   useEffect(() => {
     fetchUsers();
+  }, []);
+
+  //  ISKE BAAD YEH ADD KAR
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setCurrentUser(decoded);
+      } catch (err) {
+        console.log("Invalid token");
+      }
+    }
   }, []);
 
   async function fetchUsers() {
@@ -30,7 +46,7 @@ export default function UsersPage() {
       const newRole = user.role === "admin" ? "user" : "admin";
       await api.put(`/users/${user.id}/role`, { role: newRole });
       setUsers((prevUsers) =>
-        prevUsers.map((u) => (u.id === user.id ? { ...u, role: newRole } : u))
+        prevUsers.map((u) => (u.id === user.id ? { ...u, role: newRole } : u)),
       );
     } catch (err) {
       alert("Error updating role");
@@ -254,7 +270,6 @@ export default function UsersPage() {
       `}</style>
 
       <div className="users-container">
-
         {/* ===== HEADER ===== */}
         <div className="users-header">
           {loading ? (
@@ -291,7 +306,10 @@ export default function UsersPage() {
                 {/* email */}
                 <div className="skeleton skeleton-text-sm" />
                 {/* phone */}
-                <div className="skeleton skeleton-text-sm" style={{ width: "55%" }} />
+                <div
+                  className="skeleton skeleton-text-sm"
+                  style={{ width: "55%" }}
+                />
                 {/* role badge */}
                 <div className="skeleton skeleton-badge-pill" />
                 {/* action btn */}
@@ -307,12 +325,13 @@ export default function UsersPage() {
               <span className="header-cell">Email</span>
               <span className="header-cell">Phone</span>
               <span className="header-cell">Role</span>
-              <span className="header-cell">Action</span>
+              {currentUser?.role === "super_admin" && (
+                <span className="header-cell">Action</span>
+              )}
             </div>
 
             {users.map((user, index) => (
               <div key={index} className="data-row">
-
                 <div className="data-cell name-cell">
                   <div className="name-box">
                     <div className="avatar">
@@ -322,36 +341,69 @@ export default function UsersPage() {
                   </div>
                 </div>
 
-                <div className="data-cell" data-label="Email">{user.email || user.EMAIL}</div>
-                <div className="data-cell" data-label="Phone">{user.phone || user.PHONE}</div>
+                <div className="data-cell" data-label="Email">
+                  {user.email || user.EMAIL}
+                </div>
+                <div className="data-cell" data-label="Phone">
+                  {user.phone || user.PHONE}
+                </div>
 
                 <div className="data-cell" data-label="Role">
                   <span
                     className="role-badge"
-                    style={{ backgroundColor: user.role === "admin" ? "#ff4d4f" : "#4CAF50" }}
+                    style={{
+                      backgroundColor:
+                        user.role === "super_admin"
+                          ? "#df6908"
+                          : user.role === "admin"
+                            ? "#ff4d4f"
+                            : "#4CAF50",
+                    }}
                   >
-                    {user.role === "admin" ? "Admin" : "User"}
+                    {user.role === "super_admin"
+                      ? "Super Admin"
+                      : user.role === "admin"
+                        ? "Admin"
+                        : "User"}
                   </span>
                 </div>
 
-                <div className="data-cell" data-label="Action">
-                  <button
-                    onClick={() => toggleRole(user)}
-                    className="role-btn"
-                    style={{
-                      border: user.role === "admin" ? "1px solid #eb161a" : "1px solid #4CAF50",
-                      color: user.role === "admin" ? "#eb161a" : "#4CAF50",
-                    }}
-                  >
-                    {user.role === "admin" ? "Remove Admin" : "Make Admin"}
-                  </button>
-                </div>
-
+                {currentUser?.role === "super_admin" && (
+                  <div className="data-cell" data-label="Action">
+                    {user.role === "super_admin" ||
+                    currentUser.email === user.email ? (
+                      <button
+                        className="role-btn"
+                        style={{
+                          border: "1px solid #aaa",
+                          color: "#aaa",
+                          cursor: "not-allowed",
+                        }}
+                        disabled
+                      >
+                        Protected
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => toggleRole(user)}
+                        className="role-btn"
+                        style={{
+                          border:
+                            user.role === "admin"
+                              ? "1px solid #eb161a"
+                              : "1px solid #4CAF50",
+                          color: user.role === "admin" ? "#eb161a" : "#4CAF50",
+                        }}
+                      >
+                        {user.role === "admin" ? "Remove Admin" : "Make Admin"}
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
         )}
-
       </div>
     </>
   );

@@ -79,6 +79,7 @@ export default function Dashboard() {
     try {
       const decoded = jwtDecode(token);
       setRole(decoded.role);
+      
     } catch {
       localStorage.clear();
       navigate("/");
